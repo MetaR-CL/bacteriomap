@@ -1,0 +1,158 @@
+// editorial-main.jsx — Router, page transitions, and tweaks panel
+
+const { useState, useEffect, useCallback } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "dark": false,
+  "vivid": false,
+  "accentColor": "#9a6b1f",
+  "showImages": true,
+  "morphoStyle": "rich"
+}/*EDITMODE-END*/;
+
+// localStorage helper for bacteria images
+function getBactImage(name) {
+  try { return localStorage.getItem('bm-img:' + name) || null; } catch (e) { return null; }
+}
+function setBactImage(name, dataUrl) {
+  try {
+    if (dataUrl) localStorage.setItem('bm-img:' + name, dataUrl);
+    else localStorage.removeItem('bm-img:' + name);
+    window.dispatchEvent(new Event('bm-img-updated'));
+  } catch (e) {}
+}
+function useBactImage(name) {
+  const [img, setImg] = useState(() => getBactImage(name));
+  useEffect(() => {
+    const fn = () => setImg(getBactImage(name));
+    window.addEventListener('bm-img-updated', fn);
+    return () => window.removeEventListener('bm-img-updated', fn);
+  }, [name]);
+  return [img, (d) => { setBactImage(name, d); setImg(d); }];
+}
+
+// Component used inside the bacteria figure preview area
+function BactFigure({ bact, vivid, showImages, size = 90 }) {
+  const c = window.gramColor(bact.gram);
+  const [img] = useBactImage(bact.name);
+  const fileRef = React.useRef(null);
+
+  const onPick = (e) => {
+    e.stopPropagation();
+    fileRef.current && fileRef.current.click();
+  };
+  const onFile = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setBactImage(bact.name, ev.target.result);
+    reader.readAsDataURL(f);
+    e.target.value = '';
+  };
+  const onClear = (e) => { e.stopPropagation(); setBactImage(bact.name, null); };
+
+  if (showImages && img) {
+    return (
+      <div style={{ width:'100%', height:'100%', position:'relative' }}>
+        <img src={img} alt={bact.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+        <button onClick={onClear} title="Retirer l'image"
+                style={{ position:'absolute', top:6, right:6, width:20, height:20, padding:0, border:'0.5px solid rgba(255,255,255,.5)', background:'rgba(0,0,0,.5)', color:'#fff', fontSize:11, cursor:'pointer', borderRadius:2 }}>×</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+      <svg viewBox="0 0 100 100" width={size} height={size}>
+        <MorphoSVG kind={bact.morpho} size={100} stroke={c.stroke} fill={c.fill} fillOpacity={0.22} strokeWidth={1.6} vivid={vivid}/>
+      </svg>
+      {showImages && (
+        <button onClick={onPick} title="Ajouter une image"
+                style={{ position:'absolute', bottom:6, right:6, width:22, height:22, padding:0, border:'0.5px solid var(--rule)', background:'var(--paper)', color:'var(--ink3)', fontSize:11, cursor:'pointer', opacity:0.6, borderRadius:2 }}>+</button>
+      )}
+      <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{ display:'none' }}/>
+    </div>
+  );
+}
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [route, setRoute] = useState({ name: 'home', params: {} });
+  const [phase, setPhase] = useState('active');
+  const [pending, setPending] = useState(null);
+
+  const navigate = useCallback((name, params = {}) => {
+    setPending({ name, params });
+    setPhase('exit');
+  }, []);
+
+  useEffect(() => {
+    if (phase === 'exit' && pending) {
+      const tm = setTimeout(() => {
+        setRoute(pending);
+        setPending(null);
+        setPhase('enter');
+        window.scrollTo(0, 0);
+      }, 180);
+      return () => clearTimeout(tm);
+    }
+    if (phase === 'enter') {
+      const tm = setTimeout(() => setPhase('active'), 20);
+      return () => clearTimeout(tm);
+    }
+  }, [phase, pending]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        if (route.name === 'sheet') navigate('zone', { systemId: 'orl' });
+        else if (route.name === 'zone') navigate('home');
+        else if (route.name === 'quiz' || route.name === 'admin') navigate('home');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [route.name, navigate]);
+
+  const cls = phase === 'enter' ? 'page-enter' : phase === 'exit' ? 'page-exit' : 'page-active';
+  const rootCls = `${t.dark ? 'dark' : ''} ${t.vivid ? 'vivid' : ''}`.trim();
+
+  // Expose so other components can read the live setting
+  window.__bm = { vivid: t.vivid, showImages: t.showImages, BactFigure };
+
+  let screen;
+  if (route.name === 'home')  screen = <HomeScreen  navigate={navigate} />;
+  if (route.name === 'zone')  screen = <ZoneScreen  navigate={navigate} systemId={route.params.systemId} vivid={t.vivid} showImages={t.showImages} />;
+  if (route.name === 'sheet') screen = <SheetScreen navigate={navigate} bacteriaId={route.params.bacteriaId} systemId={route.params.systemId || 'orl'} vivid={t.vivid} showImages={t.showImages} />;
+  if (route.name === 'quiz')  screen = <QuizScreen  navigate={navigate} />;
+  if (route.name === 'admin') screen = <AdminScreen navigate={navigate} />;
+
+  return (
+    <div id="app-root" className={rootCls} style={{ '--accent': t.accentColor, minHeight:'100vh' }}>
+      <div className={cls} style={{ minHeight:'100vh' }} data-screen-label={
+        route.name === 'home' ? 'Accueil' : route.name === 'zone' ? `Zone ${route.params.systemId || 'orl'}` : route.name === 'quiz' ? 'Quiz' : route.name === 'admin' ? 'Admin' : 'Fiche bactérie'
+      }>
+        {screen}
+      </div>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Apparence"/>
+        <TweakToggle label="Mode sombre" value={t.dark} onChange={(v)=>setTweak('dark', v)}/>
+        <TweakToggle label="Couleurs vives" value={t.vivid} onChange={(v)=>setTweak('vivid', v)}/>
+        <TweakColor  label="Couleur accent" value={t.accentColor} onChange={(v)=>setTweak('accentColor', v)}/>
+        <TweakSection label="Bactéries"/>
+        <TweakToggle label="Images personnalisées" value={t.showImages} onChange={(v)=>setTweak('showImages', v)}/>
+        <div style={{ fontSize:10, color:'rgba(41,38,27,.55)', lineHeight:1.4, marginTop:-2 }}>
+          Active le bouton <b>+</b> sur chaque vignette pour téléverser une image (microscopie, culture…). Stockée localement.
+        </div>
+        <TweakButton label="Effacer toutes les images" onClick={()=>{
+          if (!confirm('Supprimer toutes les images téléversées ?')) return;
+          Object.keys(localStorage).filter(k=>k.startsWith('bm-img:')).forEach(k=>localStorage.removeItem(k));
+          window.dispatchEvent(new Event('bm-img-updated'));
+        }}/>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
