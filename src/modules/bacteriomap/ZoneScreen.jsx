@@ -2,6 +2,21 @@
 import React from 'react';
 import { T, ORL_SUBS_DETAIL } from './data.js';
 import { SYSTEMS, LCR_PATHO, getSystemPalette, gramColor } from './shared.jsx';
+import { useBacteria } from '../../hooks/useBacteria.js';
+
+// Normalize Supabase bacteria shape to the static data shape used in the UI
+const GRAM_MAP = { positif: '+', negatif: '−', variable: '±', aucun: 'F' };
+function normalizeBact(b) {
+  return {
+    ...b,
+    gram: GRAM_MAP[b.gram] || b.gram,
+    shape: b.morphology || b.name,
+    freq: 'inconnu',
+    o2: 'inconnu',
+    urgence: false,
+    declaration: false,
+  };
+}
 
 export default function ZoneScreen({ navigate, systemId = 'orl', vivid = false, showImages = true }) {
   const sys = SYSTEMS.find(s => s.id === systemId) || SYSTEMS[2];
@@ -22,7 +37,12 @@ export default function ZoneScreen({ navigate, systemId = 'orl', vivid = false, 
   const [filter, setFilter] = React.useState('all');
   const sub = subs.find(s => s.id === activeSub) || subs[0];
 
-  const bacteria = sub.patho.filter(b => {
+  const { bacteria: dbBacteria, loading: bacteriaLoading } = useBacteria();
+  const sourceBacteria = (!bacteriaLoading && dbBacteria.length > 0)
+    ? dbBacteria.map(normalizeBact)
+    : sub.patho;
+
+  const bacteria = sourceBacteria.filter(b => {
     if (filter === 'all') return true;
     if (filter === 'gp')  return b.gram === '+';
     if (filter === 'gm')  return b.gram === '−';
