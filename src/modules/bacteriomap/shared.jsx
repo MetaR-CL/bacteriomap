@@ -240,8 +240,9 @@ export function MorphoSVG({ kind, size = 100, stroke = 'var(--violet)', fill = '
 }
 
 export function gramColor(gram) {
-  // Returns palette for Gram type: positive = violet/indigo, negative = pink/red
-  if (gram === '+') return { stroke: '#3D2A6B', fill: '#5B3FA8', tint: '#EDE7F8', label: 'Gram +' };
-  if (gram === '-' || gram === '−') return { stroke: '#7A1F3D', fill: '#C4337A', tint: '#FBE6EE', label: 'Gram −' };
-  return { stroke: '#444', fill: '#777', tint: '#EEE', label: gram || '—' };
+  if (gram === '+' || gram === 'positif')
+    return { stroke: '#3D2A6B', fill: '#5B3FA8', tint: '#EDE7F8', label: 'Gram +' }
+  if (gram === '-' || gram === '−' || gram === 'negatif')
+    return { stroke: '#7A1F3D', fill: '#C4337A', tint: '#FBE6EE', label: 'Gram −' }
+  return { stroke: '#444', fill: '#777', tint: '#EEE', label: gram || '—' }
 }

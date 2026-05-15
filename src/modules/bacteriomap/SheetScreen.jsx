@@ -3,6 +3,7 @@
 import React from 'react';
 import { T, SPN_ANTIBIO } from './data.js';
 import { SYSTEMS, SPN, getSystemPalette, gramColor } from './shared.jsx';
+import { supabase } from '../../lib/supabase.js';
 
 const SHEET_SLOTS = [
   { key: 'gram',    label: 'Coloration de Gram',        caption: '×1000 · immersion',     fig: 'I'   },
@@ -184,7 +185,18 @@ function SectionTitle({ n, title, anchor, accent, right }) {
 }
 
 export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vivid = false, showImages = true }) {
-  const b = SPN;
+  const [b, setB] = React.useState(SPN);
+
+  React.useEffect(() => {
+    if (!bacteriaId) { setB(SPN); return; }
+    supabase
+      .from('bacterio_bacteria')
+      .select('*, bacterio_images(*)')
+      .eq('name', bacteriaId)
+      .single()
+      .then(({ data }) => { if (data) setB(data); });
+  }, [bacteriaId]);
+
   const c = gramColor(b.gram);
   const palette = getSystemPalette(systemId);
   const accent = palette.accent;

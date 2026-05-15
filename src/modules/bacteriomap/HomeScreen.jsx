@@ -1,8 +1,27 @@
 // HomeScreen.jsx — Table des matières
 import { T } from './data.js';
-import { SYSTEMS, getSystemPalette } from './shared.jsx';
+import { SYSTEMS as STATIC_SYSTEMS, getSystemPalette } from './shared.jsx';
+import { useSystems } from '../../hooks/useSystems.js';
+
+function mapDbSystem(s) {
+  const staticMatch = STATIC_SYSTEMS.find(st => st.id === s.slug);
+  return staticMatch
+    ? { ...staticMatch, _dbId: s.id }
+    : { id: s.slug, label: s.name, short: s.slug.toUpperCase(), subtitle: '', n: s.bacterio_zones?.length || 0, _dbId: s.id };
+}
 
 export default function HomeScreen({ navigate }) {
+  const { systems: dbSystems, loading } = useSystems();
+  const SYSTEMS = (!loading && dbSystems.length > 0) ? dbSystems.map(mapDbSystem) : STATIC_SYSTEMS;
+
+  if (loading) {
+    return (
+      <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:T.serif, fontStyle:'italic', fontSize:18, color:T.ink3 }}>
+        Chargement…
+      </div>
+    );
+  }
+
   const half1 = SYSTEMS.slice(0, 5);
   const half2 = SYSTEMS.slice(5);
   const pages  = [11,33,67,89,121,149,177,199,219,235];
