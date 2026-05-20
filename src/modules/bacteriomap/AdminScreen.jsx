@@ -304,7 +304,7 @@ function ChaptersEditor() {
                 <div key={sys.id} onClick={() => setActiveSys(sys.id)} style={{
                   padding:'12px 14px', borderBottom: idx < systems.length-1 ? `1px solid ${T.ruleSoft}` : 'none',
                   display:'grid', gridTemplateColumns:'10px 1fr auto', gap:12, alignItems:'center',
-                  cursor:'pointer', background: sel ? tint : 'transparent',
+                  cursor:'pointer', background: sel ? (document.documentElement.dataset.theme === 'dark' ? 'var(--bg)' : tint) : 'transparent',
                   borderLeft: sel ? `3px solid ${accent}` : '3px solid transparent',
                 }}>
                   <span style={{ width:8, height:8, borderRadius:'50%', background:accent }}/>

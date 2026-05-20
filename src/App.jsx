@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
 import { gramColor, MorphoSVG } from './modules/bacteriomap/shared.jsx';
 import { useTweaks, TweaksPanel, TweakSection, TweakToggle, TweakColor, TweakButton } from './modules/bacteriomap/TweaksPanel.jsx';
+import { useDarkMode } from './hooks/useDarkMode.js';
 import HomeScreen  from './modules/bacteriomap/HomeScreen.jsx';
 import ZoneScreen  from './modules/bacteriomap/ZoneScreen.jsx';
 import SheetScreen from './modules/bacteriomap/SheetScreen.jsx';
@@ -82,7 +83,34 @@ function BactFigure({ bact, vivid, showImages, size = 90 }) {
   );
 }
 
+// Sun icon (light mode active)
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  );
+}
+
+// Moon icon (dark mode active)
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  );
+}
+
 export default function App() {
+  const [dark, setDark] = useDarkMode();
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [route, setRoute] = useState({ name: 'home', params: {} });
   const [phase, setPhase] = useState('active');
@@ -122,10 +150,10 @@ export default function App() {
   }, [route.name, navigate]);
 
   const cls = phase === 'enter' ? 'page-enter' : phase === 'exit' ? 'page-exit' : 'page-active';
-  const rootCls = `${t.dark ? 'dark' : ''} ${t.vivid ? 'vivid' : ''}`.trim();
+  const rootCls = `${dark ? 'dark' : ''} ${t.vivid ? 'vivid' : ''}`.trim();
 
-  // Expose so ZoneScreen can access the live BactFigure component
-  window.__bm = { vivid: t.vivid, showImages: t.showImages, BactFigure };
+  // Expose so ZoneScreen can access the live BactFigure component + dark state
+  window.__bm = { vivid: t.vivid, showImages: t.showImages, BactFigure, dark };
 
   let screen;
   if (route.name === 'home')  screen = <HomeScreen  navigate={navigate} />;
@@ -136,6 +164,21 @@ export default function App() {
 
   return (
     <div id="app-root" className={rootCls} style={{ '--accent': t.accentColor, minHeight:'100vh' }}>
+      {/* Floating dark mode toggle */}
+      <button
+        onClick={() => setDark(d => !d)}
+        title={dark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+        style={{
+          position: 'fixed', top: 12, right: 12, zIndex: 100,
+          width: 34, height: 34, padding: 0, border: '1px solid var(--rule)',
+          background: 'var(--paper)', color: 'var(--ink2)',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderRadius: 2,
+        }}
+      >
+        {dark ? <SunIcon /> : <MoonIcon />}
+      </button>
+
       <div className={cls} style={{ minHeight:'100vh' }} data-screen-label={
         route.name === 'home' ? 'Accueil' : route.name === 'zone' ? `Zone ${route.params.systemId || 'orl'}` : route.name === 'quiz' ? 'Quiz' : route.name === 'admin' ? 'Admin' : 'Fiche bactérie'
       }>
@@ -144,7 +187,7 @@ export default function App() {
 
       <TweaksPanel title="Tweaks">
         <TweakSection label="Apparence"/>
-        <TweakToggle label="Mode sombre" value={t.dark} onChange={(v)=>setTweak('dark', v)}/>
+        <TweakToggle label="Mode sombre" value={dark} onChange={setDark}/>
         <TweakToggle label="Couleurs vives" value={t.vivid} onChange={(v)=>setTweak('vivid', v)}/>
         <TweakColor  label="Couleur accent" value={t.accentColor} onChange={(v)=>setTweak('accentColor', v)}/>
         <TweakSection label="Bactéries"/>
