@@ -151,7 +151,7 @@ function Lightbox({ bact, openIdx, onClose }) {
 
       {/* Image */}
       <div onClick={(e)=>e.stopPropagation()} style={{ cursor:'default', maxWidth:'min(1100px, 86vw)', maxHeight:'78vh', display:'flex', flexDirection:'column', alignItems:'center' }}>
-        <div style={{ background:'#1c170e', border:'1px solid rgba(248,243,229,.12)', padding:14 }}>
+        <div style={{ background:'var(--qr-bg)', border:'1px solid rgba(248,243,229,.12)', padding:14 }}>
           <div style={{ width:'min(1000px, 80vw)', maxWidth:'100%', aspectRatio: img ? 'auto' : '4 / 3', maxHeight:'66vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
             {img ? (
               <img src={img} alt={slot.label} style={{ maxWidth:'100%', maxHeight:'66vh', display:'block' }}/>
