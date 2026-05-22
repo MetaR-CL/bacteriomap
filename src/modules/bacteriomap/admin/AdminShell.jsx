@@ -8,12 +8,12 @@ import AdminQuiz from './AdminQuiz.jsx'
 import AdminPalette from './AdminPalette.jsx'
 
 const TABS = [
-  { id: 'dashboard', icon: '🏠', label: 'Tableau de bord' },
-  { id: 'systems',   icon: '📋', label: 'Systèmes & Zones' },
-  { id: 'bacteria',  icon: '🦠', label: 'Bactéries' },
-  { id: 'milieux',   icon: '🧫', label: 'Milieux' },
-  { id: 'quiz',      icon: '❓', label: 'Quiz' },
-  { id: 'palette',   icon: '🎨', label: 'Couleurs' },
+  { id: 'dashboard', num: 'I',   label: 'Tableau de bord' },
+  { id: 'systems',   num: 'II',  label: 'Systèmes & Zones' },
+  { id: 'bacteria',  num: 'III', label: 'Bactéries' },
+  { id: 'milieux',   num: 'IV',  label: 'Milieux' },
+  { id: 'quiz',      num: 'V',   label: 'Quiz' },
+  { id: 'palette',   num: 'VI',  label: 'Couleurs' },
 ]
 
 function Dashboard({ onNavigate }) {
@@ -191,10 +191,10 @@ export default function AdminShell({ navigate }) {
                   fontFamily: T.mono,
                   fontSize: 11,
                   letterSpacing: '0.06em',
-                  color: isActive ? T.ink : T.ink2,
+                  color: isActive ? T.ink : T.ink3,
                 }}
               >
-                <span style={{ fontSize: 14, lineHeight: 1 }}>{t.icon}</span>
+                <span style={{ fontFamily: T.mono, fontSize: 9, color: isActive ? 'var(--accent)' : T.ink3, width: 22, flexShrink: 0, letterSpacing: '0.04em' }}>{t.num}</span>
                 <span>{t.label}</span>
               </button>
             )

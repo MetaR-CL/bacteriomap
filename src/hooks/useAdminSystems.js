@@ -61,5 +61,12 @@ export function useAdminSystems() {
     await load()
   }
 
-  return { systems, loading, updateSystem, insertSystem, upsertZone, removeZone, reload: load }
+  const removeSystem = async (id) => {
+    await supabase.from('bacterio_zones').delete().eq('system_id', id)
+    const { error } = await supabase.from('bacterio_systems').delete().eq('id', id)
+    if (error) throw error
+    await load()
+  }
+
+  return { systems, loading, updateSystem, insertSystem, upsertZone, removeZone, removeSystem, reload: load }
 }

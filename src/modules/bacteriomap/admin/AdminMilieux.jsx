@@ -18,16 +18,27 @@ const selStyle = { ...inpStyle, fontFamily: '"IBM Plex Mono", monospace', fontSi
 
 const CATEGORIES = ['Gélose', 'Bouillon', 'Sélectif', 'Chromogène', 'Enrichissement', 'Transport', 'Autre']
 
-function ErrorBanner({ msg }) {
-  if (!msg) return null
-  return <div style={{ padding: '8px 12px', background: '#fde8e8', border: '1px solid #e87070', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#c00', marginBottom: 12, letterSpacing: '0.04em' }}>✗ {msg}</div>
+function Toast({ success, error }) {
+  return (
+    <>
+      {success && <div style={{ padding: '8px 12px', background: '#e8f5e9', border: '1px solid #81c784', fontFamily: 'var(--mono)', fontSize: 11, color: '#2e7d32', marginBottom: 12, letterSpacing: '0.04em' }}>✓ {success}</div>}
+      {error && <div style={{ padding: '8px 12px', background: '#fde8e8', border: '1px solid #e87070', fontFamily: 'var(--mono)', fontSize: 11, color: '#c00', marginBottom: 12, letterSpacing: '0.04em' }}>✗ {error}</div>}
+    </>
+  )
 }
 
 export default function AdminMilieux() {
   const { milieux, loading, upsert, remove } = useAdminMilieux()
-  const [edits, setEdits]   = React.useState({})
-  const [error, setError]   = React.useState(null)
-  const [newRow, setNewRow] = React.useState({ name: '', category: 'Gélose', selective: false })
+  const [edits, setEdits]     = React.useState({})
+  const [error, setError]     = React.useState(null)
+  const [success, setSuccess] = React.useState(null)
+  const [newRow, setNewRow]   = React.useState({ name: '', category: 'Gélose', selective: false })
+
+  const flash = (msg) => {
+    setError(null)
+    setSuccess(msg)
+    setTimeout(() => setSuccess(null), 3000)
+  }
 
   const getEdit = (m) => edits[m.id] ?? { name: m.name, category: m.category || 'Gélose', selective: !!m.selective }
   const patchEdit = (id, patch) => setEdits(e => ({ ...e, [id]: { ...(e[id] || {}), ...patch } }))
@@ -35,15 +46,19 @@ export default function AdminMilieux() {
   const saveRow = async (m) => {
     const e = getEdit(m)
     setError(null)
-    try { await upsert({ id: m.id, name: e.name, category: e.category, selective: e.selective }) }
-    catch (err) { setError(err.message) }
+    try {
+      await upsert({ id: m.id, name: e.name, category: e.category, selective: e.selective })
+      flash('Milieu enregistré')
+    } catch (err) { setError(err.message) }
   }
 
   const deleteRow = async (m) => {
-    if (!confirm(`Supprimer le milieu « ${m.name} » ?`)) return
+    if (!confirm(`Supprimer ce milieu ? Il sera retiré de toutes les fiches.`)) return
     setError(null)
-    try { await remove(m.id) }
-    catch (err) { setError(err.message) }
+    try {
+      await remove(m.id)
+      flash('Milieu supprimé')
+    } catch (err) { setError(err.message) }
   }
 
   const addRow = async () => {
@@ -52,6 +67,7 @@ export default function AdminMilieux() {
     try {
       await upsert({ name: newRow.name.trim(), category: newRow.category, selective: newRow.selective })
       setNewRow({ name: '', category: 'Gélose', selective: false })
+      flash('Milieu ajouté')
     } catch (err) { setError(err.message) }
   }
 
@@ -60,7 +76,7 @@ export default function AdminMilieux() {
   return (
     <div>
       <h2 style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 500, fontStyle: 'italic', margin: '0 0 20px' }}>Milieux de culture</h2>
-      <ErrorBanner msg={error}/>
+      <Toast success={success} error={error}/>
 
       <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, overflow: 'hidden', marginBottom: 24 }}>
         {/* Table header */}

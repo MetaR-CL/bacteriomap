@@ -43,9 +43,13 @@ function Field({ label, hint, wide, children }) {
   )
 }
 
-function ErrorBanner({ msg }) {
-  if (!msg) return null
-  return <div style={{ padding: '8px 12px', background: '#fde8e8', border: '1px solid #e87070', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#c00', marginBottom: 12, letterSpacing: '0.04em' }}>✗ {msg}</div>
+function Toast({ success, error }) {
+  return (
+    <>
+      {success && <div style={{ padding: '8px 12px', background: '#e8f5e9', border: '1px solid #81c784', fontFamily: 'var(--mono)', fontSize: 11, color: '#2e7d32', marginBottom: 12, letterSpacing: '0.04em' }}>✓ {success}</div>}
+      {error && <div style={{ padding: '8px 12px', background: '#fde8e8', border: '1px solid #e87070', fontFamily: 'var(--mono)', fontSize: 11, color: '#c00', marginBottom: 12, letterSpacing: '0.04em' }}>✗ {error}</div>}
+    </>
+  )
 }
 
 export default function AdminQuiz() {
@@ -55,8 +59,15 @@ export default function AdminQuiz() {
   const [draft, setDraft]           = React.useState(null)
   const [saving, setSaving]         = React.useState(false)
   const [error, setError]           = React.useState(null)
+  const [success, setSuccess]       = React.useState(null)
   const draftRef = React.useRef(null)
   React.useEffect(() => { draftRef.current = draft }, [draft])
+
+  const flash = (msg) => {
+    setError(null)
+    setSuccess(msg)
+    setTimeout(() => setSuccess(null), 3000)
+  }
 
   React.useEffect(() => {
     if (selectedId === null && questions.length > 0) selectQ(questions[0])
@@ -75,11 +86,13 @@ export default function AdminQuiz() {
   const saveQ = async () => {
     const d = draftRef.current
     if (!d) return
+    const isNew = !d.id
     setSaving(true); setError(null)
     try {
       const saved = await upsert(d)
       setSelectedId(saved.id)
       setDraft({ ...saved, options: Array.isArray(saved.options) ? saved.options : [] })
+      flash(isNew ? 'Question créée' : 'Question enregistrée')
     } catch (err) { setError(err.message) }
     finally { setSaving(false) }
   }
@@ -101,6 +114,7 @@ export default function AdminQuiz() {
     try {
       await remove(id)
       if (selectedId === id) { setSelectedId(null); setDraft(null) }
+      flash('Question supprimée')
     } catch (err) { setError(err.message) }
   }
 
@@ -124,7 +138,7 @@ export default function AdminQuiz() {
         <span style={{ fontFamily: T.mono, fontSize: 10, color: T.ink2, letterSpacing: '0.12em' }}>{questions.length} QUESTION{questions.length !== 1 ? 'S' : ''}</span>
         <button onClick={newQuestion} style={primaryBtn}>+ NOUVELLE QUESTION</button>
       </div>
-      <ErrorBanner msg={error}/>
+      <Toast success={success} error={error}/>
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 24, alignItems: 'start' }}>
 
         {/* Left: list */}

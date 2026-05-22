@@ -44,14 +44,13 @@ function Field({ label, hint, wide, children }) {
   )
 }
 
-function ErrorBanner({ msg }) {
-  if (!msg) return null
-  return <div style={{ padding: '8px 12px', background: '#fde8e8', border: '1px solid #e87070', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#c00', marginBottom: 12, letterSpacing: '0.04em' }}>✗ {msg}</div>
-}
-
-function SuccessBanner({ msg }) {
-  if (!msg) return null
-  return <div style={{ padding: '8px 12px', background: '#e8f5e9', border: '1px solid #66bb6a', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, color: '#2e7d32', marginBottom: 12, letterSpacing: '0.04em' }}>✓ {msg}</div>
+function Toast({ success, error }) {
+  return (
+    <>
+      {success && <div style={{ padding: '8px 12px', background: '#e8f5e9', border: '1px solid #81c784', fontFamily: 'var(--mono)', fontSize: 11, color: '#2e7d32', marginBottom: 12, letterSpacing: '0.04em' }}>✓ {success}</div>}
+      {error && <div style={{ padding: '8px 12px', background: '#fde8e8', border: '1px solid #e87070', fontFamily: 'var(--mono)', fontSize: 11, color: '#c00', marginBottom: 12, letterSpacing: '0.04em' }}>✗ {error}</div>}
+    </>
+  )
 }
 
 function BoolSelect({ value, onChange }) {
@@ -98,8 +97,9 @@ export default function AdminBacteria() {
   const images  = current?.bacterio_images || []
   const d       = draft || {}
 
-  const flashSuccess = () => {
-    setSuccessMsg('Fiche enregistrée')
+  const flash = (msg) => {
+    setError(null)
+    setSuccessMsg(msg)
     setTimeout(() => setSuccessMsg(null), 3000)
   }
 
@@ -108,7 +108,7 @@ export default function AdminBacteria() {
     setSaving(true); setError(null)
     try {
       const id = await upsert(row)
-      if (id) { setSelectedId(id); setDraft({ ...row, id }) }
+      if (id) { setSelectedId(id); setDraft({ ...row, id }); flash('Fiche créée') }
     } catch (err) { setError(err.message) }
     finally { setSaving(false) }
   }
@@ -118,14 +118,14 @@ export default function AdminBacteria() {
     setSaving(true); setError(null)
     try {
       await upsert(draftRef.current)
-      flashSuccess()
+      flash('Fiche enregistrée')
     } catch (err) { setError(err.message) }
     finally { setSaving(false) }
   }
 
   const deleteBact = async () => {
     if (!current) return
-    if (!confirm(`Supprimer définitivement « ${current.name} » ?`)) return
+    if (!confirm(`Êtes-vous sûr ? La fiche « ${current.name} » sera définitivement supprimée.`)) return
     setError(null)
     try { await remove(current.id); setSelectedId(null); setDraft(null) }
     catch (err) { setError(err.message) }
@@ -174,12 +174,9 @@ export default function AdminBacteria() {
     <div style={{ flex: 1, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 18 }}>
         <h2 style={{ fontFamily: T.serif, fontSize: 26, fontWeight: 500, fontStyle: 'italic', margin: 0, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.name}</h2>
-        <span style={{ flex: 1 }}/>
-        <button onClick={deleteBact} style={{ ...ghostBtn, color: 'var(--red)', borderColor: 'var(--red)' }}>× Supprimer</button>
       </div>
 
-      <ErrorBanner msg={error}/>
-      <SuccessBanner msg={successMsg}/>
+      <Toast success={successMsg} error={error}/>
 
       <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, padding: '24px 28px' }}>
 
@@ -467,10 +464,14 @@ export default function AdminBacteria() {
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink3 }}>Enregistrez d'abord la fiche pour pouvoir ajouter des images.</div>
         )}
 
-        {/* SAVE BUTTON */}
-        <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid var(--ruleSoft)`, display: 'flex', justifyContent: 'center' }}>
+        {/* SAVE + DELETE */}
+        <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid var(--ruleSoft)`, display: 'flex', alignItems: 'center', gap: 16 }}>
           <button onClick={handleSave} disabled={saving} style={{ ...primaryBtn, padding: '12px 32px', fontSize: 12, opacity: saving ? 0.6 : 1 }}>
             {saving ? 'ENREGISTREMENT…' : 'Enregistrer la fiche'}
+          </button>
+          <span style={{ flex: 1 }}/>
+          <button onClick={deleteBact} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--red)', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, letterSpacing: '0.1em', color: 'var(--red)', cursor: 'pointer' }}>
+            Supprimer cette fiche
           </button>
         </div>
 
