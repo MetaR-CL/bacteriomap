@@ -149,6 +149,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
   const [b, setB] = React.useState(SPN);
 
   React.useEffect(() => {
+    console.log('DEBUG SheetScreen bacteriaId:', bacteriaId)
     if (!bacteriaId) { setB(SPN); return; }
     supabase
       .from('bacterio_bacteria')
