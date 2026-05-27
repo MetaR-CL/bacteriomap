@@ -156,7 +156,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
       .select('*, bacterio_images(*)')
       .eq('name', bacteriaId)
       .single()
-      .then(({ data }) => { if (data) setB(data); });
+      .then(({ data, error }) => { console.log('DEBUG SheetScreen query result:', data, error); if (data) setB(data); });
   }, [bacteriaId]);
 
   const c = gramColor(b.gram);
