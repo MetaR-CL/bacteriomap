@@ -159,7 +159,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                 return (
                   <div key={b.id}
                     style={{ background: 'var(--paper)', border: '0.5px solid var(--rule)', cursor: 'pointer', position: 'relative' }}
-                    onClick={() => navigate('sheet', { bacteriaId: b.name, systemId })}
+                    onClick={() => { console.log('DEBUG bacteriaId:', b.name); navigate('sheet', { bacteriaId: b.name, systemId }) }}
                   >
                     <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', position: 'relative', overflow: 'hidden' }}>
                       {img ? (
