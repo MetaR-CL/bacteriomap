@@ -1,9 +1,11 @@
 // SheetScreen.jsx — Fiche bactérie, refonte densité quotidienne
 // Carrousel 3 planches cliquable → lightbox · sommaire sticky · meta-bar sticky
 import React from 'react';
-import { T, SPN_ANTIBIO } from './data.js';
-import { SYSTEMS, SPN, getSystemPalette, gramColor } from './shared.jsx';
+import { T } from './data.js';
+import { SYSTEMS, getSystemPalette, gramColor } from './shared.jsx';
 import { supabase } from '../../lib/supabase.js';
+
+const GRAM_MAP = { positif: '+', négatif: '−', aucun: 'F' }
 
 const SHEET_SLOTS = [
   { key: 'gram',    label: 'Coloration de Gram',        caption: '×1000 · immersion',     fig: 'I'   },
@@ -97,7 +99,7 @@ function Lightbox({ bact, openIdx, onClose, images }) {
     }}>
       {/* Top bar */}
       <div style={{ position:'absolute', top:0, left:0, right:0, padding:'18px 28px', display:'flex', alignItems:'center', fontFamily:T.mono, fontSize:10, color:'rgba(248,243,229,.6)', letterSpacing:'0.16em' }}>
-        <span style={{ fontStyle:'italic', fontFamily:T.serif, letterSpacing:0, fontSize:13, color:'rgba(248,243,229,.85)' }}>{bact.name}</span>
+        <span style={{ fontStyle:'italic', fontFamily:T.serif, letterSpacing:0, fontSize:13, color:'rgba(248,243,229,.85)' }}>{bact?.name}</span>
         <span style={{ flex:1 }}/>
         <span>{(idx + 1).toString().padStart(2,'0')} / {SHEET_SLOTS.length.toString().padStart(2,'0')}</span>
         <span style={{ margin:'0 14px', opacity:0.4 }}>·</span>
@@ -146,29 +148,22 @@ function SectionTitle({ n, title, anchor, accent, right }) {
 }
 
 export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vivid = false, showImages = true }) {
-  const [b, setB] = React.useState(SPN);
+  const [b, setB] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [antiTab, setAntiTab] = React.useState('tableau');
+  const [lightbox, setLightbox] = React.useState(null);
+  const [activeAnchor, setActiveAnchor] = React.useState('s02');
 
   React.useEffect(() => {
-    console.log('DEBUG SheetScreen bacteriaId:', bacteriaId)
-    if (!bacteriaId) { setB(SPN); return; }
+    setLoading(true);
+    if (!bacteriaId) { setLoading(false); return; }
     supabase
       .from('bacterio_bacteria')
       .select('*, bacterio_images(*)')
       .eq('name', bacteriaId)
       .single()
-      .then(({ data, error }) => { console.log('DEBUG SheetScreen query result:', data, error); if (data) setB(data); });
+      .then(({ data }) => { if (data) setB(data); setLoading(false); });
   }, [bacteriaId]);
-
-  const c = gramColor(b.gram);
-  const palette = getSystemPalette(systemId);
-  const accent = palette.accent;
-  const sys = SYSTEMS.find(s => s.id === systemId) || SYSTEMS[2];
-  const sysIdx = SYSTEMS.indexOf(sys);
-  const sysRoman = ['I','II','III','IV','V','VI','VII','VIII','IX','X'][sysIdx];
-
-  const [antiTab, setAntiTab] = React.useState('tableau');
-  const [lightbox, setLightbox] = React.useState(null);
-  const [activeAnchor, setActiveAnchor] = React.useState('s02');
 
   const sections = [
     { id:'s02', n:'02', label:'Microscopie & culture' },
@@ -177,7 +172,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
     { id:'s05', n:'05', label:'Antibiogramme' },
     { id:'s06', n:'06', label:'Résistances' },
     { id:'s07', n:'07', label:'Virulence' },
-    { id:'s08', n:'08', label:'Renvois' },
+    { id:'s08', n:'08', label:'Remarques' },
   ];
 
   // Scroll-spy
@@ -187,19 +182,61 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
     }, { rootMargin: '-30% 0px -60% 0px' });
     sections.forEach(s => { const el = document.getElementById(s.id); if (el) io.observe(el); });
     return () => io.disconnect();
-  }, []);
+  }, [b]);
 
-  // Quick reference meta items
+  if (loading) return (
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:T.serif, color:T.ink3, fontStyle:'italic' }}>
+      Chargement…
+    </div>
+  );
+
+  if (!b) return (
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:T.serif, color:T.ink3, fontStyle:'italic' }}>
+      Bactérie introuvable.
+    </div>
+  );
+
+  const gram = GRAM_MAP[b.gram] || b.gram || '?';
+  const c = gramColor(gram);
+  const palette = getSystemPalette(systemId);
+  const accent = palette.accent;
+  const sys = SYSTEMS.find(s => s.id === systemId) || SYSTEMS[2];
+  const sysIdx = SYSTEMS.indexOf(sys);
+  const sysRoman = ['I','II','III','IV','V','VI','VII','VIII','IX','X'][sysIdx];
+
+  const genus = b.name?.split(' ')[0] || '';
+
+  const rapidTests = [
+    b.catalase    != null && { k: 'Catalase',    v: b.catalase    ? '+' : '−' },
+    b.oxydase     != null && { k: 'Oxydase',     v: b.oxydase     ? '+' : '−' },
+    b.coagulase   != null && { k: 'Coagulase',   v: b.coagulase   ? '+' : '−' },
+    b.sporulation != null && { k: 'Sporulation', v: b.sporulation ? '+' : '−' },
+    ...(Array.isArray(b.tests_rapides) ? b.tests_rapides : []),
+  ].filter(Boolean);
+
   const metaItems = [
-    { k:'GRAM',     v:'+' },
-    { k:'CATALASE', v:'−' },
-    { k:'OXYDASE',  v:'−' },
-    { k:'OPTOCHINE',v:'S' },
-    { k:'HÉMOLYSE', v:'α' },
-    { k:'SPORULATION', v:'−' },
-    { k:'O₂',       v:'FAC.' },
-    { k:'BSL',      v:'2' },
+    { k: 'GRAM',        v: gram },
+    { k: 'CATALASE',    v: b.catalase    != null ? (b.catalase    ? '+' : '−') : '?' },
+    { k: 'OXYDASE',     v: b.oxydase     != null ? (b.oxydase     ? '+' : '−') : '?' },
+    { k: 'COAGULASE',   v: b.coagulase   != null ? (b.coagulase   ? '+' : '−') : '?' },
+    { k: 'SPORULATION', v: b.sporulation != null ? (b.sporulation ? '+' : '−') : '?' },
+    { k: 'O₂',         v: b.atmosphere  || '?' },
+    { k: 'BSL',        v: b.bsl3 ? '3' : '2' },
   ];
+
+  const premierAb = b.antibio ? b.antibio.split(/[.;]/)[0].trim() : '—';
+  const milieux = Array.isArray(b.milieux) ? b.milieux : [];
+  const antibiogramme = Array.isArray(b.antibiogramme) ? b.antibiogramme : [];
+  const resistNat = Array.isArray(b.resist_nat) ? b.resist_nat : [];
+  const resistAcq = Array.isArray(b.resist_acq) ? b.resist_acq : [];
+  const virulence = Array.isArray(b.virulence) ? b.virulence : [];
+
+  const badges = [
+    b.urgence && { l: 'URGENCE', col: T.red },
+    b.bsl3    && { l: 'BSL-3',   col: T.ink2 },
+    b.freq    && { l: b.freq.toUpperCase(), col: T.ink2 },
+    b.declaration && { l: 'DÉCLARATION', col: T.ink2 },
+  ].filter(Boolean);
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', fontFamily:T.serif, '--accent': accent, background:T.bg }}>
@@ -207,9 +244,8 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
       <div style={{ padding:'10px 48px', borderBottom:`3px solid ${accent}`, display:'flex', alignItems:'center', fontFamily:T.mono, fontSize:10, color:T.ink3, letterSpacing:'0.14em', background:T.paper }}>
         <span style={{ cursor:'pointer', color:T.ink2 }} onClick={()=>navigate('zone',{systemId})}>← Chapitre {sysRoman} · {sys.short || sys.label}</span>
         <span style={{ flex:1 }}/>
-        <span style={{ fontStyle:'italic', fontFamily:T.serif, letterSpacing:0, fontSize:12, color:T.ink2 }}>Streptococcus pneumoniae · entrée 023</span>
+        <span style={{ fontStyle:'italic', fontFamily:T.serif, letterSpacing:0, fontSize:12, color:T.ink2 }}>{b.name}</span>
         <span style={{ margin:'0 12px', opacity:0.4 }}>·</span>
-        <span>p. 074</span>
         <div style={{ marginLeft:18, display:'flex', gap:6 }}>
           <button style={{ height:24, padding:'0 10px', background:'transparent', border:`1px solid ${T.rule}`, fontFamily:T.mono, fontSize:9, letterSpacing:'0.08em', cursor:'pointer', color:T.ink2 }}>↳ COMPARER</button>
           <button style={{ height:24, padding:'0 10px', background:'transparent', border:`1px solid ${T.rule}`, fontFamily:T.mono, fontSize:9, letterSpacing:'0.08em', cursor:'pointer', color:T.ink2 }}>⎙ IMPRIMER</button>
@@ -219,24 +255,21 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
       {/* ── Title block (compressed) ── */}
       <div style={{ padding:'28px 48px 16px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
         <div style={{ maxWidth:1100, margin:'0 auto' }}>
-          <div style={{ fontFamily:T.mono, fontSize:10, color:accent, letterSpacing:'0.2em', marginBottom:8 }}>ENTRÉE Nº 023 · GENRE STREPTOCOCCUS</div>
+          <div style={{ fontFamily:T.mono, fontSize:10, color:accent, letterSpacing:'0.2em', marginBottom:8 }}>GENRE {genus.toUpperCase()}</div>
           <h1 style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:62, fontWeight:500, letterSpacing:'-0.022em', lineHeight:0.95, margin:0 }}>
-            Streptococcus pneumoniae
+            {b.name}
           </h1>
           <div style={{ display:'grid', gridTemplateColumns:'1fr auto', alignItems:'end', gap:32, marginTop:14 }}>
             <div style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:15, color:T.ink2, lineHeight:1.5, maxWidth:740 }}>
-              « Diplocoque Gram positif lancéolé, α-hémolytique, sensible à l'optochine. Première cause de pneumonie communautaire et de méningite bactérienne de l'adulte. »
+              {b.identif || b.clinical_info || ''}
             </div>
-            <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'flex-end' }}>
-              {[
-                {l:'⚠ URGENCE', col:T.red},
-                {l:'BSL-2', col:T.ink2},
-                {l:'5 SITES', col:T.ink2},
-                {l:'FRÉQUENT', col:T.ink2},
-              ].map(p=>(
-                <span key={p.l} style={{ fontFamily:T.mono, fontSize:9, padding:'3px 8px', border:`1px solid ${p.col === T.red ? T.red : T.rule}`, color:p.col, letterSpacing:'0.08em' }}>{p.l}</span>
-              ))}
-            </div>
+            {badges.length > 0 && (
+              <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'flex-end' }}>
+                {badges.map(p => (
+                  <span key={p.l} style={{ fontFamily:T.mono, fontSize:9, padding:'3px 8px', border:`1px solid ${p.col === T.red ? T.red : T.rule}`, color:p.col, letterSpacing:'0.08em' }}>{p.l}</span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -252,8 +285,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
           ))}
           <div style={{ borderLeft:`1px solid ${T.rule}`, background:T.qrBg, color:T.qrInk, padding:'10px 14px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
             <span style={{ fontFamily:T.mono, fontSize:8.5, color:T.qrMute, letterSpacing:'0.16em' }}>1ʳᵉ INTENTION</span>
-            <span style={{ fontFamily:T.serif, fontSize:18, fontWeight:500, lineHeight:1.1, marginTop:2 }}>Amoxicilline</span>
-            <span style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:11, color:T.qrMute, opacity:0.85 }}>Ceftriaxone si méningite</span>
+            <span style={{ fontFamily:T.serif, fontSize:16, fontWeight:500, lineHeight:1.2, marginTop:2 }}>{premierAb}</span>
           </div>
         </div>
       </div>
@@ -306,37 +338,44 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
           <main style={{ minWidth:0 }}>
             {/* §02 Microscopie & culture */}
             <SectionTitle n="02" title="Microscopie & culture" anchor="s02" accent={accent} right="LECTURE 24H"/>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:14 }}>
-              {SPN.milieux.map((m) => (
-                <div key={m.name} style={{ background:T.bg, border:`0.5px solid ${T.rule}`, padding:'10px 12px', borderLeft:`3px solid ${m.primary ? accent : T.rule}` }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-                    <div style={{ fontFamily:T.serif, fontSize:15, fontWeight:500 }}>{m.name}</div>
-                    {m.primary && <span style={{ fontFamily:T.mono, fontSize:9, color:accent, letterSpacing:'0.12em' }}>1ʳᵉ</span>}
+            {milieux.length > 0 && (
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:14 }}>
+                {milieux.map((m) => (
+                  <div key={m.name} style={{ background:T.bg, border:`0.5px solid ${T.rule}`, padding:'10px 12px', borderLeft:`3px solid ${m.primary ? accent : T.rule}` }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+                      <div style={{ fontFamily:T.serif, fontSize:15, fontWeight:500 }}>{m.name}</div>
+                      {m.primary && <span style={{ fontFamily:T.mono, fontSize:9, color:accent, letterSpacing:'0.12em' }}>1ʳᵉ</span>}
+                    </div>
+                    <div style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink2, marginTop:3, lineHeight:1.4 }}>{m.note}</div>
                   </div>
-                  <div style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink2, marginTop:3, lineHeight:1.4 }}>{m.note}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', border:`1px solid ${T.rule}` }}>
-              {SPN.rapid.map((r, i) => (
-                <div key={r.k} style={{
-                  padding:'8px 12px',
-                  borderRight: i < SPN.rapid.length - 1 ? `1px solid ${T.ruleSoft}` : 'none',
-                  background: i % 2 === 0 ? T.bg : T.paper,
-                }}>
-                  <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.1em' }}>{r.k}</div>
-                  <div style={{ fontFamily:T.serif, fontSize:26, lineHeight:1, marginTop:4, fontWeight:500 }}>{r.v}</div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+            {rapidTests.length > 0 && (
+              <div style={{ display:'grid', gridTemplateColumns:`repeat(${Math.min(rapidTests.length, 4)}, 1fr)`, border:`1px solid ${T.rule}` }}>
+                {rapidTests.map((r, i) => (
+                  <div key={r.k} style={{
+                    padding:'8px 12px',
+                    borderRight: i < rapidTests.length - 1 ? `1px solid ${T.ruleSoft}` : 'none',
+                    background: i % 2 === 0 ? T.bg : T.paper,
+                  }}>
+                    <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.1em' }}>{r.k}</div>
+                    <div style={{ fontFamily:T.serif, fontSize:26, lineHeight:1, marginTop:4, fontWeight:500 }}>{r.v}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {milieux.length === 0 && rapidTests.length === 0 && (
+              <p style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:13, color:T.ink3 }}>Données non renseignées.</p>
+            )}
 
             {/* §03 Identification */}
             <SectionTitle n="03" title="Identification" anchor="s03" accent={accent}/>
-            <p style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink, margin:0 }}>{SPN.identif}</p>
+            <p style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink, margin:0 }}>{b.identif || '—'}</p>
 
             {/* §04 Clinique */}
             <SectionTitle n="04" title="Signification clinique" anchor="s04" accent={accent}/>
-            <p style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink, margin:0 }}>{SPN.clinique}</p>
+            <p style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink, margin:0 }}>{b.clinical_info || '—'}</p>
 
             {/* §05 Antibiogramme */}
             <SectionTitle n="05" title="Antibiogramme" anchor="s05" accent={accent} right={
@@ -348,24 +387,25 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
             }/>
             {antiTab === 'tableau' ? (
               <div style={{ border:`1px solid ${T.rule}` }}>
-                <div style={{ display:'grid', gridTemplateColumns:'150px 1fr 78px 56px 1fr', padding:'6px 12px', background:T.bgSoft, fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.12em', borderBottom:`1px solid ${T.rule}` }}>
-                  <span>FAMILLE</span><span>ANTIBIOTIQUE</span><span>CMI</span><span>STATUT</span><span>NOTE</span>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 80px', padding:'6px 12px', background:T.bgSoft, fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.12em', borderBottom:`1px solid ${T.rule}` }}>
+                  <span>ANTIBIOTIQUE</span><span>S / I / R</span>
                 </div>
-                {SPN_ANTIBIO.map((row, i) => {
-                  const col = row.statut === 'S' ? T.green : row.statut === 'R' ? T.red : accent;
+                {antibiogramme.length === 0 && (
+                  <div style={{ padding:'14px 12px', fontFamily:T.serif, fontStyle:'italic', color:T.ink3, fontSize:13 }}>Données non renseignées.</div>
+                )}
+                {antibiogramme.map((row, i) => {
+                  const sens = row.sens || row.statut || '?';
+                  const col = sens === 'S' ? T.green : sens === 'R' ? T.red : accent;
                   return (
-                    <div key={i} style={{ display:'grid', gridTemplateColumns:'150px 1fr 78px 56px 1fr', padding:'7px 12px', borderBottom: i < SPN_ANTIBIO.length-1 ? `1px solid ${T.ruleSoft}` : 'none', fontFamily:T.sans, fontSize:12.5, alignItems:'center', background: i%2===0 ? T.paper : T.bg }}>
-                      <span style={{ fontFamily:T.mono, fontSize:9.5, color:T.ink3 }}>{row.famille}</span>
-                      <span style={{ fontFamily:T.serif, fontStyle:'italic', fontWeight:500, fontSize:14 }}>{row.ab}</span>
-                      <span style={{ fontFamily:T.mono, fontSize:10.5, color:T.ink2 }}>{row.cmival}</span>
-                      <span style={{ fontFamily:T.mono, fontSize:12, fontWeight:600, color:col }}>{row.statut}</span>
-                      <span style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:11.5, color:T.ink3 }}>{row.note}</span>
+                    <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 80px', padding:'7px 12px', borderBottom: i < antibiogramme.length-1 ? `1px solid ${T.ruleSoft}` : 'none', fontFamily:T.serif, fontSize:13, alignItems:'center', background: i%2===0 ? T.paper : T.bg }}>
+                      <span style={{ fontStyle:'italic', fontWeight:500 }}>{row.ab}</span>
+                      <span style={{ fontFamily:T.mono, fontSize:12, fontWeight:600, color:col }}>{sens}</span>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink }}>{SPN.antibio}</div>
+              <div style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink }}>{b.antibio || '—'}</div>
             )}
 
             {/* §06 Résistances — 2 cols */}
@@ -373,41 +413,53 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, fontFamily:T.serif }}>
               <div>
                 <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginBottom:6 }}>NATURELLES</div>
-                <ul style={{ paddingLeft:16, margin:0, fontSize:13.5, lineHeight:1.6 }}>
-                  {SPN.resistNat.map(x=><li key={x}>{x}</li>)}
-                </ul>
+                {resistNat.length > 0 ? (
+                  <ul style={{ paddingLeft:16, margin:0, fontSize:13.5, lineHeight:1.6 }}>
+                    {resistNat.map(x=><li key={x}>{x}</li>)}
+                  </ul>
+                ) : (
+                  <p style={{ fontStyle:'italic', fontSize:13, color:T.ink3, margin:0 }}>—</p>
+                )}
               </div>
               <div>
                 <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginBottom:6 }}>ACQUISES</div>
-                <ul style={{ paddingLeft:16, margin:0, fontSize:13.5, lineHeight:1.6 }}>
-                  {SPN.resistAcq.map(x=><li key={x}>{x}</li>)}
-                </ul>
+                {resistAcq.length > 0 ? (
+                  <ul style={{ paddingLeft:16, margin:0, fontSize:13.5, lineHeight:1.6 }}>
+                    {resistAcq.map(x=><li key={x}>{x}</li>)}
+                  </ul>
+                ) : (
+                  <p style={{ fontStyle:'italic', fontSize:13, color:T.ink3, margin:0 }}>—</p>
+                )}
               </div>
             </div>
 
             {/* §07 Virulence — inline data list */}
             <SectionTitle n="07" title="Facteurs de virulence" anchor="s07" accent={accent}/>
-            <ul style={{ listStyle:'none', padding:0, margin:0, display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 24px', borderTop:`1px solid ${T.ruleSoft}` }}>
-              {SPN.virulence.map((v, i)=>(
-                <li key={v} style={{ padding:'6px 0', borderBottom:`1px solid ${T.ruleSoft}`, fontFamily:T.serif, fontSize:13.5, display:'flex', gap:10 }}>
-                  <span style={{ fontFamily:T.mono, fontSize:9.5, color:accent, letterSpacing:'0.05em' }}>0{i+1}</span>
-                  <span>{v}</span>
-                </li>
-              ))}
-            </ul>
+            {virulence.length > 0 ? (
+              <ul style={{ listStyle:'none', padding:0, margin:0, display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 24px', borderTop:`1px solid ${T.ruleSoft}` }}>
+                {virulence.map((v, i)=>(
+                  <li key={v} style={{ padding:'6px 0', borderBottom:`1px solid ${T.ruleSoft}`, fontFamily:T.serif, fontSize:13.5, display:'flex', gap:10 }}>
+                    <span style={{ fontFamily:T.mono, fontSize:9.5, color:accent, letterSpacing:'0.05em' }}>0{i+1}</span>
+                    <span>{v}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:13, color:T.ink3 }}>—</p>
+            )}
 
-            {/* §08 Renvois */}
-            <SectionTitle n="08" title="Renvois anatomiques" anchor="s08" accent={accent}/>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 24px' }}>
-              {SPN.sites.map((s)=>(
-                <div key={s.l}
-                     onClick={()=>navigate('zone', { systemId: SYSTEMS.find(sys=>sys.label===s.l)?.id || 'orl' })}
-                     style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', borderBottom:`1px solid ${T.ruleSoft}`, padding:'7px 0', cursor:'pointer' }}>
-                  <span style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:13.5 }}>↗ {s.l}</span>
-                  <span style={{ fontFamily:T.mono, fontSize:9.5, color:T.ink3, letterSpacing:'0.06em' }}>{s.tag}</span>
-                </div>
-              ))}
-            </div>
+            {/* §08 Remarques */}
+            <SectionTitle n="08" title="Remarques" anchor="s08" accent={accent}/>
+            {b.commentaire ? (
+              <p style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink, margin:0 }}>{b.commentaire}</p>
+            ) : b.populations_risque ? (
+              <div>
+                <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginBottom:6 }}>POPULATIONS À RISQUE</div>
+                <p style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink, margin:0 }}>{b.populations_risque}</p>
+              </div>
+            ) : (
+              <p style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:13, color:T.ink3 }}>—</p>
+            )}
           </main>
         </div>
       </div>
