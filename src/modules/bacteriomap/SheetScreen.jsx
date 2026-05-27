@@ -11,26 +11,6 @@ const SHEET_SLOTS = [
   { key: 'meb',     label: 'Microscopie électronique',  caption: '×6000 · contraste neg.',fig: 'III' },
 ];
 
-// Multi-slot image hook
-function useBactImageSlot(name, slot) {
-  const key = `bm-img:${name}:${slot}`;
-  const [img, setImg] = React.useState(() => { try { return localStorage.getItem(key); } catch (e) { return null; } });
-  React.useEffect(() => {
-    const fn = () => { try { setImg(localStorage.getItem(key)); } catch (e) {} };
-    window.addEventListener('bm-img-updated', fn);
-    return () => window.removeEventListener('bm-img-updated', fn);
-  }, [key]);
-  const set = (dataUrl) => {
-    try {
-      if (dataUrl) localStorage.setItem(key, dataUrl);
-      else localStorage.removeItem(key);
-      window.dispatchEvent(new Event('bm-img-updated'));
-    } catch (e) {}
-    setImg(dataUrl);
-  };
-  return [img, set];
-}
-
 // Striped placeholder for empty slot
 function PlateauPlaceholder({ label, caption, accent }) {
   const stripeId = `stripes-${label.replace(/\s+/g,'-')}`;
@@ -45,26 +25,14 @@ function PlateauPlaceholder({ label, caption, accent }) {
       <rect width="200" height="200" fill={`url(#${stripeId})`}/>
       <text x="100" y="96" textAnchor="middle" fontFamily="IBM Plex Mono, monospace" fontSize="9" letterSpacing="2" fill="var(--ink3)">{label.toUpperCase()}</text>
       <text x="100" y="112" textAnchor="middle" fontFamily="Newsreader, serif" fontStyle="italic" fontSize="9" fill="var(--ink3)" opacity="0.7">{caption}</text>
-      <text x="100" y="132" textAnchor="middle" fontFamily="IBM Plex Mono, monospace" fontSize="8" letterSpacing="1.5" fill="var(--ink3)" opacity="0.55">[ déposer image ]</text>
+      <text x="100" y="132" textAnchor="middle" fontFamily="IBM Plex Mono, monospace" fontSize="8" letterSpacing="1.5" fill="var(--ink3)" opacity="0.55">[ aucune image ]</text>
     </svg>
   );
 }
 
 // One planche in the carrousel
-function Planche({ bact, slot, idx, onOpen, accent }) {
-  const [img, setImg] = useBactImageSlot(bact.name, idx);
-  const fileRef = React.useRef(null);
-  const onPick = (e) => { e.stopPropagation(); fileRef.current && fileRef.current.click(); };
-  const onFile = (e) => {
-    const f = e.target.files && e.target.files[0];
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setImg(ev.target.result);
-    reader.readAsDataURL(f);
-    e.target.value = '';
-  };
-  const onClear = (e) => { e.stopPropagation(); setImg(null); };
-
+function Planche({ bact, slot, idx, onOpen, accent, images }) {
+  const img = images?.[idx]?.url || null;
   return (
     <figure style={{ margin:0, display:'flex', flexDirection:'column' }}>
       <div
@@ -89,13 +57,6 @@ function Planche({ bact, slot, idx, onOpen, accent }) {
             <PlateauPlaceholder label={slot.key} caption={slot.caption} accent={accent}/>
           )}
         </div>
-        <button onClick={onPick} title="Déposer une image"
-                style={{ position:'absolute', top:8, right:8, width:22, height:22, padding:0, border:`0.5px solid ${T.rule}`, background:'rgba(255,255,255,.85)', color:T.ink3, fontSize:13, lineHeight:'20px', cursor:'pointer', borderRadius:1 }}>+</button>
-        {img && (
-          <button onClick={onClear} title="Retirer"
-                  style={{ position:'absolute', top:8, right:34, width:22, height:22, padding:0, border:`0.5px solid ${T.rule}`, background:'rgba(255,255,255,.85)', color:T.ink3, fontSize:13, lineHeight:'20px', cursor:'pointer', borderRadius:1 }}>×</button>
-        )}
-        <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{ display:'none' }}/>
       </div>
       <figcaption style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink2, marginTop:8, lineHeight:1.35 }}>
         <span style={{ fontFamily:T.mono, fontStyle:'normal', fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginRight:6 }}>FIG. {slot.fig}</span>
@@ -107,11 +68,11 @@ function Planche({ bact, slot, idx, onOpen, accent }) {
 }
 
 // Lightbox overlay
-function Lightbox({ bact, openIdx, onClose }) {
+function Lightbox({ bact, openIdx, onClose, images }) {
   const [idx, setIdx] = React.useState(openIdx);
   React.useEffect(() => { setIdx(openIdx); }, [openIdx]);
   const slot = SHEET_SLOTS[idx];
-  const [img] = useBactImageSlot(bact.name, idx);
+  const img = images?.[idx]?.url || null;
 
   React.useEffect(() => {
     if (openIdx == null) return;
@@ -159,7 +120,7 @@ function Lightbox({ bact, openIdx, onClose }) {
               <div style={{ width:'100%', height:'100%', minHeight:300, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:8, fontFamily:T.mono, fontSize:11, color:'rgba(248,243,229,.45)', letterSpacing:'0.18em' }}>
                 <div style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:22, color:'rgba(248,243,229,.85)', letterSpacing:0 }}>{slot.label}</div>
                 <div>[ AUCUNE IMAGE DÉPOSÉE ]</div>
-                <div style={{ marginTop:8, opacity:0.6 }}>Retour fiche · cliquer le « + » sur la planche</div>
+                <div style={{ marginTop:8, opacity:0.6 }}>Aucune image disponible pour cette planche</div>
               </div>
             )}
           </div>
@@ -305,7 +266,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:18 }}>
             {SHEET_SLOTS.map((slot, idx) => (
-              <Planche key={slot.key} bact={b} slot={slot} idx={idx} onOpen={setLightbox} accent={accent}/>
+              <Planche key={slot.key} bact={b} slot={slot} idx={idx} onOpen={setLightbox} accent={accent} images={b.bacterio_images}/>
             ))}
           </div>
         </div>
@@ -451,7 +412,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
       </div>
 
       {/* ── Lightbox ── */}
-      <Lightbox bact={b} openIdx={lightbox} onClose={()=>setLightbox(null)}/>
+      <Lightbox bact={b} openIdx={lightbox} onClose={()=>setLightbox(null)} images={b.bacterio_images}/>
     </div>
   );
 }

@@ -11,7 +11,10 @@ export function useSystems() {
       .select('*, bacterio_zones(*)')
       .order('position')
       .then(({ data }) => {
-        setSystems(data || [])
+        setSystems((data || []).map(s => ({
+          ...s,
+          bacterio_zones: [...(s.bacterio_zones || [])].sort((a, b) => a.position - b.position),
+        })))
         setLoading(false)
       })
   }, [])

@@ -13,7 +13,7 @@ export function useBacteria(zoneId = null) {
         .select('*, bacterio_images(*)')
         .order('name')
 
-      if (zoneId) {
+      if (zoneId !== null) {
         query = query.contains('zone_ids', [zoneId])
       }
 
