@@ -406,12 +406,14 @@ export default function AdminBacteria() {
                   <div style={{ fontFamily: T.mono, fontSize: 9, color: sys.color || T.ink2, letterSpacing: '0.1em', marginBottom: 8 }}>{sys.name.toUpperCase()}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {zones.map(z => {
-                      const checked = (d.zone_ids || []).includes(z.id)
+                      const checked = (d.zone_ids || []).map(Number).includes(Number(z.id))
                       return (
                         <label key={z.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: T.serif, fontSize: 13, color: T.ink2, cursor: 'pointer' }}>
                           <input type="checkbox" checked={checked} onChange={e => {
-                            const cur = draftRef.current?.zone_ids || []
-                            const next = e.target.checked ? [...cur, z.id] : cur.filter(id => id !== z.id)
+                            const cur = (draftRef.current?.zone_ids || []).map(Number)
+                            const next = e.target.checked
+                              ? [...cur, Number(z.id)]
+                              : cur.filter(id => id !== Number(z.id))
                             setDraft(p => ({...p, zone_ids: next}))
                           }}/>
                           {z.label || z.name}
