@@ -41,8 +41,7 @@ export default function HomeScreen({ navigate }) {
       {/* Hero — calm, single column */}
       <div style={{ padding:'68px 56px 52px', borderBottom:`1.5px double ${T.rule}`, background:T.paper }}>
         <div style={{ maxWidth:920 }}>
-          <div style={{ fontFamily:T.mono, fontSize:11, color:T.ocre, letterSpacing:'0.2em', marginBottom:24 }}>ATLAS DE MICROBIOLOGIE CLINIQUE</div>
-          <h1 style={{ fontFamily:T.serif, fontSize:160, fontWeight:500, lineHeight:0.86, letterSpacing:'-0.04em', margin:0 }}>
+          <h1 style={{ fontFamily:T.serif, fontSize:48, fontWeight:500, lineHeight:1.1, letterSpacing:'-0.02em', margin:0 }}>
             <em style={{ fontStyle:'italic' }}>Bacterio</em><span style={{ color:T.ocre }}>map.</span>
           </h1>
           <div style={{ marginTop:28, fontFamily:T.serif, fontStyle:'italic', fontSize:22, color:T.ink2, maxWidth:680, lineHeight:1.45 }}>
