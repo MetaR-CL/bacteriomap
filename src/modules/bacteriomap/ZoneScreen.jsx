@@ -34,7 +34,8 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
 
   const activeZone = zones.find(z => z.id === activeZoneId) || zones[0] || null
 
-  const { bacteria, loading: bacteriaLoading } = useBacteria(activeZoneId)
+  const zoneIdToFetch = activeZoneId ?? zones[0]?.id ?? null
+  const { bacteria, loading: bacteriaLoading } = useBacteria(zoneIdToFetch)
 
   const filtered = bacteria.map(normalize).filter(b => {
     if (filter === 'all') return true
