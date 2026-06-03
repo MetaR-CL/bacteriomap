@@ -71,21 +71,23 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
         <span style={{ fontStyle: 'italic', fontFamily: T.serif, letterSpacing: 0, fontSize: 12, color: 'var(--ink2)' }}>{sys.name}</span>
       </div>
 
-      {/* Chapter opener */}
-      <div style={{ padding: '56px 56px 40px', borderBottom: '1.5px double var(--rule)', background: 'var(--paper)' }}>
-        <div style={{ maxWidth: 920 }}>
-          <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--accent)', letterSpacing: '0.2em', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ width: 24, height: 2, background: 'var(--accent)', display: 'inline-block' }}/>
-            {sys.short?.toUpperCase() || sys.slug?.toUpperCase()}
+      {/* Chapter opener — compact */}
+      <div style={{ padding: '22px 56px 20px', borderBottom: '1.5px double var(--rule)', background: 'var(--paper)', display: 'flex', alignItems: 'baseline', gap: 18, flexWrap: 'wrap' }}>
+        <div style={{ fontFamily: T.mono, fontSize: 10, color: accent, letterSpacing: '0.2em', display: 'flex', alignItems: 'center', gap: 9, alignSelf: 'center' }}>
+          <span style={{ width: 20, height: 2, background: accent, display: 'inline-block' }} />
+          {sys?.short?.toUpperCase() || sys?.slug?.toUpperCase()}
+        </div>
+        <h1 style={{ fontFamily: T.serif, fontSize: 34, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1, margin: 0, color: 'var(--ink)' }}>
+          {sys?.name}<span style={{ color: accent }}>.</span>
+        </h1>
+        {sys?.subtitle && (
+          <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15, color: 'var(--ink3)' }}>
+            {sys.subtitle}
           </div>
-          <h1 style={{ fontFamily: T.serif, fontSize: 120, fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 0.9, margin: 0, color: 'var(--ink)' }}>
-            {sys.name?.split(' ')[0]}<span style={{ color: 'var(--accent)' }}>.</span>
-          </h1>
-          {sys.subtitle && (
-            <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 22, color: 'var(--ink2)', marginTop: 14, maxWidth: 620 }}>
-              {sys.subtitle}.
-            </div>
-          )}
+        )}
+        <span style={{ flex: 1 }} />
+        <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.1em', alignSelf: 'center' }}>
+          {bacteria.length} ESPÈCES
         </div>
       </div>
 
