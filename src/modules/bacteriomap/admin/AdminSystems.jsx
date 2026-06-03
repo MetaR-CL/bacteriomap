@@ -189,9 +189,9 @@ export default function AdminSystems() {
     try {
       const ext = file.name.split('.').pop()
       const path = `systems/${active.slug}-${Date.now()}.${ext}`
-      const { error: upErr } = await supabase.storage.from('bacterio-images').upload(path, file, { upsert: true })
+      const { error: upErr } = await supabase.storage.from('bacteriomap-images').upload(path, file, { upsert: true })
       if (upErr) throw upErr
-      const { data: { publicUrl } } = supabase.storage.from('bacterio-images').getPublicUrl(path)
+      const { data: { publicUrl } } = supabase.storage.from('bacteriomap-images').getPublicUrl(path)
       await updateSystem(active.id, { image_url: publicUrl })
       flash('Image enregistrée')
     } catch (err) { setError(err.message) }
