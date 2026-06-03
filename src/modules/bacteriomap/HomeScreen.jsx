@@ -66,31 +66,63 @@ export default function HomeScreen({ navigate }) {
 
   const renderCard = (sys) => {
     const accent = sys.color || '#8b7355'
+
+    // Carte avec image pleine hauteur
+    const hasImage = !!sys.image_url
+
     return (
       <div key={sys.id}
            onClick={() => navigate('zone', { systemId: sys.slug })}
            onMouseEnter={e => {
-             e.currentTarget.style.background = 'var(--paper)'
              e.currentTarget.style.boxShadow = `0 6px 24px -8px ${accent}44`
              e.currentTarget.style.transform = 'translateY(-2px)'
            }}
            onMouseLeave={e => {
-             e.currentTarget.style.background = 'var(--bg)'
              e.currentTarget.style.boxShadow = 'none'
              e.currentTarget.style.transform = 'none'
            }}
            style={{
-             cursor: 'pointer', position: 'relative', background: 'var(--bg)',
+             cursor: 'pointer', position: 'relative', overflow: 'hidden',
+             background: 'var(--paper)',
              border: '1px solid var(--ruleSoft)', borderLeft: `3px solid ${accent}`,
-             padding: '20px 22px', display: 'grid',
-             gridTemplateColumns: '1fr auto',
-             alignItems: 'center', gap: 14, transition: 'transform .14s, box-shadow .14s, background .14s',
-             overflow: 'hidden',
+             padding: '20px 22px',
+             display: 'grid',
+             gridTemplateColumns: hasImage ? '1fr' : '1fr auto',
+             alignItems: 'center', gap: 14,
+             transition: 'transform .14s, box-shadow .14s',
+             minHeight: 90,
            }}>
-        <div style={{ minWidth: 0 }}>
+
+        {/* Image duotone pleine hauteur à droite */}
+        {hasImage && (
+          <div style={{
+            position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%',
+            overflow: 'hidden', pointerEvents: 'none',
+          }}>
+            <img src={sys.image_url} alt="" style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'center',
+              filter: 'grayscale(1) contrast(1.05)',
+            }}/>
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: accent, mixBlendMode: 'multiply', opacity: 0.4,
+            }}/>
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(to right, var(--paper) 0%, transparent 60%)',
+            }}/>
+          </div>
+        )}
+
+        {/* Contenu texte */}
+        <div style={{ position: 'relative', zIndex: 1, minWidth: 0, maxWidth: hasImage ? '65%' : '100%' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
             <span style={{ fontFamily: T.mono, fontSize: 9, color: accent, letterSpacing: '0.18em' }}>
               {sys.short?.toUpperCase()}
+            </span>
+            <span style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.12em' }}>
+              {/* nombre espèces si dispo */}
             </span>
           </div>
           <div style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 500, letterSpacing: '-0.015em', lineHeight: 1.04 }}>
@@ -100,13 +132,9 @@ export default function HomeScreen({ navigate }) {
             {sys.subtitle}
           </div>
         </div>
-        {sys.image_url ? (
-          <div style={{ width: 90, height: 90, position: 'relative', flexShrink: 0, overflow: 'hidden' }}>
-            <img src={sys.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1) contrast(1.1)', display: 'block' }} />
-            <div style={{ position: 'absolute', inset: 0, background: accent, mixBlendMode: 'multiply', opacity: 0.55 }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 40%, var(--paper) 100%)' }} />
-          </div>
-        ) : (
+
+        {/* Vignette morpho si pas d'image */}
+        {!hasImage && (
           <div style={{ width: 62, height: 62, display: 'grid', placeItems: 'center', borderRadius: '50%', backgroundColor: accent + '22', flexShrink: 0 }}>
             <svg width="56" height="56" viewBox="0 0 100 100">
               <MorphoSVG kind={SYSTEM_MORPHO[sys.slug] || 'rod'} size={100} stroke={accent} fill={accent} fillOpacity={0.3} strokeWidth={1.6} />
