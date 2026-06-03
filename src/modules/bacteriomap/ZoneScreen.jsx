@@ -77,7 +77,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
           <span style={{ width: 20, height: 2, background: accent, display: 'inline-block' }} />
           {sys?.short?.toUpperCase() || sys?.slug?.toUpperCase()}
         </div>
-        <h1 style={{ fontFamily: T.serif, fontSize: 34, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1, margin: 0, color: 'var(--ink)' }}>
+        <h1 style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1, margin: 0, color: 'var(--ink)' }}>
           {sys?.name}<span style={{ color: accent }}>.</span>
         </h1>
         {sys?.subtitle && (

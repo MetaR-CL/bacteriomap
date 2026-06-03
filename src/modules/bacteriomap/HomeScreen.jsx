@@ -91,7 +91,7 @@ export default function HomeScreen({ navigate }) {
               {sys.short?.toUpperCase()}
             </span>
           </div>
-          <div style={{ fontFamily: T.serif, fontSize: 25, fontWeight: 500, letterSpacing: '-0.015em', lineHeight: 1.04 }}>
+          <div style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 500, letterSpacing: '-0.015em', lineHeight: 1.04 }}>
             {sys.name}
           </div>
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)', marginTop: 5 }}>
