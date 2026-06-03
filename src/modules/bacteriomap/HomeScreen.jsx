@@ -106,15 +106,9 @@ export default function HomeScreen({ navigate }) {
             }}/>
             <div style={{
               position: 'absolute', inset: 0,
-              background: 'white',
-              mixBlendMode: 'screen',
-              opacity: 0.6,
-            }}/>
-            <div style={{
-              position: 'absolute', inset: 0,
               background: accent,
               mixBlendMode: 'multiply',
-              opacity: 0.7,
+              opacity: 0.4,
             }}/>
             <div style={{
               position: 'absolute', inset: 0,
