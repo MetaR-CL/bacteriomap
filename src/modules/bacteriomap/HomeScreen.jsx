@@ -110,7 +110,7 @@ export default function HomeScreen({ navigate }) {
             }}/>
             <div style={{
               position: 'absolute', inset: 0,
-              background: 'linear-gradient(to right, var(--paper) 0%, transparent 60%)',
+              background: 'linear-gradient(to right, #faf6ec 0%, transparent 60%)',
             }}/>
           </div>
         )}
