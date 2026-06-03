@@ -69,11 +69,21 @@ export default function HomeScreen({ navigate }) {
     return (
       <div key={sys.id}
            onClick={() => navigate('zone', { systemId: sys.slug })}
+           onMouseEnter={e => {
+             e.currentTarget.style.background = 'var(--paper)'
+             e.currentTarget.style.boxShadow = `0 6px 24px -8px ${accent}44`
+             e.currentTarget.style.transform = 'translateY(-2px)'
+           }}
+           onMouseLeave={e => {
+             e.currentTarget.style.background = 'var(--bg)'
+             e.currentTarget.style.boxShadow = 'none'
+             e.currentTarget.style.transform = 'none'
+           }}
            style={{
-             cursor: 'pointer', position: 'relative', background: 'var(--paper)',
+             cursor: 'pointer', position: 'relative', background: 'var(--bg)',
              border: '1px solid var(--ruleSoft)', borderLeft: `3px solid ${accent}`,
              padding: '20px 22px', display: 'grid', gridTemplateColumns: '1fr auto',
-             alignItems: 'center', gap: 14,
+             alignItems: 'center', gap: 14, transition: 'transform .14s, box-shadow .14s, background .14s',
            }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
