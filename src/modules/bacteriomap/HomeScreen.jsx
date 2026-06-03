@@ -83,30 +83,11 @@ export default function HomeScreen({ navigate }) {
              cursor: 'pointer', position: 'relative', background: 'var(--bg)',
              border: '1px solid var(--ruleSoft)', borderLeft: `3px solid ${accent}`,
              padding: '20px 22px', display: 'grid',
-             gridTemplateColumns: sys.image_url ? '1fr' : '1fr auto',
+             gridTemplateColumns: '1fr auto',
              alignItems: 'center', gap: 14, transition: 'transform .14s, box-shadow .14s, background .14s',
              overflow: 'hidden',
            }}>
-        {sys.image_url && (
-          <div style={{
-            position: 'absolute', right: 0, top: 0, bottom: 0, width: '55%',
-            overflow: 'hidden',
-          }}>
-            <img src={sys.image_url} alt="" style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              objectFit: 'cover', filter: 'grayscale(1) contrast(1.1)', display: 'block',
-            }}/>
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: accent, mixBlendMode: 'multiply', opacity: 0.55,
-            }}/>
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: `linear-gradient(to left, transparent 40%, var(--paper) 100%)`,
-            }}/>
-          </div>
-        )}
-        <div style={{ minWidth: 0, position: 'relative', zIndex: 1 }}>
+        <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
             <span style={{ fontFamily: T.mono, fontSize: 9, color: accent, letterSpacing: '0.18em' }}>
               {sys.short?.toUpperCase()}
@@ -119,7 +100,13 @@ export default function HomeScreen({ navigate }) {
             {sys.subtitle}
           </div>
         </div>
-        {!sys.image_url && (
+        {sys.image_url ? (
+          <div style={{ width: 90, height: 90, position: 'relative', flexShrink: 0, overflow: 'hidden' }}>
+            <img src={sys.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1) contrast(1.1)', display: 'block' }} />
+            <div style={{ position: 'absolute', inset: 0, background: accent, mixBlendMode: 'multiply', opacity: 0.55 }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 40%, var(--bg) 100%)' }} />
+          </div>
+        ) : (
           <div style={{ width: 62, height: 62, display: 'grid', placeItems: 'center', borderRadius: '50%', backgroundColor: accent + '22', flexShrink: 0 }}>
             <svg width="56" height="56" viewBox="0 0 100 100">
               <MorphoSVG kind={SYSTEM_MORPHO[sys.slug] || 'rod'} size={100} stroke={accent} fill={accent} fillOpacity={0.3} strokeWidth={1.6} />
