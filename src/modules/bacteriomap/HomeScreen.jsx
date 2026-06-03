@@ -104,7 +104,7 @@ export default function HomeScreen({ navigate }) {
           <div style={{ width: 90, height: 90, position: 'relative', flexShrink: 0, overflow: 'hidden' }}>
             <img src={sys.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1) contrast(1.1)', display: 'block' }} />
             <div style={{ position: 'absolute', inset: 0, background: accent, mixBlendMode: 'multiply', opacity: 0.55 }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 40%, var(--bg) 100%)' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 40%, var(--paper) 100%)' }} />
           </div>
         ) : (
           <div style={{ width: 62, height: 62, display: 'grid', placeItems: 'center', borderRadius: '50%', backgroundColor: accent + '22', flexShrink: 0 }}>
