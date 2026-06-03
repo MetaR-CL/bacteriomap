@@ -58,11 +58,10 @@ function Carrousel({ images, accent, onOpen }) {
           display:'flex',
           transform:`translateX(-${idx * 100}%)`,
           transition:'transform 0.3s ease',
-          width:`${total * 100}%`,
           height:'100%',
         }}>
           {images.map((im, i) => (
-            <div key={im.id || i} style={{ flex:`0 0 ${100/total}%`, height:'100%' }}>
+            <div key={im.id || i} style={{ flex:'0 0 100%', height:'100%' }}>
               <img src={im.url} alt={im.label || `Image ${i+1}`} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
             </div>
           ))}
