@@ -294,7 +294,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
       <div style={{ padding:'28px 48px 16px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
         <div style={{ maxWidth:1100, margin:'0 auto' }}>
           <div style={{ fontFamily:T.mono, fontSize:10, color:accent, letterSpacing:'0.2em', marginBottom:8 }}>GENRE {genus.toUpperCase()}</div>
-          <h1 style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:62, fontWeight:500, letterSpacing:'-0.022em', lineHeight:0.95, margin:0 }}>
+          <h1 style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:32, fontWeight:500, letterSpacing:'-0.022em', lineHeight:0.95, margin:0 }}>
             {b.name}
           </h1>
           <div style={{ display:'grid', gridTemplateColumns:'1fr auto', alignItems:'end', gap:32, marginTop:14 }}>
