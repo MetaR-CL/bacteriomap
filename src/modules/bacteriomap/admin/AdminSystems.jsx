@@ -1,6 +1,7 @@
 import React from 'react'
 import { T } from '../data.js'
 import { useAdminSystems } from '../../../hooks/useAdminSystems.js'
+import { supabase } from '../../../lib/supabase.js'
 
 const primaryBtn = {
   padding: '8px 16px', background: 'var(--accent)', color: 'var(--paper)', border: 'none',
@@ -66,6 +67,10 @@ export default function AdminSystems() {
   const [newSysName, setNewSysName]   = React.useState('')
   const [newSysShort, setNewSysShort] = React.useState('')
   const [newSysSub, setNewSysSub]     = React.useState('')
+
+  // Image upload
+  const [uploading, setUploading] = React.useState(false)
+  const imgInputRef = React.useRef(null)
 
   React.useEffect(() => {
     if (!activeSys && systems.length > 0) setActiveSys(systems[0].id)
@@ -177,6 +182,31 @@ export default function AdminSystems() {
     } catch (err) { setError(err.message) }
   }
 
+  const uploadImage = async (file) => {
+    if (!active || !file) return
+    setUploading(true)
+    setError(null)
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `systems/${active.slug}-${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage.from('bacterio-images').upload(path, file, { upsert: true })
+      if (upErr) throw upErr
+      const { data: { publicUrl } } = supabase.storage.from('bacterio-images').getPublicUrl(path)
+      await updateSystem(active.id, { image_url: publicUrl })
+      flash('Image enregistrée')
+    } catch (err) { setError(err.message) }
+    setUploading(false)
+  }
+
+  const removeImage = async () => {
+    if (!active?.image_url) return
+    setError(null)
+    try {
+      await updateSystem(active.id, { image_url: null })
+      flash('Image supprimée')
+    } catch (err) { setError(err.message) }
+  }
+
   if (loading) return <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, padding: 40 }}>Chargement…</div>
 
   return (
@@ -256,6 +286,30 @@ export default function AdminSystems() {
               <div style={{ padding: '8px 0', display: 'grid', gridTemplateColumns: '140px 1fr', gap: 14, alignItems: 'baseline' }}>
                 <div style={{ fontFamily: T.mono, fontSize: 10, color: T.ink2, letterSpacing: '0.08em' }}>Sous-titre</div>
                 <input type="text" value={sysSubtitle} onChange={e => setSysSubtitle(e.target.value)} style={inpStyle}/>
+              </div>
+              <div style={{ padding: '8px 0', borderTop: '1px dotted var(--ruleSoft)', marginTop: 8, display: 'grid', gridTemplateColumns: '140px 1fr', gap: 14, alignItems: 'center' }}>
+                <div style={{ fontFamily: T.mono, fontSize: 10, color: T.ink2, letterSpacing: '0.08em' }}>Image chapitre</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  {active.image_url && (
+                    <div style={{ position: 'relative', width: 72, height: 52, overflow: 'hidden', flexShrink: 0, border: `1px solid var(--ruleSoft)` }}>
+                      <img src={active.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1)' }} />
+                      <div style={{ position: 'absolute', inset: 0, background: active.color || '#8b7355', mixBlendMode: 'multiply', opacity: 0.55 }} />
+                    </div>
+                  )}
+                  <input
+                    ref={imgInputRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={e => { if (e.target.files[0]) uploadImage(e.target.files[0]) }}
+                  />
+                  <button onClick={() => imgInputRef.current?.click()} disabled={uploading} style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10 }}>
+                    {uploading ? 'Envoi…' : active.image_url ? 'Remplacer' : '+ Importer'}
+                  </button>
+                  {active.image_url && (
+                    <button onClick={removeImage} style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10, color: 'var(--red)', borderColor: 'var(--red)' }}>Retirer</button>
+                  )}
+                </div>
               </div>
               <div style={{ marginTop: 16 }}>
                 <button onClick={saveSys} style={primaryBtn}>Enregistrer les modifications</button>
