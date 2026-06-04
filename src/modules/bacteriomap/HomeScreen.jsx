@@ -35,6 +35,8 @@ const SYSTEM_MORPHO = {
   gen:  'spiral',
 }
 
+const centeredBlock = { maxWidth: 1280, margin: '0 auto', width: '100%' }
+
 export default function HomeScreen({ navigate }) {
   const [dark] = useDarkMode()
   const { systems, loading: sysLoading } = useSystems()
@@ -68,8 +70,6 @@ export default function HomeScreen({ navigate }) {
 
   const renderCard = (sys) => {
     const accent = sys.color || '#8b7355'
-
-    // Carte avec image pleine hauteur
     const hasImage = !!sys.image_url
 
     return (
@@ -87,7 +87,7 @@ export default function HomeScreen({ navigate }) {
              cursor: 'pointer', position: 'relative', overflow: 'hidden',
              background: 'var(--paper)',
              border: '1px solid var(--ruleSoft)', borderLeft: `3px solid ${accent}`,
-             padding: '20px 22px',
+             padding: '28px 32px',
              display: 'grid',
              gridTemplateColumns: hasImage ? '1fr' : '1fr auto',
              alignItems: 'center', gap: 14,
@@ -96,12 +96,28 @@ export default function HomeScreen({ navigate }) {
            }}>
 
         {/* Image duotone pleine hauteur à droite */}
-        {hasImage && !dark && (
-          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%', overflow: 'hidden', pointerEvents: 'none' }}>
-            <img src={sys.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1) contrast(1.05)', display: 'block' }}/>
-            <div style={{ position: 'absolute', inset: 0, background: accent, mixBlendMode: 'multiply', opacity: 0.4 }}/>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, #faf6ec 0%, transparent 60%)' }}/>
-          </div>
+        {hasImage && (
+          <>
+            <div aria-hidden="true" style={{
+              position: 'absolute', top: 0, right: 0, bottom: 0, width: '58%',
+              pointerEvents: 'none', isolation: 'isolate', opacity: 0.62,
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.55) 45%, #000 100%)',
+              maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.55) 45%, #000 100%)',
+            }}>
+              <div style={{
+                position: 'absolute', inset: 0,
+                backgroundImage: `url(${sys.image_url})`,
+                backgroundSize: 'cover', backgroundPosition: 'center right',
+                filter: 'grayscale(1) contrast(1.05)',
+              }}/>
+              <div style={{ position: 'absolute', inset: 0, background: accent, mixBlendMode: 'color' }}/>
+              <div style={{ position: 'absolute', inset: 0, background: accent, mixBlendMode: 'multiply', opacity: 0.35 }}/>
+            </div>
+            <div aria-hidden="true" style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none',
+              background: 'linear-gradient(to right, #faf6ec 28%, rgba(250,246,236,0.8) 48%, transparent 78%)',
+            }}/>
+          </>
         )}
 
         {/* Contenu texte */}
@@ -110,11 +126,8 @@ export default function HomeScreen({ navigate }) {
             <span style={{ fontFamily: T.mono, fontSize: 9, color: accent, letterSpacing: '0.18em' }}>
               {sys.short?.toUpperCase()}
             </span>
-            <span style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.12em' }}>
-              {/* nombre espèces si dispo */}
-            </span>
           </div>
-          <div style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 500, letterSpacing: '-0.015em', lineHeight: 1.04 }}>
+          <div style={{ fontFamily: T.serif, fontSize: 30, fontWeight: 500, letterSpacing: '-0.015em', lineHeight: 1.04 }}>
             {sys.name}
           </div>
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)', marginTop: 5 }}>
@@ -124,8 +137,8 @@ export default function HomeScreen({ navigate }) {
 
         {/* Vignette morpho si pas d'image */}
         {!hasImage && (
-          <div style={{ width: 62, height: 62, display: 'grid', placeItems: 'center', borderRadius: '50%', backgroundColor: accent + '22', flexShrink: 0 }}>
-            <svg width="56" height="56" viewBox="0 0 100 100">
+          <div style={{ width: 74, height: 74, display: 'grid', placeItems: 'center', borderRadius: '50%', backgroundColor: accent + '22', flexShrink: 0 }}>
+            <svg width="48" height="48" viewBox="0 0 100 100">
               <MorphoSVG kind={SYSTEM_MORPHO[sys.slug] || 'rod'} size={100} stroke={accent} fill={accent} fillOpacity={0.3} strokeWidth={1.6} />
             </svg>
           </div>
@@ -151,7 +164,7 @@ export default function HomeScreen({ navigate }) {
 
       {/* Barre de recherche */}
       <div style={{ padding: '24px 40px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+        <div style={{ ...centeredBlock, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', flex: '1 1 360px', maxWidth: 520 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
                  style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
@@ -185,7 +198,7 @@ export default function HomeScreen({ navigate }) {
 
         {/* Résultats espèces */}
         {q && matchedSpecies.length > 0 && (
-          <div style={{ marginTop: 14, border: '1px solid var(--ruleSoft)', background: 'var(--paper)' }}>
+          <div style={{ ...centeredBlock, marginTop: 14, border: '1px solid var(--ruleSoft)', background: 'var(--paper)' }}>
             <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', padding: '10px 16px 8px' }}>ESPÈCES</div>
             {matchedSpecies.map(b => {
               const gram = GRAM_DISPLAY[b.gram] || b.gram || '?'
@@ -206,45 +219,52 @@ export default function HomeScreen({ navigate }) {
       </div>
 
       {/* Grille systèmes */}
-      <div style={{ padding: '0 40px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: 14 }}>
-        {sysLoading
-          ? <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: 40 }}>Chargement…</div>
-          : matchedSystems.length > 0
-            ? matchedSystems.map(renderCard)
-            : <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: '20px 0' }}>Aucun chapitre ne correspond.</div>
-        }
-      </div>
-
-      {/* Annexes */}
-      <div style={{ padding: '30px 40px 8px' }}>
-        <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 12 }}>ANNEXES</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))', gap: 14 }}>
-          {[
-            { key: 'quiz',  kicker: 'RÉCRÉATION',    title: 'Qui suis-je ?', sub: "Quiz d'identification — quatre indices" },
-            { key: 'admin', kicker: 'ADMINISTRATION', title: 'Atelier',       sub: 'Édition du contenu · accès protégé'    },
-          ].map(({ key, kicker, title, sub }) => (
-            <div key={key} onClick={() => navigate(key)}
-                 style={{ cursor: 'pointer', border: '1px solid var(--ruleSoft)', borderLeft: '3px solid var(--ink3)', padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 12 }}>
-              <div>
-                <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 5 }}>{kicker}</div>
-                <div style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500 }}>{title}</div>
-                <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)', marginTop: 4 }}>{sub}</div>
-              </div>
-              <span style={{ fontFamily: T.mono, fontSize: 12, color: 'var(--ink3)' }}>↗</span>
-            </div>
-          ))}
+      <div style={{ padding: '0 40px' }}>
+        <div style={{ ...centeredBlock, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+          {sysLoading
+            ? <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: 40 }}>Chargement…</div>
+            : matchedSystems.length > 0
+              ? matchedSystems.map(renderCard)
+              : <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: '20px 0' }}>Aucun chapitre ne correspond.</div>
+          }
         </div>
       </div>
 
+      {/* Quiz — centré, caché si recherche active */}
+      {!q && (
+        <div style={{ padding: '24px 40px 0' }}>
+          <div style={{ ...centeredBlock, maxWidth: 640 }}>
+            <div key="quiz" onClick={() => navigate('quiz')}
+                 style={{ cursor: 'pointer', border: '1px solid var(--ruleSoft)', borderLeft: '3px solid var(--ink3)', padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 12, background: 'var(--paper)' }}>
+              <div>
+                <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 5 }}>RÉCRÉATION</div>
+                <div style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500 }}>Qui suis-je ?</div>
+                <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)', marginTop: 4 }}>Quiz d'identification — quatre indices</div>
+              </div>
+              <span style={{ fontFamily: T.mono, fontSize: 12, color: 'var(--ink3)' }}>↗</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ flex: 1 }} />
 
-      {/* Légende */}
-      <div style={{ padding: '12px 40px', borderTop: '1px solid var(--rule)', display: 'flex', gap: 22, fontFamily: T.mono, fontSize: 10, color: 'var(--ink2)', letterSpacing: '0.06em', background: 'var(--paper)', alignItems: 'center', flexWrap: 'wrap' }}>
-        <span style={{ color: 'var(--ink3)', letterSpacing: '0.18em' }}>LÉGENDE</span>
-        <span><span style={{ color: '#8b5cf6' }}>●</span> Gram positif</span>
-        <span><span style={{ color: '#ec4899' }}>●</span> Gram négatif</span>
-        <span><span style={{ color: '#3b82f6' }}>●</span> Fongique</span>
-      </div>
+      {/* Admin — bas de page, caché si recherche active */}
+      {!q && (
+        <div style={{ padding: '0 40px 24px' }}>
+          <div style={{ ...centeredBlock, maxWidth: 640 }}>
+            <div key="admin" onClick={() => navigate('admin')}
+                 style={{ cursor: 'pointer', border: '1px solid var(--ruleSoft)', borderLeft: '3px solid var(--ink3)', padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 12, background: 'var(--paper)' }}>
+              <div>
+                <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 5 }}>ADMINISTRATION</div>
+                <div style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500 }}>Atelier</div>
+                <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)', marginTop: 4 }}>Édition du contenu · accès protégé</div>
+              </div>
+              <span style={{ fontFamily: T.mono, fontSize: 12, color: 'var(--ink3)' }}>↗</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
