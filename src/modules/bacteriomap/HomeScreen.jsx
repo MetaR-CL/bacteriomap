@@ -4,6 +4,7 @@ import { T } from './data.js'
 import { MorphoSVG, gramColor } from './shared.jsx'
 import { useSystems } from '../../hooks/useSystems.js'
 import { useAllBacteria } from '../../hooks/useAllBacteria.js'
+import { useDarkMode } from '../../hooks/useDarkMode.js'
 
 const GRAM_DISPLAY = { positif: '+', negatif: '−', aucun: 'F' }
 
@@ -35,6 +36,7 @@ const SYSTEM_MORPHO = {
 }
 
 export default function HomeScreen({ navigate }) {
+  const [dark] = useDarkMode()
   const { systems, loading: sysLoading } = useSystems()
   const { bacteria: allBacteria } = useAllBacteria()
 
@@ -94,26 +96,11 @@ export default function HomeScreen({ navigate }) {
            }}>
 
         {/* Image duotone pleine hauteur à droite */}
-        {hasImage && (
-          <div style={{
-            position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%',
-            overflow: 'hidden', pointerEvents: 'none',
-          }}>
-            <img src={sys.image_url} alt="" style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              objectFit: 'cover', objectPosition: 'center',
-              filter: 'grayscale(1) contrast(1.05)',
-            }}/>
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: accent,
-              mixBlendMode: 'multiply',
-              opacity: 0.4,
-            }}/>
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(to right, #faf6ec 0%, transparent 60%)',
-            }}/>
+        {hasImage && !dark && (
+          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '50%', overflow: 'hidden', pointerEvents: 'none' }}>
+            <img src={sys.image_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1) contrast(1.05)', display: 'block' }}/>
+            <div style={{ position: 'absolute', inset: 0, background: accent, mixBlendMode: 'multiply', opacity: 0.4 }}/>
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, #faf6ec 0%, transparent 60%)' }}/>
           </div>
         )}
 
