@@ -88,6 +88,11 @@ function Carrousel({ images, accent, onOpen }) {
         <span style={{ fontFamily:T.mono, fontStyle:'normal', fontSize:9, color:T.ink3, letterSpacing:'0.14em' }}>PL. {idx + 1}</span>
         {label}
       </figcaption>
+      {img.source && (
+        <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, marginTop: 3, letterSpacing: '0.08em' }}>
+          © {img.source}
+        </div>
+      )}
     </figure>
   );
 }
@@ -158,6 +163,11 @@ function Lightbox({ bact, openIdx, onClose, images }) {
           <span style={{ fontFamily:T.mono, fontStyle:'normal', fontSize:9, color:'rgba(248,243,229,.55)', letterSpacing:'0.18em', marginRight:8 }}>PL. {idx + 1}</span>
           {label}
         </div>
+        {img?.source && (
+          <div style={{ fontFamily: T.mono, fontSize: 9, color: 'rgba(248,243,229,.45)', marginTop: 6, textAlign: 'center', letterSpacing: '0.08em' }}>
+            © {img.source}
+          </div>
+        )}
       </div>
     </div>
   );

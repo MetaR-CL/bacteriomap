@@ -4,6 +4,7 @@ import { useAdminBacteria } from '../../../hooks/useAdminBacteria.js'
 import { useAdminSystems } from '../../../hooks/useAdminSystems.js'
 import { useAdminMilieux } from '../../../hooks/useAdminMilieux.js'
 import { gramColor } from '../shared.jsx'
+import { supabase } from '../../../lib/supabase.js'
 
 const primaryBtn = {
   padding: '8px 16px', background: 'var(--accent)', color: 'var(--paper)', border: 'none',
@@ -478,6 +479,19 @@ export default function AdminBacteria() {
                     catch (err) { setError(err.message) }
                     finally { setSaving(false) }
                   }} style={{ ...arrowBtn, color: 'var(--red)', marginLeft: 4 }}>×</button>
+                </div>
+                <div style={{ padding: '0 8px 6px' }}>
+                  <input
+                    type="text"
+                    placeholder="Source (auteur, site, licence…)"
+                    defaultValue={img.source || ''}
+                    onBlur={async e => {
+                      const val = e.target.value.trim()
+                      if (val === (img.source || '')) return
+                      await supabase.from('bacterio_images').update({ source: val || null }).eq('id', img.id)
+                    }}
+                    style={{ width: '100%', fontFamily: T.mono, fontSize: 11, color: T.ink2, background: 'transparent', border: 'none', borderBottom: `1px solid var(--ruleSoft)`, outline: 'none', padding: '3px 0', boxSizing: 'border-box' }}
+                  />
                 </div>
               </div>
             ))}
