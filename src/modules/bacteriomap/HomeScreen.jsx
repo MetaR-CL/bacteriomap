@@ -159,8 +159,6 @@ export default function HomeScreen({ navigate }) {
         <span style={{ width: 1, height: 18, background: 'var(--rule)', margin: '0 6px' }} />
         <span style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.14em' }}>ATLAS DE MICROBIOLOGIE CLINIQUE</span>
         <span style={{ flex: 1 }} />
-        <span style={{ cursor: 'pointer', color: 'var(--ink3)', border: '1px solid var(--ruleSoft)', padding: '2px 8px', fontFamily: T.mono, fontSize: 10, letterSpacing: '0.12em' }}
-              onClick={() => navigate('admin')}>ADMIN</span>
         <span style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.12em' }}>CHUV · ÉD. 2026</span>
       </div>
 

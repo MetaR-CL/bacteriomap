@@ -66,7 +66,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: T.serif, '--accent': accent, background: 'var(--bg)' }}>
 
-      <TopBar navigate={navigate} center={sys.name} />
+      <TopBar navigate={navigate} center={sys.name} onBack={() => navigate('home')} />
 
       {/* Chapter opener — compact */}
       <div style={{ padding: '22px 56px 20px', borderBottom: '1.5px double var(--rule)', background: 'var(--paper)', display: 'flex', alignItems: 'baseline', gap: 18, flexWrap: 'wrap' }}>

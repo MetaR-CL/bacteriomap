@@ -288,7 +288,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
   return (
     <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', fontFamily:T.serif, '--accent': accent, background:T.bg }}>
 
-      <TopBar navigate={navigate} center={b?.name} />
+      <TopBar navigate={navigate} center={b?.name} onBack={() => navigate('zone', { systemId })} />
 
       {/* ── Title block ── */}
       <div style={{ padding:'28px 48px 16px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
