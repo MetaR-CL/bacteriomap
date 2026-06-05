@@ -4,6 +4,7 @@ import React from 'react';
 import { T } from './data.js';
 import { SYSTEMS, getSystemPalette, gramColor } from './shared.jsx';
 import { supabase } from '../../lib/supabase.js';
+import TopBar from './TopBar.jsx';
 
 const GRAM_MAP = { positif: '+', négatif: '−', aucun: 'F' }
 
@@ -287,17 +288,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
   return (
     <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', fontFamily:T.serif, '--accent': accent, background:T.bg }}>
 
-      {/* ── Running head ── */}
-      <div style={{ padding:'10px 48px', borderBottom:`3px solid ${accent}`, display:'flex', alignItems:'center', fontFamily:T.mono, fontSize:10, color:T.ink3, letterSpacing:'0.14em', background:T.paper }}>
-        <span style={{ cursor:'pointer', color:T.ink2 }} onClick={()=>navigate('zone',{systemId})}>← Chapitre {sysRoman} · {sys.short || sys.label}</span>
-        <span style={{ flex:1 }}/>
-        <span style={{ fontStyle:'italic', fontFamily:T.serif, letterSpacing:0, fontSize:12, color:T.ink2 }}>{b.name}</span>
-        <span style={{ margin:'0 12px', opacity:0.4 }}>·</span>
-        <div style={{ marginLeft:18, display:'flex', gap:6 }}>
-          <button style={{ height:24, padding:'0 10px', background:'transparent', border:`1px solid ${T.rule}`, fontFamily:T.mono, fontSize:9, letterSpacing:'0.08em', cursor:'pointer', color:T.ink2 }}>↳ COMPARER</button>
-          <button style={{ height:24, padding:'0 10px', background:'transparent', border:`1px solid ${T.rule}`, fontFamily:T.mono, fontSize:9, letterSpacing:'0.08em', cursor:'pointer', color:T.ink2 }}>⎙ IMPRIMER</button>
-        </div>
-      </div>
+      <TopBar navigate={navigate} center={b?.name} />
 
       {/* ── Title block ── */}
       <div style={{ padding:'28px 48px 16px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>

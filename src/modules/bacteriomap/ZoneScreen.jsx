@@ -3,6 +3,7 @@ import { T } from './data.js'
 import { gramColor, MorphoSVG } from './shared.jsx'
 import { useSystems } from '../../hooks/useSystems.js'
 import { useBacteria } from '../../hooks/useBacteria.js'
+import TopBar from './TopBar.jsx'
 
 const GRAM_MAP = { positif: '+', negatif: '−', aucun: 'F' }
 function normalize(b) {
@@ -65,12 +66,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: T.serif, '--accent': accent, background: 'var(--bg)' }}>
 
-      {/* Running head */}
-      <div style={{ padding: '13px 56px', borderBottom: '0.5px solid var(--rule)', display: 'flex', alignItems: 'center', fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.14em', background: 'var(--paper)' }}>
-        <span style={{ cursor: 'pointer', color: 'var(--ink2)' }} onClick={() => navigate('home')}>← TABLE DES MATIÈRES</span>
-        <span style={{ flex: 1 }}/>
-        <span style={{ fontStyle: 'italic', fontFamily: T.serif, letterSpacing: 0, fontSize: 12, color: 'var(--ink2)' }}>{sys.name}</span>
-      </div>
+      <TopBar navigate={navigate} center={sys.name} />
 
       {/* Chapter opener — compact */}
       <div style={{ padding: '22px 56px 20px', borderBottom: '1.5px double var(--rule)', background: 'var(--paper)', display: 'flex', alignItems: 'baseline', gap: 18, flexWrap: 'wrap' }}>

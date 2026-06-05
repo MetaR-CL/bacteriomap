@@ -3,6 +3,7 @@ import React from 'react';
 import { T } from './data.js';
 import { useQuiz } from '../../hooks/useQuiz.js';
 import { useSystems } from '../../hooks/useSystems.js';
+import TopBar from './TopBar.jsx';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -89,14 +90,7 @@ export default function QuizScreen({ navigate }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: T.serif, background: T.bg }}>
 
-      {/* Running head */}
-      <div style={{ padding: '13px 56px', borderBottom: `0.5px solid ${T.rule}`, display: 'flex', alignItems: 'center', fontFamily: T.mono, fontSize: 10, color: T.ink3, letterSpacing: '0.14em', background: T.paper }}>
-        <span style={{ cursor: 'pointer', color: T.ink2 }} onClick={() => navigate('home')}>← TABLE DES MATIÈRES</span>
-        <span style={{ flex: 1 }} />
-        <span style={{ fontStyle: 'italic', fontFamily: T.serif, letterSpacing: 0, fontSize: 12, color: T.ink2 }}>Annexe · Récréation</span>
-        <span style={{ margin: '0 12px', opacity: 0.4 }}>·</span>
-        <span>p. 245</span>
-      </div>
+      <TopBar navigate={navigate} center="FORMATION" />
 
       {/* Title */}
       <div style={{ padding: '40px 56px 28px', borderBottom: `1.5px double ${T.rule}`, background: T.paper }}>
