@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-export function useBacteria(zoneId = null) {
+export function useBacteria(zoneId = null, isFlora = false) {
   const [bacteria, setBacteria] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -14,17 +14,22 @@ export function useBacteria(zoneId = null) {
     }
     setLoading(true)
     async function fetch() {
-      const { data, error } = await supabase
+      let query = supabase
         .from('bacterio_bacteria')
         .select('*, bacterio_images(*)')
-        .contains('zone_ids', [zoneId])
         .order('name')
+      if (isFlora) {
+        query = query.contains('flora_zone_ids', [zoneId])
+      } else {
+        query = query.contains('zone_ids', [zoneId])
+      }
+      const { data, error } = await query
       if (error) setError(error)
       else setBacteria(data || [])
       setLoading(false)
     }
     fetch()
-  }, [zoneId])
+  }, [zoneId, isFlora])
 
   return { bacteria, loading, error }
 }

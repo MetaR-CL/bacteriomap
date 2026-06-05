@@ -37,6 +37,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
   const zoneReady = !sysLoading && zones.length > 0
   const zoneIdToFetch = zoneReady ? (activeZoneId ?? zones[0]?.id ?? null) : null
   const { bacteria, loading: bacteriaLoading } = useBacteria(zoneIdToFetch)
+  const { bacteria: flora, loading: floraLoading } = useBacteria(zoneIdToFetch, true)
 
   const filtered = bacteria.map(normalize).filter(b => {
     if (filter === 'all') return true
@@ -196,6 +197,40 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                   Aucune bactérie dans cette zone.
                 </div>
               )}
+            </div>
+          )}
+
+          {!floraLoading && flora.length > 0 && (
+            <div style={{ marginTop: 40 }}>
+              <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 16, paddingBottom: 8, borderBottom: '1px solid var(--rule)' }}>
+                FLORE COMMENSALE
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+                {flora.map(normalize).map((b, i) => {
+                  const c = gramColor(b.gram)
+                  const img = b.bacterio_images?.[0]
+                  return (
+                    <div key={b.id}
+                      style={{ background: 'var(--paper)', border: '0.5px solid var(--ruleSoft)', cursor: 'pointer', position: 'relative', opacity: 0.75 }}
+                      onClick={() => navigate('sheet', { bacteriaId: b.name, systemId })}
+                    >
+                      <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
+                        {img ? (
+                          <img src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.4)' }}/>
+                        ) : (
+                          <svg viewBox="0 0 100 100" width={90} height={90}>
+                            <MorphoSVG kind={b.morpho} size={100} stroke={c.stroke} fill={c.fill} fillOpacity={0.2} strokeWidth={1.4}/>
+                          </svg>
+                        )}
+                      </div>
+                      <div style={{ padding: '10px 14px' }}>
+                        <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 16, color: 'var(--ink)', marginBottom: 3 }}>{b.name}</div>
+                        <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)' }}>GRAM {b.gram}</div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
         </main>
