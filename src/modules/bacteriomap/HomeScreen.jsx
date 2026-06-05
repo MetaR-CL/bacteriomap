@@ -159,6 +159,8 @@ export default function HomeScreen({ navigate }) {
         <span style={{ width: 1, height: 18, background: 'var(--rule)', margin: '0 6px' }} />
         <span style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.14em' }}>ATLAS DE MICROBIOLOGIE CLINIQUE</span>
         <span style={{ flex: 1 }} />
+        <span style={{ cursor: 'pointer', color: 'var(--ink3)', border: '1px solid var(--ruleSoft)', padding: '2px 8px', fontFamily: T.mono, fontSize: 10, letterSpacing: '0.12em' }}
+              onClick={() => navigate('admin')}>ADMIN</span>
         <span style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.12em' }}>CHUV · ÉD. 2026</span>
       </div>
 
@@ -248,23 +250,6 @@ export default function HomeScreen({ navigate }) {
       )}
 
       <div style={{ flex: 1 }} />
-
-      {/* Admin — bas de page, caché si recherche active */}
-      {!q && (
-        <div style={{ padding: '0 40px 24px' }}>
-          <div style={{ ...centeredBlock, maxWidth: 640 }}>
-            <div key="admin" onClick={() => navigate('admin')}
-                 style={{ cursor: 'pointer', border: '1px solid var(--ruleSoft)', borderLeft: '3px solid var(--ink3)', padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 12, background: 'var(--paper)' }}>
-              <div>
-                <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 5 }}>ADMINISTRATION</div>
-                <div style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500 }}>Atelier</div>
-                <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)', marginTop: 4 }}>Édition du contenu · accès protégé</div>
-              </div>
-              <span style={{ fontFamily: T.mono, fontSize: 12, color: 'var(--ink3)' }}>↗</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
