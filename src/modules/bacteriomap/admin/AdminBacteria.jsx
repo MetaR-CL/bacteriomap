@@ -492,6 +492,18 @@ export default function AdminBacteria() {
                     }}
                     style={{ width: '100%', fontFamily: T.mono, fontSize: 11, color: T.ink2, background: 'transparent', border: 'none', borderBottom: `1px solid var(--ruleSoft)`, outline: 'none', padding: '3px 0', boxSizing: 'border-box' }}
                   />
+                  <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.1em', marginTop: 6, marginBottom: 2 }}>LÉGENDE</div>
+                  <input
+                    type="text"
+                    placeholder="ex. PL.1, Image 1…"
+                    defaultValue={img.legend || ''}
+                    onBlur={async e => {
+                      const val = e.target.value.trim()
+                      if (val === (img.legend || '')) return
+                      await supabase.from('bacterio_images').update({ legend: val || null }).eq('id', img.id)
+                    }}
+                    style={{ width: '100%', fontFamily: T.mono, fontSize: 11, color: T.ink2, background: 'transparent', border: 'none', borderBottom: `1px solid var(--ruleSoft)`, outline: 'none', padding: '3px 0', boxSizing: 'border-box' }}
+                  />
                 </div>
               </div>
             ))}

@@ -89,6 +89,11 @@ function Carrousel({ images, accent, onOpen }) {
         <span style={{ fontFamily:T.mono, fontStyle:'normal', fontSize:9, color:T.ink3, letterSpacing:'0.14em' }}>PL. {idx + 1}</span>
         {label}
       </figcaption>
+      {img.legend && (
+        <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.14em', textAlign: 'center', marginTop: 6 }}>
+          {img.legend}
+        </div>
+      )}
       {img.source && (
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, marginTop: 3, letterSpacing: '0.08em' }}>
           © {img.source}
