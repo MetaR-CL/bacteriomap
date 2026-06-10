@@ -10,8 +10,12 @@ export default function TopBar({ navigate, center, onBack }) {
       position: 'sticky', top: 0, zIndex: 10,
     }}>
       {onBack && (
-        <span style={{ cursor: 'pointer', color: 'var(--ink2)', fontSize: 16, padding: '0 4px' }}
-              onClick={onBack}>←</span>
+        <span style={{
+          cursor: 'pointer', color: 'var(--ink2)',
+          border: '1px solid var(--ruleSoft)', padding: '3px 10px',
+          fontFamily: T.mono, fontSize: 12, letterSpacing: 0,
+        }}
+          onClick={onBack}>←</span>
       )}
       <span style={{ cursor: 'pointer', color: 'var(--ink3)' }}
             onClick={() => navigate('home')}>ACCUEIL</span>
