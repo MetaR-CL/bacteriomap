@@ -94,9 +94,9 @@ export default function QuizScreen({ navigate }) {
 
       {/* Title */}
       <div style={{ padding: '40px 56px 28px', borderBottom: `1.5px double ${T.rule}`, background: T.paper }}>
-        <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 18, color: T.ocre, marginBottom: 6 }}>Récréation</div>
+        <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 18, color: T.ocre, marginBottom: 6 }}>Formation</div>
         <h1 style={{ fontFamily: T.serif, fontSize: 80, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 0.92, fontStyle: 'italic', margin: 0 }}>
-          Quiz QCM
+          Quiz
         </h1>
         <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 18, color: T.ink2, marginTop: 14, maxWidth: 680, lineHeight: 1.5 }}>
           Questions à choix multiples — sélectionne la bonne réponse ou révèle-la directement.

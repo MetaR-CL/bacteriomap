@@ -239,9 +239,9 @@ export default function HomeScreen({ navigate }) {
             <div key="quiz" onClick={() => navigate('quiz')}
                  style={{ cursor: 'pointer', border: '1px solid var(--ruleSoft)', borderLeft: '3px solid var(--ink3)', padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 12, background: 'var(--paper)' }}>
               <div>
-                <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 5 }}>RÉCRÉATION</div>
-                <div style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500 }}>Qui suis-je ?</div>
-                <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)', marginTop: 4 }}>Quiz d'identification — quatre indices</div>
+                <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 5 }}>FORMATION</div>
+                <div style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500 }}>Formation</div>
+                <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)', marginTop: 4 }}>Questions à choix multiples</div>
               </div>
               <span style={{ fontFamily: T.mono, fontSize: 12, color: 'var(--ink3)' }}>↗</span>
             </div>

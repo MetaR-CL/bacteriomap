@@ -12,7 +12,7 @@ const TABS = [
   { id: 'systems',   num: 'II',  label: 'Systèmes & Zones' },
   { id: 'bacteria',  num: 'III', label: 'Bactéries' },
   { id: 'milieux',   num: 'IV',  label: 'Milieux' },
-  { id: 'quiz',      num: 'V',   label: 'Quiz' },
+  { id: 'quiz',      num: 'V',   label: 'Formation' },
   { id: 'palette',   num: 'VI',  label: 'Couleurs' },
 ]
 
@@ -94,7 +94,7 @@ function Dashboard({ onNavigate }) {
           { tab: 'systems',  label: 'Systèmes & Zones' },
           { tab: 'bacteria', label: 'Bactéries' },
           { tab: 'milieux',  label: 'Milieux de culture' },
-          { tab: 'quiz',     label: 'Questions Quiz' },
+          { tab: 'quiz',     label: 'Formation' },
         ].map(({ tab, label }) => (
           <button key={tab} onClick={() => onNavigate(tab)} style={{
             padding: '10px 18px',
