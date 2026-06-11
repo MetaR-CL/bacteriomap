@@ -48,7 +48,7 @@ function Carrousel({ images, accent, onOpen }) {
   }
 
   const img = images[idx];
-  const label = img.label || `Image ${idx + 1}`;
+  const label = img.label && img.label.trim() !== '' ? img.label : null;
 
   return (
     <figure style={{ margin:0 }}>
@@ -124,7 +124,7 @@ function Lightbox({ bact, openIdx, onClose, images }) {
   if (openIdx == null) return null;
 
   const img = images[idx];
-  const label = img?.label || `Image ${idx + 1}`;
+  const label = img?.label && img.label.trim() !== '' ? img.label : null;
 
   return (
     <div onClick={onClose} style={{
