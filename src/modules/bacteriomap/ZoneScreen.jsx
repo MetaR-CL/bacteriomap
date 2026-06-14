@@ -66,7 +66,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: T.serif, '--accent': accent, background: 'var(--bg)' }}>
 
-      <TopBar navigate={navigate} center={sys.name} onBack={() => navigate('home')} />
+      <TopBar navigate={navigate} onBack={() => navigate('home')} />
 
       {/* Chapter opener — compact */}
       <div style={{ padding: '22px 56px 20px', borderBottom: '1.5px double var(--rule)', background: 'var(--paper)', display: 'flex', alignItems: 'baseline', gap: 18, flexWrap: 'wrap' }}>
@@ -104,14 +104,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                 padding: '16px 0',
                 borderBottom: '1px solid var(--ruleSoft)',
                 cursor: 'pointer',
-                display: 'grid',
-                gridTemplateColumns: '28px 1fr',
-                gap: 10,
-                alignItems: 'baseline',
               }}>
-                <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: isActive ? 'var(--accent)' : 'var(--ink3)' }}>
-                  §{['a','b','c','d','e','f','g','h'][i] || i}
-                </span>
                 <div>
                   <div style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500, color: isActive ? 'var(--ink)' : 'var(--ink2)' }}>
                     {z.label || z.name}
@@ -159,10 +152,12 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                 const img = b.bacterio_images?.[0]
                 return (
                   <div key={b.id}
-                    style={{ background: 'var(--paper)', border: '0.5px solid var(--rule)', cursor: 'pointer', position: 'relative' }}
+                    style={{ background: 'var(--paper)', border: '0.5px solid var(--rule)', cursor: 'pointer', position: 'relative', transition: 'transform .14s, box-shadow .14s' }}
                     onClick={() => navigate('sheet', { bacteriaId: b.name, systemId })}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 6px 24px -8px ${accent}44` }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}
                   >
-                    <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
                       {img ? (
                         <img src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
                       ) : (
@@ -170,13 +165,9 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                           <MorphoSVG kind={b.morpho} size={100} stroke={c.stroke} fill={c.fill} fillOpacity={0.3} strokeWidth={1.6} vivid={vivid}/>
                         </svg>
                       )}
-                      <div style={{ position: 'absolute', top: 8, left: 10, fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.1em' }}>
-                        fig. {['I','II','III','IV','V','VI','VII','VIII','IX','X'][i] || i + 1}
-                      </div>
                     </div>
                     <div style={{ padding: '12px 14px' }}>
                       <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 18, fontWeight: 500, color: 'var(--ink)', marginBottom: 4 }}>{b.name}</div>
-                      <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', marginBottom: 6 }}>{b.morpho}</div>
                       <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontFamily: T.mono, fontSize: 10 }}>
                         <span style={{ color: c.stroke }}>GRAM {b.gram}</span>
                         <span style={{ color: 'var(--ink3)' }}>·</span>
