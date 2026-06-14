@@ -48,7 +48,7 @@ function Carrousel({ images, accent, onOpen }) {
   }
 
   const img = images[idx];
-  const label = img.label || `Image ${idx + 1}`;
+  const label = img.label && img.label.trim() !== '' ? img.label : null;
 
   return (
     <figure style={{ margin:0 }}>
@@ -63,7 +63,7 @@ function Carrousel({ images, accent, onOpen }) {
         }}>
           {images.map((im, i) => (
             <div key={im.id || i} style={{ flex:'0 0 100%', height:'100%' }}>
-              <img src={im.url} alt={im.label || `Image ${i+1}`} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
+              <img src={im.url} alt={im.label || ''} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
             </div>
           ))}
         </div>
@@ -124,7 +124,7 @@ function Lightbox({ bact, openIdx, onClose, images }) {
   if (openIdx == null) return null;
 
   const img = images[idx];
-  const label = img?.label || `Image ${idx + 1}`;
+  const label = img?.label && img.label.trim() !== '' ? img.label : null;
 
   return (
     <div onClick={onClose} style={{
