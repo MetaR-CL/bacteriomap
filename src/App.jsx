@@ -168,12 +168,14 @@ export default function App() {
       <button
         onClick={() => setDark(d => !d)}
         title={dark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+        onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.borderColor = 'var(--ink3)'; e.currentTarget.style.color = 'var(--ink)' }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'var(--paper)'; e.currentTarget.style.borderColor = 'var(--rule)'; e.currentTarget.style.color = 'var(--ink2)' }}
         style={{
           position: 'fixed', top: 12, right: 12, zIndex: 100,
           width: 34, height: 34, padding: 0, border: '1px solid var(--rule)',
           background: 'var(--paper)', color: 'var(--ink2)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          borderRadius: 2,
+          borderRadius: 2, transition: 'background .12s, border-color .12s, color .12s',
         }}
       >
         {dark ? <SunIcon /> : <MoonIcon />}
