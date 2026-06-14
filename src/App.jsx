@@ -171,8 +171,8 @@ export default function App() {
         onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.borderColor = 'var(--ink3)'; e.currentTarget.style.color = 'var(--ink)' }}
         onMouseLeave={e => { e.currentTarget.style.background = 'var(--paper)'; e.currentTarget.style.borderColor = 'var(--rule)'; e.currentTarget.style.color = 'var(--ink2)' }}
         style={{
-          position: 'fixed', top: 12, right: 12, zIndex: 100,
-          width: 34, height: 34, padding: 0, border: '1px solid var(--rule)',
+          position: 'fixed', top: 14, right: 14, zIndex: 100,
+          width: 28, height: 28, padding: 0, border: '1px solid var(--rule)',
           background: 'var(--paper)', color: 'var(--ink2)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           borderRadius: 2, transition: 'background .12s, border-color .12s, color .12s',
