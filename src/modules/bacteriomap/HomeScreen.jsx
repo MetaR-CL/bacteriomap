@@ -163,8 +163,7 @@ export default function HomeScreen({ navigate }) {
           onClick={() => navigate('admin')}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ink3)'; e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.background = 'var(--bg)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ruleSoft)'; e.currentTarget.style.color = 'var(--ink3)'; e.currentTarget.style.background = 'transparent' }}
-          style={{ cursor: 'pointer', color: 'var(--ink3)', border: '1px solid var(--ruleSoft)', padding: '2px 8px', fontFamily: T.mono, fontSize: 10, letterSpacing: '0.12em', transition: 'color .12s, border-color .12s, background .12s', marginRight: 46 }}>ADMIN</span>
-        <span style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.12em' }}>CHUV · ÉD. 2026</span>
+          style={{ cursor: 'pointer', color: 'var(--ink3)', border: '1px solid var(--ruleSoft)', padding: '4px 10px', fontFamily: T.mono, fontSize: 10, letterSpacing: '0.12em', lineHeight: 1, transition: 'color .12s, border-color .12s, background .12s', marginRight: 52 }}>ADMIN</span>
       </div>
 
       {/* Barre de recherche */}
@@ -194,11 +193,11 @@ export default function HomeScreen({ navigate }) {
               : <span style={{ position: 'absolute', right: 11, top: '50%', transform: 'translateY(-50%)', fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', border: '1px solid var(--ruleSoft)', borderRadius: 3, padding: '2px 6px', pointerEvents: 'none' }}>/</span>
             }
           </div>
-          <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
-            {q
-              ? `${matchedSystems.length} CHAPITRE${matchedSystems.length !== 1 ? 'S' : ''} · ${matchedSpecies.length} ESPÈCE${matchedSpecies.length !== 1 ? 'S' : ''}`
-              : `${systems.length} CHAPITRES`}
-          </div>
+          {q && (
+            <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
+              {`${matchedSystems.length} CHAPITRE${matchedSystems.length !== 1 ? 'S' : ''} · ${matchedSpecies.length} ESPÈCE${matchedSpecies.length !== 1 ? 'S' : ''}`}
+            </div>
+          )}
         </div>
 
         {/* Résultats espèces */}
@@ -231,7 +230,17 @@ export default function HomeScreen({ navigate }) {
           {sysLoading
             ? <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: 40 }}>Chargement…</div>
             : matchedSystems.length > 0
-              ? matchedSystems.map(renderCard)
+              ? matchedSystems.map((sys, i, arr) => {
+                  const isLastOdd = arr.length % 2 !== 0 && i === arr.length - 1
+                  if (isLastOdd) {
+                    return (
+                      <div key={sys.id} style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ width: 'calc(50% - 7px)' }}>{renderCard(sys)}</div>
+                      </div>
+                    )
+                  }
+                  return renderCard(sys)
+                })
               : <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: '20px 0' }}>Aucun chapitre ne correspond.</div>
           }
         </div>
