@@ -159,8 +159,11 @@ export default function HomeScreen({ navigate }) {
         <span style={{ width: 1, height: 18, background: 'var(--rule)', margin: '0 6px' }} />
         <span style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.14em' }}>ATLAS DE MICROBIOLOGIE CLINIQUE</span>
         <span style={{ flex: 1 }} />
-        <span style={{ cursor: 'pointer', color: 'var(--ink3)', border: '1px solid var(--ruleSoft)', padding: '2px 8px', fontFamily: T.mono, fontSize: 10, letterSpacing: '0.12em' }}
-              onClick={() => navigate('admin')}>ADMIN</span>
+        <span
+          onClick={() => navigate('admin')}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ink3)'; e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.background = 'var(--bg)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ruleSoft)'; e.currentTarget.style.color = 'var(--ink3)'; e.currentTarget.style.background = 'transparent' }}
+          style={{ cursor: 'pointer', color: 'var(--ink3)', border: '1px solid var(--ruleSoft)', padding: '2px 8px', fontFamily: T.mono, fontSize: 10, letterSpacing: '0.12em', transition: 'color .12s, border-color .12s, background .12s', marginRight: 46 }}>ADMIN</span>
         <span style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.12em' }}>CHUV · ÉD. 2026</span>
       </div>
 
@@ -208,7 +211,9 @@ export default function HomeScreen({ navigate }) {
               return (
                 <div key={b.id}
                      onClick={() => navigate('sheet', { bacteriaId: b.name, systemId: null })}
-                     style={{ display: 'flex', alignItems: 'baseline', gap: 12, padding: '9px 16px', cursor: 'pointer', borderTop: '1px solid var(--ruleSoft)' }}>
+                     onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg)' }}
+                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                     style={{ display: 'flex', alignItems: 'baseline', gap: 12, padding: '9px 16px', cursor: 'pointer', borderTop: '1px solid var(--ruleSoft)', transition: 'background .1s' }}>
                   <span style={{ fontFamily: T.mono, fontSize: 9, color: stroke, width: 46, flexShrink: 0 }}>GRAM {gram}</span>
                   <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15 }}>{b.name}</span>
                   <span style={{ flex: 1 }} />
@@ -237,7 +242,9 @@ export default function HomeScreen({ navigate }) {
         <div style={{ padding: '24px 40px 0' }}>
           <div style={{ ...centeredBlock, maxWidth: 640 }}>
             <div key="quiz" onClick={() => navigate('quiz')}
-                 style={{ cursor: 'pointer', border: '1px solid var(--ruleSoft)', borderLeft: '3px solid var(--ink3)', padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 12, background: 'var(--paper)' }}>
+                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px -8px rgba(0,0,0,0.15)' }}
+                 onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}
+                 style={{ cursor: 'pointer', border: '1px solid var(--ruleSoft)', borderLeft: '3px solid var(--ink3)', padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 12, background: 'var(--paper)', transition: 'transform .14s, box-shadow .14s' }}>
               <div>
                 <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 5 }}>FORMATION</div>
                 <div style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500 }}>Formation</div>
