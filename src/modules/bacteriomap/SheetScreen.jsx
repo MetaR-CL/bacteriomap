@@ -85,10 +85,11 @@ function Carrousel({ images, accent, onOpen }) {
           </>
         )}
       </div>
-      <figcaption style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink2, marginTop:8, lineHeight:1.35, display:'flex', alignItems:'baseline', gap:8 }}>
-        <span style={{ fontFamily:T.mono, fontStyle:'normal', fontSize:9, color:T.ink3, letterSpacing:'0.14em' }}>PL. {idx + 1}</span>
-        {label}
-      </figcaption>
+      {label && (
+        <figcaption style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink2, marginTop:8, lineHeight:1.35 }}>
+          {label}
+        </figcaption>
+      )}
       {img.legend && img.legend.trim() !== '' && (
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.14em', textAlign: 'center', marginTop: 6 }}>
           {img.legend}
@@ -338,12 +339,11 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
       {/* ── Carrousel planches ── */}
       <div style={{ padding:'24px 48px 20px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
         <div style={{ maxWidth:1100, margin:'0 auto' }}>
-          <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:14 }}>
-            <span style={{ fontFamily:T.mono, fontSize:10, color:T.ink3, letterSpacing:'0.18em' }}>§ 01 · PLANCHES — MORPHOLOGIE</span>
-            {images.length > 1 && (
+          {images.length > 1 && (
+            <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:14 }}>
               <span style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink3 }}>cliquer pour agrandir · ←/→ pour naviguer</span>
-            )}
-          </div>
+            </div>
+          )}
           <Carrousel images={images} accent={accent} onOpen={setLightbox}/>
         </div>
       </div>
