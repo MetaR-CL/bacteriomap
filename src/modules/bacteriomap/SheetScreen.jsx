@@ -183,10 +183,8 @@ function Lightbox({ bact, openIdx, onClose, images }) {
 // Section heading
 function SectionTitle({ n, title, anchor, accent, right }) {
   return (
-    <div id={anchor} style={{ display:'grid', gridTemplateColumns:'42px 1fr auto', alignItems:'baseline', padding:'18px 0 8px', borderBottom:`1px solid ${T.rule}`, marginBottom:12, scrollMarginTop:96 }}>
-      <span style={{ fontFamily:T.mono, fontSize:10, color:accent, letterSpacing:'0.14em' }}>§ {n}</span>
+    <div id={anchor} style={{ padding:'18px 0 8px', borderBottom:`1px solid ${T.rule}`, marginBottom:12, scrollMarginTop:96 }}>
       <span style={{ fontFamily:T.serif, fontSize:18, fontWeight:500, letterSpacing:'-0.005em' }}>{title}</span>
-      {right ? <span style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.12em' }}>{right}</span> : null}
     </div>
   );
 }
@@ -350,39 +348,13 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
 
       {/* ── Body : sommaire + main column ── */}
       <div style={{ background:T.paper, flex:1 }}>
-        <div style={{ maxWidth:1100, margin:'0 auto', display:'grid', gridTemplateColumns:'160px 1fr', gap:32, padding:'28px 48px 64px' }}>
-
-          {/* Sommaire sticky — only visible sections */}
-          <nav style={{ position:'sticky', top:88, alignSelf:'start', borderTop:`1px solid ${T.rule}`, paddingTop:12 }}>
-            <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.18em', marginBottom:10 }}>SOMMAIRE</div>
-            <ul style={{ listStyle:'none', padding:0, margin:0, display:'flex', flexDirection:'column', gap:2 }}>
-              {sections.map((s) => {
-                const active = activeAnchor === s.id;
-                return (
-                  <li key={s.id}>
-                    <a href={`#${s.id}`}
-                       onClick={(e)=>{ e.preventDefault(); document.getElementById(s.id)?.scrollIntoView({ behavior:'smooth', block:'start' }); }}
-                       style={{
-                         display:'grid', gridTemplateColumns:'22px 1fr', alignItems:'baseline',
-                         padding:'5px 0', textDecoration:'none',
-                         fontFamily:T.serif, fontSize:13, color: active ? T.ink : T.ink3,
-                         borderLeft: active ? `2px solid ${accent}` : '2px solid transparent',
-                         paddingLeft:8,
-                       }}>
-                      <span style={{ fontFamily:T.mono, fontSize:9, color: active ? accent : T.ink3, letterSpacing:'0.1em' }}>{s.n}</span>
-                      <span style={{ fontStyle: active ? 'normal' : 'italic' }}>{s.label}</span>
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+        <div style={{ maxWidth:1100, margin:'0 auto', padding:'28px 48px 64px' }}>
 
           {/* Main column */}
           <main style={{ minWidth:0 }}>
 
             {/* §02 Microscopie & culture — always shown */}
-            <SectionTitle n="02" title="Microscopie & culture" anchor="s02" accent={accent} right="LECTURE 24H"/>
+            <SectionTitle n="02" title="Microscopie & culture" anchor="s02" accent={accent}/>
             {milieux.length > 0 ? (
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:14 }}>
                 {milieux.map((m, i) => {
