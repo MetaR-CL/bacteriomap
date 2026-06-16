@@ -38,6 +38,25 @@ export function useQuizAdmin() {
     await load()
   }
 
+  const uploadImage = async (file, questionId) => {
+    const ext = file.name.split('.').pop()
+    const path = `quiz/${questionId}/${Date.now()}.${ext}`
+    const { error: upErr } = await supabase.storage
+      .from('bacteriomap-images')
+      .upload(path, file, { upsert: true })
+    if (upErr) throw upErr
+    const { data: { publicUrl } } = supabase.storage
+      .from('bacteriomap-images')
+      .getPublicUrl(path)
+    const { error: updErr } = await supabase
+      .from('bacterio_quiz')
+      .update({ image_url: publicUrl })
+      .eq('id', questionId)
+    if (updErr) throw updErr
+    await load()
+    return publicUrl
+  }
+
   const toggle = async (id, active) => {
     const { error } = await supabase
       .from('bacterio_quiz')
@@ -47,5 +66,5 @@ export function useQuizAdmin() {
     await load()
   }
 
-  return { questions, loading, upsert, remove, toggle, reload: load }
+  return { questions, loading, upsert, remove, toggle, uploadImage, reload: load }
 }
