@@ -235,18 +235,20 @@ export default function HomeScreen({ navigate }) {
             Atlas de microbiologie clinique
           </span>
         </div>
-        <span
-          onClick={() => navigate('admin')}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ink3)'; e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.background = 'var(--bg)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--rule)'; e.currentTarget.style.color = 'var(--ink2)'; e.currentTarget.style.background = 'transparent' }}
-          style={{
-            cursor: 'pointer',
-            fontFamily: T.mono, fontSize: 10.5, letterSpacing: '0.18em',
-            color: 'var(--ink2)', border: '1px solid var(--rule)',
-            padding: '6px 12px', borderRadius: 4,
-            transition: 'color .12s, border-color .12s, background .12s',
-          }}>ADMIN</span>
-        <DarkToggle />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span
+            onClick={() => navigate('admin')}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ink3)'; e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.background = 'var(--bg)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--rule)'; e.currentTarget.style.color = 'var(--ink2)'; e.currentTarget.style.background = 'transparent' }}
+            style={{
+              cursor: 'pointer',
+              fontFamily: T.mono, fontSize: 10.5, letterSpacing: '0.18em',
+              color: 'var(--ink2)', border: '1px solid var(--rule)',
+              padding: '6px 12px', borderRadius: 4,
+              transition: 'color .12s, border-color .12s, background .12s',
+            }}>ADMIN</span>
+          <DarkToggle />
+        </div>
       </header>
 
       {/* Main container */}
