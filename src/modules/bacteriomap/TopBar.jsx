@@ -1,4 +1,5 @@
 import { T } from './data.js'
+import DarkToggle from './DarkToggle.jsx'
 
 const btnBase = {
   cursor: 'pointer',
@@ -35,7 +36,8 @@ export default function TopBar({ navigate, center, onBack }) {
       <span style={{ flex: 1, textAlign: 'center', fontStyle: 'italic',
                      fontFamily: T.serif, letterSpacing: 0, fontSize: 12,
                      color: 'var(--ink2)' }}>{center}</span>
-      <NavBtn onClick={() => navigate('admin')} style={{ marginRight: 46 }}>ADMIN</NavBtn>
+      <NavBtn onClick={() => navigate('admin')}>ADMIN</NavBtn>
+      <DarkToggle />
     </div>
   )
 }

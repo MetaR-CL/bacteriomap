@@ -164,23 +164,6 @@ export default function App() {
 
   return (
     <div id="app-root" className={rootCls} style={{ '--accent': t.accentColor, minHeight:'100vh' }}>
-      {/* Floating dark mode toggle */}
-      <button
-        onClick={() => setDark(d => !d)}
-        title={dark ? 'Passer en mode clair' : 'Passer en mode sombre'}
-        onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.borderColor = 'var(--ink3)'; e.currentTarget.style.color = 'var(--ink)' }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'var(--paper)'; e.currentTarget.style.borderColor = 'var(--rule)'; e.currentTarget.style.color = 'var(--ink2)' }}
-        style={{
-          position: 'fixed', top: 21, right: 14, zIndex: 100,
-          width: 28, height: 28, padding: 0, border: '1px solid var(--rule)',
-          background: 'var(--paper)', color: 'var(--ink2)',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          borderRadius: 8, transition: 'background .12s, border-color .12s, color .12s',
-        }}
-      >
-        {dark ? <SunIcon /> : <MoonIcon />}
-      </button>
-
       <div className={cls} style={{ minHeight:'100vh' }} data-screen-label={
         route.name === 'home' ? 'Accueil' : route.name === 'zone' ? `Zone ${route.params.systemId || 'orl'}` : route.name === 'quiz' ? 'Quiz' : route.name === 'admin' ? 'Admin' : 'Fiche bactérie'
       }>
