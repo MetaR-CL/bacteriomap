@@ -312,6 +312,7 @@ export default function AdminBacteria() {
           placeholder="Méthodes d'identification…"
           style={taStyle}
         />
+        <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
 
         {/* RÉSISTANCES NATURELLES */}
         <SectionTitle>RÉSISTANCES NATURELLES</SectionTitle>
@@ -347,9 +348,11 @@ export default function AdminBacteria() {
         <SectionTitle>CLINIQUE &amp; TRAITEMENT</SectionTitle>
         <Field label="Description clinique" wide>
           <textarea value={d.clinical_info || ''} onChange={e => setDraft(p=>({...p,clinical_info:e.target.value}))} rows={3} style={taStyle}/>
+          <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
         </Field>
         <Field label="Traitement antibiotique" wide>
           <textarea value={d.antibio || ''} onChange={e => setDraft(p=>({...p,antibio:e.target.value}))} rows={3} style={taStyle}/>
+          <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
         </Field>
 
         {/* ANTIBIOGRAMME */}
@@ -392,6 +395,7 @@ export default function AdminBacteria() {
         {/* COMMENTAIRE */}
         <SectionTitle>COMMENTAIRE</SectionTitle>
         <textarea value={d.commentaire || ''} onChange={e => setDraft(p=>({...p,commentaire:e.target.value}))} rows={3} placeholder="Notes libres…" style={taStyle}/>
+        <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
 
         {/* ZONES ASSOCIÉES */}
         <SectionTitle>ZONES ASSOCIÉES</SectionTitle>

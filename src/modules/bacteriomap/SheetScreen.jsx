@@ -4,7 +4,8 @@ import React from 'react';
 import { T } from './data.js';
 import { SYSTEMS, getSystemPalette, gramColor } from './shared.jsx';
 import { supabase } from '../../lib/supabase.js';
-import TopBar from './TopBar.jsx';
+import TopBar from './TopBar.jsx'
+import MarkdownView from './MarkdownView.jsx';
 
 const GRAM_MAP = { positif: '+', négatif: '−', aucun: 'F' }
 
@@ -390,7 +391,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
             {!!b.identif && (
               <>
                 <SectionTitle n="03" title="Identification" anchor="s03" accent={accent}/>
-                <p style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink, margin:0 }}>{b.identif}</p>
+                <MarkdownView content={b.identif} />
               </>
             )}
 
@@ -398,7 +399,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
             {!!(b.clinical_info || b.clinique) && (
               <>
                 <SectionTitle n="04" title="Signification clinique" anchor="s04" accent={accent}/>
-                <p style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink, margin:0 }}>{b.clinical_info || b.clinique}</p>
+                <MarkdownView content={b.clinical_info || b.clinique} />
               </>
             )}
 
@@ -429,7 +430,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
                     })}
                   </div>
                 ) : (
-                  <div style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink }}>{b.antibio || '—'}</div>
+                  <MarkdownView content={b.antibio} />
                 )}
               </>
             )}
@@ -482,7 +483,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
             {!!b.commentaire && (
               <>
                 <SectionTitle n="08" title="Remarques" anchor="s08" accent={accent}/>
-                <p style={{ fontFamily:T.serif, fontSize:14, lineHeight:1.6, color:T.ink, margin:0 }}>{b.commentaire}</p>
+                <MarkdownView content={b.commentaire} />
               </>
             )}
 
