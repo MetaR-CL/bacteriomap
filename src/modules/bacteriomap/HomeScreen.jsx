@@ -4,6 +4,7 @@ import { T } from './data.js'
 import { MorphoSVG, gramColor } from './shared.jsx'
 import { useSystems } from '../../hooks/useSystems.js'
 import { useAllBacteria } from '../../hooks/useAllBacteria.js'
+import DarkToggle from './DarkToggle.jsx'
 
 const GRAM_DISPLAY = { positif: '+', negatif: '−', aucun: 'F' }
 
@@ -244,8 +245,8 @@ export default function HomeScreen({ navigate }) {
             color: 'var(--ink2)', border: '1px solid var(--rule)',
             padding: '6px 12px', borderRadius: 4,
             transition: 'color .12s, border-color .12s, background .12s',
-            marginRight: 12,
           }}>ADMIN</span>
+        <DarkToggle />
       </header>
 
       {/* Main container */}
