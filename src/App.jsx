@@ -4,11 +4,14 @@ import React from 'react';
 import { gramColor, MorphoSVG } from './modules/bacteriomap/shared.jsx';
 import { useTweaks, TweaksPanel, TweakSection, TweakToggle, TweakColor, TweakButton } from './modules/bacteriomap/TweaksPanel.jsx';
 import { useDarkMode } from './hooks/useDarkMode.js';
-import HomeScreen  from './modules/bacteriomap/HomeScreen.jsx';
-import ZoneScreen  from './modules/bacteriomap/ZoneScreen.jsx';
-import SheetScreen from './modules/bacteriomap/SheetScreen.jsx';
-import QuizScreen  from './modules/bacteriomap/QuizScreen.jsx';
-import AdminScreen from './modules/bacteriomap/AdminScreen.jsx';
+import HomeScreen    from './modules/bacteriomap/HomeScreen.jsx';
+import ZoneScreen    from './modules/bacteriomap/ZoneScreen.jsx';
+import SheetScreen   from './modules/bacteriomap/SheetScreen.jsx';
+import QuizScreen    from './modules/bacteriomap/QuizScreen.jsx';
+import AdminScreen   from './modules/bacteriomap/AdminScreen.jsx';
+import CompareScreen from './modules/bacteriomap/CompareScreen.jsx';
+import CompareBar    from './modules/bacteriomap/CompareBar.jsx';
+import { CompareProvider } from './context/CompareContext.jsx';
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "dark": false,
@@ -159,13 +162,15 @@ export default function App() {
   if (route.name === 'home')  screen = <HomeScreen  navigate={navigate} />;
   if (route.name === 'zone')  screen = <ZoneScreen  navigate={navigate} systemId={route.params.systemId} vivid={t.vivid} showImages={t.showImages} />;
   if (route.name === 'sheet') screen = <SheetScreen navigate={navigate} bacteriaId={route.params.bacteriaId} systemId={route.params.systemId || 'orl'} vivid={t.vivid} showImages={t.showImages} />;
-  if (route.name === 'quiz')  screen = <QuizScreen  navigate={navigate} />;
-  if (route.name === 'admin') screen = <AdminScreen navigate={navigate} />;
+  if (route.name === 'quiz')    screen = <QuizScreen    navigate={navigate} />;
+  if (route.name === 'admin')   screen = <AdminScreen   navigate={navigate} />;
+  if (route.name === 'compare') screen = <CompareScreen navigate={navigate} />;
 
   return (
+    <CompareProvider>
     <div id="app-root" className={rootCls} style={{ '--accent': t.accentColor, minHeight:'100vh' }}>
       <div className={cls} style={{ minHeight:'100vh' }} data-screen-label={
-        route.name === 'home' ? 'Accueil' : route.name === 'zone' ? `Zone ${route.params.systemId || 'orl'}` : route.name === 'quiz' ? 'Quiz' : route.name === 'admin' ? 'Admin' : 'Fiche bactérie'
+        route.name === 'home' ? 'Accueil' : route.name === 'zone' ? `Zone ${route.params.systemId || 'orl'}` : route.name === 'quiz' ? 'Quiz' : route.name === 'admin' ? 'Admin' : route.name === 'compare' ? 'Comparaison' : 'Fiche bactérie'
       }>
         {screen}
       </div>
@@ -186,6 +191,8 @@ export default function App() {
           window.dispatchEvent(new Event('bm-img-updated'));
         }}/>
       </TweaksPanel>
+      <CompareBar navigate={navigate} />
     </div>
+    </CompareProvider>
   );
 }
