@@ -68,6 +68,60 @@ const DIFFS = [
 ];
 
 // ── Lobby ─────────────────────────────────────────────────────────────────────
+function ModeCard({ m, onClick }) {
+  const [hover, setHover] = React.useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 24, padding: '22px 28px',
+        background: hover ? T.bg : T.paper,
+        border: `1px solid ${hover ? T.ink2 : T.rule}`,
+        borderLeft: `4px solid ${hover ? 'var(--accent)' : T.rule}`,
+        cursor: 'pointer',
+        transform: hover ? 'translateX(3px)' : 'none',
+        transition: 'all .18s ease',
+      }}>
+      <div style={{ color: hover ? 'var(--accent)' : T.ink3, flexShrink: 0, transition: 'color .18s' }}>{m.icon}</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: '0.14em', color: T.ink2, marginBottom: 5 }}>{m.label}</div>
+        <div style={{ fontFamily: T.serif, fontSize: 18, color: T.ink, marginBottom: 5 }}>{m.title}</div>
+        <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{m.desc}</div>
+      </div>
+      <div style={{ color: T.ink3, opacity: hover ? 1 : 0, transition: 'opacity .18s', flexShrink: 0 }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </div>
+    </div>
+  );
+}
+
+function DiffCard({ d, selected, onClick }) {
+  const [hover, setHover] = React.useState(false);
+  const sel = selected;
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        padding: '20px 16px', textAlign: 'center', cursor: 'pointer',
+        background: sel ? T.ink : hover ? T.bg : T.paper,
+        border: `1px solid ${sel ? T.ink : hover ? T.ink2 : T.rule}`,
+        transition: 'all .15s ease',
+      }}>
+      {d.stars && (
+        <div style={{ fontFamily: T.mono, fontSize: 16, color: sel ? T.paper : T.ocre, marginBottom: 8, letterSpacing: '0.1em' }}>{d.stars}</div>
+      )}
+      {!d.stars && (
+        <div style={{ fontFamily: T.mono, fontSize: 20, color: sel ? T.paper : T.ink3, marginBottom: 8 }}>∞</div>
+      )}
+      <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: '0.12em', color: sel ? T.paper : T.ink2 }}>{d.label.toUpperCase()}</div>
+    </div>
+  );
+}
+
 function Lobby({ onStart }) {
   const [mode, setMode] = React.useState(null);
   const [diff, setDiff] = React.useState('all');
@@ -92,34 +146,9 @@ function Lobby({ onStart }) {
             Quel type d'entraînement ?
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {MODES.map(m => {
-              const [hover, setHover] = React.useState(false);
-              return (
-                <div key={m.id}
-                  onClick={() => setMode(m.id)}
-                  onMouseEnter={() => setHover(true)}
-                  onMouseLeave={() => setHover(false)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 24, padding: '22px 28px',
-                    background: hover ? T.bg : T.paper,
-                    border: `1px solid ${hover ? T.ink2 : T.rule}`,
-                    borderLeft: `4px solid ${hover ? 'var(--accent)' : T.rule}`,
-                    cursor: 'pointer',
-                    transform: hover ? 'translateX(3px)' : 'none',
-                    transition: 'all .18s ease',
-                  }}>
-                  <div style={{ color: hover ? 'var(--accent)' : T.ink3, flexShrink: 0, transition: 'color .18s' }}>{m.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: '0.14em', color: T.ink2, marginBottom: 5 }}>{m.label}</div>
-                    <div style={{ fontFamily: T.serif, fontSize: 18, color: T.ink, marginBottom: 5 }}>{m.title}</div>
-                    <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{m.desc}</div>
-                  </div>
-                  <div style={{ color: T.ink3, opacity: hover ? 1 : 0, transition: 'opacity .18s', flexShrink: 0 }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                  </div>
-                </div>
-              );
-            })}
+            {MODES.map(m => (
+              <ModeCard key={m.id} m={m} onClick={() => setMode(m.id)} />
+            ))}
           </div>
         </div>
       )}
@@ -134,30 +163,9 @@ function Lobby({ onStart }) {
             Quel niveau de difficulté ?
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 40 }}>
-            {DIFFS.map(d => {
-              const sel = diff === d.id;
-              const [hover, setHover] = React.useState(false);
-              return (
-                <div key={d.id}
-                  onClick={() => setDiff(d.id)}
-                  onMouseEnter={() => setHover(true)}
-                  onMouseLeave={() => setHover(false)}
-                  style={{
-                    padding: '20px 16px', textAlign: 'center', cursor: 'pointer',
-                    background: sel ? T.ink : hover ? T.bg : T.paper,
-                    border: `1px solid ${sel ? T.ink : hover ? T.ink2 : T.rule}`,
-                    transition: 'all .15s ease',
-                  }}>
-                  {d.stars && (
-                    <div style={{ fontFamily: T.mono, fontSize: 16, color: sel ? T.paper : T.ocre, marginBottom: 8, letterSpacing: '0.1em' }}>{d.stars}</div>
-                  )}
-                  {!d.stars && (
-                    <div style={{ fontFamily: T.mono, fontSize: 20, color: sel ? T.paper : T.ink3, marginBottom: 8 }}>∞</div>
-                  )}
-                  <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: '0.12em', color: sel ? T.paper : T.ink2 }}>{d.label.toUpperCase()}</div>
-                </div>
-              );
-            })}
+            {DIFFS.map(d => (
+              <DiffCard key={d.id} d={d} selected={diff === d.id} onClick={() => setDiff(d.id)} />
+            ))}
           </div>
           <button onClick={() => onStart(mode, diff)} style={{ ...primaryBtn, padding: '13px 32px', fontSize: 12 }}>
             <span>COMMENCER</span>
