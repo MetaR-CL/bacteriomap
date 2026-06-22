@@ -4,6 +4,7 @@ import { T } from './data.js'
 import { MorphoSVG, gramColor } from './shared.jsx'
 import { useSystems } from '../../hooks/useSystems.js'
 import { useAllBacteria } from '../../hooks/useAllBacteria.js'
+import { useIsMobile } from '../../hooks/useIsMobile.js'
 import DarkToggle from './DarkToggle.jsx'
 
 const GRAM_DISPLAY = { positif: '+', negatif: '−', aucun: 'F' }
@@ -35,7 +36,7 @@ function BacterioMark({ size = 26 }) {
   )
 }
 
-function SystemCard({ sys, wide = false, navigate }) {
+function SystemCard({ sys, wide = false, navigate, mobile = false }) {
   const [hover, setHover] = useState(false)
   const accent = sys.color || '#8b7355'
   const speciesCount = sys.bacterio_zones?.reduce((sum, z) => sum + (z.n || 0), 0) || 0
@@ -49,7 +50,7 @@ function SystemCard({ sys, wide = false, navigate }) {
       style={{
         position: 'relative',
         display: 'grid',
-        gridTemplateColumns: '1fr 150px',
+        gridTemplateColumns: mobile ? '1fr 100px' : '1fr 150px',
         alignItems: 'center',
         cursor: 'pointer',
         overflow: 'hidden',
@@ -57,8 +58,8 @@ function SystemCard({ sys, wide = false, navigate }) {
         border: '1px solid var(--rule)',
         borderLeft: `4px solid ${accent}`,
         borderRadius: 12,
-        padding: '24px 28px',
-        minHeight: wide ? 100 : 116,
+        padding: mobile ? '18px 16px' : '24px 28px',
+        minHeight: wide ? 80 : (mobile ? 88 : 116),
         transform: hover ? 'translateY(-2px)' : 'none',
         boxShadow: hover
           ? '0 14px 30px -18px rgba(44,38,32,0.45)'
@@ -92,8 +93,8 @@ function SystemCard({ sys, wide = false, navigate }) {
       {/* Illustration cell */}
       <div style={{ position: 'relative', height: '100%', minHeight: 90 }}>
         <div style={{
-          position: 'absolute', right: -26, top: '50%', transform: 'translateY(-50%)',
-          width: 190, height: 190,
+          position: 'absolute', right: mobile ? -16 : -26, top: '50%', transform: 'translateY(-50%)',
+          width: mobile ? 120 : 190, height: mobile ? 120 : 190,
           opacity: hover ? 0.9 : 0.6,
           maskImage: 'radial-gradient(circle at 55% 50%, #000 52%, transparent 76%)',
           WebkitMaskImage: 'radial-gradient(circle at 55% 50%, #000 52%, transparent 76%)',
@@ -144,7 +145,7 @@ function SystemCard({ sys, wide = false, navigate }) {
   )
 }
 
-function FormationBanner({ navigate }) {
+function FormationBanner({ navigate, mobile = false }) {
   const [hover, setHover] = useState(false)
   return (
     <div
@@ -154,8 +155,8 @@ function FormationBanner({ navigate }) {
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         marginTop: 26, cursor: 'pointer',
-        background: '#2C2620', borderRadius: 12, padding: '24px 32px',
-        gap: 24,
+        background: '#2C2620', borderRadius: 12, padding: mobile ? '16px 18px' : '24px 32px',
+        gap: 16,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 22, minWidth: 0 }}>
@@ -188,6 +189,7 @@ function FormationBanner({ navigate }) {
 export default function HomeScreen({ navigate }) {
   const { systems, loading: sysLoading } = useSystems()
   const { bacteria: allBacteria } = useAllBacteria()
+  const mobile = useIsMobile()
 
   const [query, setQuery] = useState('')
   const searchRef = useRef(null)
@@ -220,7 +222,7 @@ export default function HomeScreen({ navigate }) {
 
       {/* Header */}
       <header style={{
-        padding: '22px 40px',
+        padding: mobile ? '14px 16px' : '22px 40px',
         borderBottom: '1px solid var(--rule)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         background: 'var(--paper)', position: 'sticky', top: 0, zIndex: 5,
@@ -230,10 +232,14 @@ export default function HomeScreen({ navigate }) {
           <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 22, letterSpacing: '0.01em' }}>
             Bacterio<span style={{ fontWeight: 600, fontStyle: 'normal', color: T.ocre }}>map</span>
           </span>
-          <span style={{ width: 1, height: 22, background: 'var(--rule)', margin: '0 4px' }} />
-          <span style={{ fontFamily: T.mono, fontSize: 10.5, letterSpacing: '0.22em', color: 'var(--ink3)', textTransform: 'uppercase' }}>
-            Atlas de microbiologie clinique
-          </span>
+          {!mobile && (
+            <>
+              <span style={{ width: 1, height: 22, background: 'var(--rule)', margin: '0 4px' }} />
+              <span style={{ fontFamily: T.mono, fontSize: 10.5, letterSpacing: '0.22em', color: 'var(--ink3)', textTransform: 'uppercase' }}>
+                Atlas de microbiologie clinique
+              </span>
+            </>
+          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span
@@ -252,11 +258,11 @@ export default function HomeScreen({ navigate }) {
       </header>
 
       {/* Main container */}
-      <div style={{ maxWidth: 1120, margin: '0 auto', width: '100%', padding: '44px 40px 56px', boxSizing: 'border-box' }}>
+      <div style={{ maxWidth: 1120, margin: '0 auto', width: '100%', padding: mobile ? '16px 16px 40px' : '44px 40px 56px', boxSizing: 'border-box' }}>
 
         {/* Search bar */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 40 }}>
-          <div style={{ position: 'relative', width: 560 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: mobile ? 20 : 40 }}>
+          <div style={{ position: 'relative', width: mobile ? '100%' : 560 }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                  style={{ position: 'absolute', left: 18, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
               <circle cx="11" cy="11" r="7" stroke="var(--ink3)" strokeWidth="1.8"/>
@@ -320,27 +326,27 @@ export default function HomeScreen({ navigate }) {
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: 40 }}>Chargement…</div>
         ) : q ? (
           matchedSystems.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
-              {matchedSystems.map(sys => <SystemCard key={sys.id} sys={sys} navigate={navigate} />)}
+            <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: mobile ? 10 : 18 }}>
+              {matchedSystems.map(sys => <SystemCard key={sys.id} sys={sys} navigate={navigate} mobile={mobile} />)}
             </div>
           ) : (
             <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: '20px 0' }}>Aucun chapitre ne correspond.</div>
           )
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
-              {systems.slice(0, 8).map(sys => <SystemCard key={sys.id} sys={sys} navigate={navigate} />)}
+            <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: mobile ? 10 : 18 }}>
+              {systems.slice(0, 8).map(sys => <SystemCard key={sys.id} sys={sys} navigate={navigate} mobile={mobile} />)}
             </div>
             {systems[8] && (
-              <div style={{ marginTop: 18 }}>
-                <SystemCard sys={systems[8]} wide navigate={navigate} />
+              <div style={{ marginTop: mobile ? 10 : 18 }}>
+                <SystemCard sys={systems[8]} wide navigate={navigate} mobile={mobile} />
               </div>
             )}
           </>
         )}
 
         {/* Formation banner */}
-        {!q && <FormationBanner navigate={navigate} />}
+        {!q && <FormationBanner navigate={navigate} mobile={mobile} />}
       </div>
     </div>
   )

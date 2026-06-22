@@ -1,6 +1,7 @@
 import React from 'react'
 import { T } from '../data.js'
 import { supabase } from '../../../lib/supabase.js'
+import { useIsMobile } from '../../../hooks/useIsMobile.js'
 import AdminSystems from './AdminSystems.jsx'
 import AdminBacteria from './AdminBacteria.jsx'
 import AdminMilieux from './AdminMilieux.jsx'
@@ -119,6 +120,7 @@ export default function AdminShell({ navigate }) {
   const [pwInput, setPwInput]   = React.useState('')
   const [pwError, setPwError]   = React.useState('')
   const [tab, setTab]           = React.useState('dashboard')
+  const mobile = useIsMobile()
 
   const tryUnlock = () => {
     if (pwInput === 'admin') {
@@ -156,6 +158,32 @@ export default function AdminShell({ navigate }) {
               ENTRER
             </button>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (mobile) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: T.bg }}>
+        {/* Mobile top nav */}
+        <div style={{ position: 'sticky', top: 0, zIndex: 10, background: T.paper, borderBottom: `0.5px solid ${T.rule}`, padding: '10px 14px', display: 'flex', gap: 10, alignItems: 'center' }}>
+          <select
+            value={tab}
+            onChange={e => setTab(e.target.value)}
+            style={{ flex: 1, padding: '8px 10px', fontFamily: T.mono, fontSize: 11, color: T.ink, background: T.bg, border: `1px solid ${T.rule}`, outline: 'none' }}
+          >
+            {TABS.map(t => <option key={t.id} value={t.id}>{t.num} · {t.label}</option>)}
+          </select>
+          <button onClick={() => navigate('home')} style={{ padding: '8px 12px', background: 'transparent', border: `1px solid ${T.rule}`, fontFamily: T.mono, fontSize: 10, color: T.ink3, cursor: 'pointer' }}>← Quitter</button>
+        </div>
+        <div style={{ flex: 1, padding: '20px 16px 40px', overflowY: 'auto' }}>
+          {tab === 'dashboard' && <Dashboard onNavigate={setTab} />}
+          {tab === 'systems'   && <AdminSystems />}
+          {tab === 'bacteria'  && <AdminBacteria />}
+          {tab === 'milieux'   && <AdminMilieux />}
+          {tab === 'quiz'      && <AdminQuiz />}
+          {tab === 'palette'   && <AdminPalette />}
         </div>
       </div>
     )

@@ -2,7 +2,7 @@
 import React from 'react';
 import { T } from './data.js';
 import { useQuiz } from '../../hooks/useQuiz.js';
-import { useSystems } from '../../hooks/useSystems.js';
+import { useIsMobile } from '../../hooks/useIsMobile.js';
 import TopBar from './TopBar.jsx';
 import MarkdownView from './MarkdownView.jsx';
 
@@ -122,13 +122,13 @@ function DiffCard({ d, selected, onClick }) {
   );
 }
 
-function Lobby({ onStart }) {
+function Lobby({ onStart, mobile = false }) {
   const [mode, setMode] = React.useState(null);
   const [diff, setDiff] = React.useState('all');
   const step = mode === null ? 1 : 2;
 
   return (
-    <div style={{ flex: 1, padding: '48px 56px 80px', maxWidth: 860, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ flex: 1, padding: mobile ? '24px 16px 60px' : '48px 56px 80px', maxWidth: 860, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
 
       {/* Step indicator */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40, fontFamily: T.mono, fontSize: 9, letterSpacing: '0.18em', color: T.ink3 }}>
@@ -162,7 +162,7 @@ function Lobby({ onStart }) {
           <div style={{ fontFamily: T.serif, fontSize: 15, color: T.ink2, marginBottom: 28, fontStyle: 'italic' }}>
             Quel niveau de difficulté ?
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 40 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 14, marginBottom: 40 }}>
             {DIFFS.map(d => (
               <DiffCard key={d.id} d={d} selected={diff === d.id} onClick={() => setDiff(d.id)} />
             ))}
@@ -298,7 +298,7 @@ function CasCliniqueQuestion({ q, onNext }) {
 }
 
 // ── Session (questions en cours) ──────────────────────────────────────────────
-function Session({ mode, diff, onQuit }) {
+function Session({ mode, diff, onQuit, mobile = false }) {
   const { questions, loading } = useQuiz(null);
   const filtered = React.useMemo(() => {
     let q = questions.filter(x => (x.type || 'qcm') === mode);
@@ -319,7 +319,7 @@ function Session({ mode, diff, onQuit }) {
   );
 
   return (
-    <div style={{ flex: 1, padding: '40px 56px 64px', maxWidth: 860, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ flex: 1, padding: mobile ? '24px 16px 48px' : '40px 56px 64px', maxWidth: 860, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
 
       {/* Session header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
@@ -354,13 +354,14 @@ function Session({ mode, diff, onQuit }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function QuizScreen({ navigate }) {
   const [session, setSession] = React.useState(null); // null = lobby, {mode, diff} = playing
+  const mobile = useIsMobile();
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: T.serif, background: T.bg }}>
       <TopBar navigate={navigate} center="FORMATION" />
 
       {/* Header — compact */}
-      <div style={{ padding: '24px 56px 20px', borderBottom: `1px solid ${T.rule}`, background: T.paper }}>
+      <div style={{ padding: mobile ? '16px 16px 14px' : '24px 56px 20px', borderBottom: `1px solid ${T.rule}`, background: T.paper }}>
         <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ocre, marginBottom: 2 }}>Formation</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 16 }}>
           <h1 style={{ fontFamily: T.serif, fontSize: 36, fontWeight: 500, letterSpacing: '-0.02em', fontStyle: 'italic', margin: 0, lineHeight: 1 }}>
@@ -375,9 +376,9 @@ export default function QuizScreen({ navigate }) {
       </div>
 
       {session === null ? (
-        <Lobby onStart={(mode, diff) => setSession({ mode, diff })} />
+        <Lobby onStart={(mode, diff) => setSession({ mode, diff })} mobile={mobile} />
       ) : (
-        <Session mode={session.mode} diff={session.diff} onQuit={() => setSession(null)} />
+        <Session mode={session.mode} diff={session.diff} onQuit={() => setSession(null)} mobile={mobile} />
       )}
     </div>
   );

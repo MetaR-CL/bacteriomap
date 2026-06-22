@@ -5,7 +5,8 @@ import { T } from './data.js';
 import { SYSTEMS, getSystemPalette, gramColor } from './shared.jsx';
 import { supabase } from '../../lib/supabase.js';
 import TopBar from './TopBar.jsx'
-import MarkdownView from './MarkdownView.jsx';
+import MarkdownView from './MarkdownView.jsx'
+import { useIsMobile } from '../../hooks/useIsMobile.js';
 
 const GRAM_MAP = { positif: '+', négatif: '−', aucun: 'F' }
 
@@ -191,6 +192,7 @@ function SectionTitle({ n, title, anchor, accent, right }) {
 }
 
 export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vivid = false, showImages = true }) {
+  const mobile = useIsMobile();
   const [b, setB] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [antiTab, setAntiTab] = React.useState('tableau');
@@ -296,7 +298,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
       <TopBar navigate={navigate} center={b?.name} onBack={() => navigate('zone', { systemId })} />
 
       {/* ── Title block ── */}
-      <div style={{ padding:'28px 48px 16px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
+      <div style={{ padding: mobile ? '16px 16px 12px' : '28px 48px 16px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
         <div style={{ maxWidth:1100, margin:'0 auto' }}>
           <div style={{ fontFamily:T.mono, fontSize:10, color:accent, letterSpacing:'0.2em', marginBottom:8 }}>GENRE {genus.toUpperCase()}</div>
           <h1 style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:32, fontWeight:500, letterSpacing:'-0.022em', lineHeight:0.95, margin:0 }}>
@@ -319,24 +321,28 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
 
       {/* ── Sticky meta bar ── */}
       <div style={{ position:'sticky', top:0, zIndex:50, background:T.paper, borderBottom:`1px solid ${T.rule}`, boxShadow:'0 1px 0 rgba(0,0,0,0.02)' }}>
-        <div style={{ maxWidth:1100, margin:'0 auto', display:'grid', gridTemplateColumns:`repeat(${metaItems.length}, 1fr)${showAntiboPanel ? ' 220px' : ''}`, alignItems:'stretch' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto',
+          ...(mobile
+            ? { display:'flex', flexWrap:'wrap' }
+            : { display:'grid', gridTemplateColumns:`repeat(${metaItems.length}, 1fr)${showAntiboPanel ? ' 220px' : ''}` }),
+          alignItems:'stretch' }}>
           {metaItems.map((m, i) => (
-            <div key={m.k} style={{ padding:'10px 12px', borderLeft: i === 0 ? 'none' : `1px solid ${T.ruleSoft}`, display:'flex', flexDirection:'column', gap:2 }}>
+            <div key={m.k} style={{ padding:'8px 12px', borderLeft: mobile ? 'none' : (i === 0 ? 'none' : `1px solid ${T.ruleSoft}`), borderRight: mobile ? `1px solid ${T.ruleSoft}` : 'none', borderBottom: mobile ? `1px solid ${T.ruleSoft}` : 'none', display:'flex', flexDirection:'column', gap:2, minWidth: mobile ? 80 : 'auto' }}>
               <span style={{ fontFamily:T.mono, fontSize:8.5, color:T.ink3, letterSpacing:'0.14em' }}>{m.k}</span>
-              <span style={{ fontFamily:T.serif, fontSize:20, lineHeight:1, fontWeight:500 }}>{m.v}</span>
+              <span style={{ fontFamily:T.serif, fontSize: mobile ? 16 : 20, lineHeight:1, fontWeight:500 }}>{m.v}</span>
             </div>
           ))}
           {showAntiboPanel && (
-            <div style={{ borderLeft:`1px solid ${T.rule}`, background:T.qrBg, color:T.qrInk, padding:'10px 14px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+            <div style={{ borderLeft: mobile ? 'none' : `1px solid ${T.rule}`, borderTop: mobile ? `1px solid ${T.rule}` : 'none', background:T.qrBg, color:T.qrInk, padding:'8px 14px', display:'flex', flexDirection:'column', justifyContent:'center', flex: mobile ? '1 0 100%' : 'none' }}>
               <span style={{ fontFamily:T.mono, fontSize:8.5, color:T.qrMute, letterSpacing:'0.16em' }}>1ʳᵉ INTENTION</span>
-              <span style={{ fontFamily:T.serif, fontSize:16, fontWeight:500, lineHeight:1.2, marginTop:2 }}>{premierAb}</span>
+              <span style={{ fontFamily:T.serif, fontSize:14, fontWeight:500, lineHeight:1.2, marginTop:2 }}>{premierAb}</span>
             </div>
           )}
         </div>
       </div>
 
       {/* ── Carrousel planches ── */}
-      <div style={{ padding:'24px 48px 20px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
+      <div style={{ padding: mobile ? '12px 16px 16px' : '24px 48px 20px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
         <div style={{ maxWidth:1100, margin:'0 auto' }}>
           {images.length > 1 && (
             <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:14 }}>
@@ -349,15 +355,15 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
 
       {/* ── Body : sommaire + main column ── */}
       <div style={{ background:T.paper, flex:1 }}>
-        <div style={{ maxWidth:1100, margin:'0 auto', padding:'28px 48px 64px' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto', padding: mobile ? '16px 16px 40px' : '28px 48px 64px' }}>
 
           {/* Main column */}
-          <main style={{ minWidth:0 }}>
+          <main style={{ minWidth:0, padding: mobile ? '0' : undefined }}>
 
             {/* §02 Microscopie & culture — always shown */}
             <SectionTitle n="02" title="Microscopie & culture" anchor="s02" accent={accent}/>
             {milieux.length > 0 ? (
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:14 }}>
+              <div style={{ display:'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap:10, marginBottom:14 }}>
                 {milieux.map((m, i) => {
                   const mName = typeof m === 'string' ? m : (m.name || JSON.stringify(m));
                   const mNote = typeof m === 'object' ? m.note : null;
@@ -377,7 +383,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
               <p style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:13, color:T.ink3, marginBottom:14 }}>Données non renseignées.</p>
             )}
             {rapidTests.length > 0 && (
-              <div style={{ display:'grid', gridTemplateColumns:`repeat(${Math.min(rapidTests.length, 4)}, 1fr)`, border:`1px solid ${T.rule}`, marginBottom:8 }}>
+              <div style={{ display:'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : `repeat(${Math.min(rapidTests.length, 4)}, 1fr)`, border:`1px solid ${T.rule}`, marginBottom:8 }}>
                 {rapidTests.map((r, i) => (
                   <div key={r.k} style={{ padding:'8px 12px', borderRight: i < rapidTests.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', background: i % 2 === 0 ? T.bg : T.paper }}>
                     <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.1em' }}>{r.k}</div>
@@ -439,7 +445,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
             {(resistNat.length > 0 || resistAcq.length > 0) && (
               <>
                 <SectionTitle n="06" title="Résistances" anchor="s06" accent={accent}/>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, fontFamily:T.serif }}>
+                <div style={{ display:'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap:24, fontFamily:T.serif }}>
                   <div>
                     <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginBottom:6 }}>NATURELLES</div>
                     {resistNat.length > 0 ? (
@@ -468,7 +474,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
             {virulence.length > 0 && (
               <>
                 <SectionTitle n="07" title="Facteurs de virulence" anchor="s07" accent={accent}/>
-                <ul style={{ listStyle:'none', padding:0, margin:0, display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 24px', borderTop:`1px solid ${T.ruleSoft}` }}>
+                <ul style={{ listStyle:'none', padding:0, margin:0, display:'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap:'0 24px', borderTop:`1px solid ${T.ruleSoft}` }}>
                   {virulence.map((v, i)=>(
                     <li key={v} style={{ padding:'6px 0', borderBottom:`1px solid ${T.ruleSoft}`, fontFamily:T.serif, fontSize:13.5, display:'flex', gap:10 }}>
                       <span style={{ fontFamily:T.mono, fontSize:9.5, color:accent, letterSpacing:'0.05em' }}>0{i+1}</span>
