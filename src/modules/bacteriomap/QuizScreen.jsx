@@ -19,23 +19,160 @@ const ghostBtn = {
   color: 'var(--ink2)', cursor: 'pointer',
 };
 
-function FilterBtn({ active, onClick, children, borderLeft }) {
+// ── Mode definitions ──────────────────────────────────────────────────────────
+const MODES = [
+  {
+    id: 'qcm',
+    label: 'QCM',
+    title: 'Questions à choix multiples',
+    desc: 'Sélectionne la bonne réponse parmi plusieurs propositions. Feedback immédiat après chaque choix.',
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'cas_clinique',
+    label: 'Cas cliniques',
+    title: 'Cas cliniques',
+    desc: 'Un scénario narratif suivi de plusieurs sous-questions liées. Idéal pour entraîner le raisonnement clinique.',
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+        <path d="M9 12h6M9 16h4"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'theorique',
+    label: 'Théorique',
+    title: 'Questions ouvertes',
+    desc: 'Formule ta réponse mentalement puis révèle la correction. Parfait pour réviser les mécanismes et définitions.',
+    icon: (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+        <path d="M4 19V6a2 2 0 0 1 2-2h7v15H6a2 2 0 0 0-2 2zM13 4h5a2 2 0 0 1 2 2v13"/>
+        <path d="M9 8h3M9 12h3M9 16h2"/>
+      </svg>
+    ),
+  },
+];
+
+const DIFFS = [
+  { id: 'all', label: 'Toutes', stars: null },
+  { id: '1',   label: 'Facile',    stars: '★' },
+  { id: '2',   label: 'Moyen',     stars: '★★' },
+  { id: '3',   label: 'Difficile', stars: '★★★' },
+];
+
+// ── Lobby ─────────────────────────────────────────────────────────────────────
+function Lobby({ onStart }) {
+  const [mode, setMode] = React.useState(null);
+  const [diff, setDiff] = React.useState('all');
+  const step = mode === null ? 1 : 2;
+
   return (
-    <button onClick={onClick} style={{
-      padding: '4px 9px', fontFamily: T.mono, fontSize: 10, letterSpacing: '0.06em', cursor: 'pointer',
-      background: active ? T.ink : 'transparent',
-      color: active ? T.paper : T.ink2,
-      border: `1px solid ${active ? T.ink : T.rule}`,
-      borderLeft: borderLeft === false ? 'none' : undefined,
-    }}>{children}</button>
+    <div style={{ flex: 1, padding: '48px 56px 80px', maxWidth: 860, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+
+      {/* Step indicator */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40, fontFamily: T.mono, fontSize: 9, letterSpacing: '0.18em', color: T.ink3 }}>
+        <span style={{ color: step === 1 ? T.ink : T.ink3 }}>01 · MODE</span>
+        <span style={{ flex: 'none', width: 32, height: 1, background: T.rule }}/>
+        <span style={{ color: step === 2 ? T.ink : T.ink3 }}>02 · DIFFICULTÉ</span>
+        <span style={{ flex: 'none', width: 32, height: 1, background: T.rule }}/>
+        <span style={{ opacity: 0.4 }}>03 · QUESTIONS</span>
+      </div>
+
+      {/* Step 1 — mode */}
+      {step === 1 && (
+        <div>
+          <div style={{ fontFamily: T.serif, fontSize: 15, color: T.ink2, marginBottom: 28, fontStyle: 'italic' }}>
+            Quel type d'entraînement ?
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {MODES.map(m => {
+              const [hover, setHover] = React.useState(false);
+              return (
+                <div key={m.id}
+                  onClick={() => setMode(m.id)}
+                  onMouseEnter={() => setHover(true)}
+                  onMouseLeave={() => setHover(false)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 24, padding: '22px 28px',
+                    background: hover ? T.bg : T.paper,
+                    border: `1px solid ${hover ? T.ink2 : T.rule}`,
+                    borderLeft: `4px solid ${hover ? 'var(--accent)' : T.rule}`,
+                    cursor: 'pointer',
+                    transform: hover ? 'translateX(3px)' : 'none',
+                    transition: 'all .18s ease',
+                  }}>
+                  <div style={{ color: hover ? 'var(--accent)' : T.ink3, flexShrink: 0, transition: 'color .18s' }}>{m.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: '0.14em', color: T.ink2, marginBottom: 5 }}>{m.label}</div>
+                    <div style={{ fontFamily: T.serif, fontSize: 18, color: T.ink, marginBottom: 5 }}>{m.title}</div>
+                    <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink3, lineHeight: 1.5 }}>{m.desc}</div>
+                  </div>
+                  <div style={{ color: T.ink3, opacity: hover ? 1 : 0, transition: 'opacity .18s', flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Step 2 — difficulty */}
+      {step === 2 && (
+        <div>
+          <button onClick={() => setMode(null)} style={{ ...ghostBtn, padding: '6px 12px', fontSize: 10, marginBottom: 32, display: 'flex', alignItems: 'center', gap: 6 }}>
+            ← {MODES.find(m => m.id === mode)?.label}
+          </button>
+          <div style={{ fontFamily: T.serif, fontSize: 15, color: T.ink2, marginBottom: 28, fontStyle: 'italic' }}>
+            Quel niveau de difficulté ?
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 40 }}>
+            {DIFFS.map(d => {
+              const sel = diff === d.id;
+              const [hover, setHover] = React.useState(false);
+              return (
+                <div key={d.id}
+                  onClick={() => setDiff(d.id)}
+                  onMouseEnter={() => setHover(true)}
+                  onMouseLeave={() => setHover(false)}
+                  style={{
+                    padding: '20px 16px', textAlign: 'center', cursor: 'pointer',
+                    background: sel ? T.ink : hover ? T.bg : T.paper,
+                    border: `1px solid ${sel ? T.ink : hover ? T.ink2 : T.rule}`,
+                    transition: 'all .15s ease',
+                  }}>
+                  {d.stars && (
+                    <div style={{ fontFamily: T.mono, fontSize: 16, color: sel ? T.paper : T.ocre, marginBottom: 8, letterSpacing: '0.1em' }}>{d.stars}</div>
+                  )}
+                  {!d.stars && (
+                    <div style={{ fontFamily: T.mono, fontSize: 20, color: sel ? T.paper : T.ink3, marginBottom: 8 }}>∞</div>
+                  )}
+                  <div style={{ fontFamily: T.mono, fontSize: 10, letterSpacing: '0.12em', color: sel ? T.paper : T.ink2 }}>{d.label.toUpperCase()}</div>
+                </div>
+              );
+            })}
+          </div>
+          <button onClick={() => onStart(mode, diff)} style={{ ...primaryBtn, padding: '13px 32px', fontSize: 12 }}>
+            <span>COMMENCER</span>
+            <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 16 }}>→</span>
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
+// ── Question components ───────────────────────────────────────────────────────
 function QuizImage({ url }) {
   if (!url) return null;
-  return (
-    <img src={url} alt="" style={{ maxHeight: 320, width: '100%', objectFit: 'cover', marginBottom: 24, border: `0.5px solid ${T.rule}`, display: 'block' }}/>
-  );
+  return <img src={url} alt="" style={{ maxHeight: 320, width: '100%', objectFit: 'cover', marginBottom: 24, border: `0.5px solid ${T.rule}`, display: 'block' }}/>;
 }
 
 function FeedbackBlock({ children }) {
@@ -47,42 +184,23 @@ function FeedbackBlock({ children }) {
   );
 }
 
-// ── QCM ──────────────────────────────────────────────────────────────────────
-function QcmQuestion({ q, onNext }) {
-  const [chosen, setChosen] = React.useState(null);
-  const [revealed, setRevealed] = React.useState(false);
-  const answered = chosen !== null || revealed;
-
-  const optBg = (i) => {
-    if (!answered) return 'transparent';
-    if (i === q.correct_index) return 'rgba(76,175,80,0.12)';
-    if (i === chosen && chosen !== q.correct_index) return 'rgba(229,57,53,0.10)';
-    return 'transparent';
-  };
-  const optBorder = (i) => {
-    if (!answered) return T.rule;
-    if (i === q.correct_index) return '#4caf50';
-    if (i === chosen && chosen !== q.correct_index) return '#e53935';
-    return T.ruleSoft;
-  };
-  const optOpacity = (i) => {
-    if (!answered) return 1;
-    if (i === q.correct_index || i === chosen) return 1;
-    return 0.45;
-  };
-
+function OptionList({ options, correct_index, answered, chosen, onChoose }) {
   return (
-    <>
-      <QuizImage url={q.image_url} />
-      <div style={{ fontFamily: T.serif, fontSize: 22, lineHeight: 1.6, color: T.ink, marginBottom: 36, fontStyle: 'italic' }}>
-        {q.question}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
-        {(q.options || []).map((opt, i) => (
-          <button key={i} onClick={() => { if (!answered) setChosen(i); }} style={{
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
+      {(options || []).map((opt, i) => {
+        const bg = !answered ? 'transparent'
+          : i === correct_index ? 'rgba(76,175,80,0.12)'
+          : i === chosen && chosen !== correct_index ? 'rgba(229,57,53,0.10)'
+          : 'transparent';
+        const border = !answered ? T.rule
+          : i === correct_index ? '#4caf50'
+          : i === chosen && chosen !== correct_index ? '#e53935'
+          : T.ruleSoft;
+        const opacity = !answered || i === correct_index || i === chosen ? 1 : 0.45;
+        return (
+          <button key={i} onClick={() => onChoose(i)} style={{
             display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 18px',
-            border: `1px solid ${optBorder(i)}`,
-            background: optBg(i), opacity: optOpacity(i),
+            border: `1px solid ${border}`, background: bg, opacity,
             cursor: answered ? 'default' : 'pointer',
             fontFamily: T.serif, fontSize: 15, lineHeight: 1.5, color: T.ink,
             transition: 'background 0.3s, border-color 0.3s, opacity 0.3s',
@@ -90,121 +208,78 @@ function QcmQuestion({ q, onNext }) {
           }}>
             <span style={{ fontFamily: T.mono, fontSize: 11, color: T.ink3, letterSpacing: '0.1em', flexShrink: 0, paddingTop: 2 }}>{LETTERS[i]}</span>
             <span style={{ flex: 1 }}>{opt}</span>
-            {answered && i === q.correct_index && <span style={{ fontFamily: T.mono, fontSize: 12, color: '#4caf50', flexShrink: 0, paddingTop: 2 }}>✓</span>}
-            {answered && i === chosen && chosen !== q.correct_index && <span style={{ fontFamily: T.mono, fontSize: 12, color: '#e53935', flexShrink: 0, paddingTop: 2 }}>✗</span>}
+            {answered && i === correct_index && <span style={{ fontFamily: T.mono, fontSize: 12, color: '#4caf50', flexShrink: 0, paddingTop: 2 }}>✓</span>}
+            {answered && i === chosen && chosen !== correct_index && <span style={{ fontFamily: T.mono, fontSize: 12, color: '#e53935', flexShrink: 0, paddingTop: 2 }}>✗</span>}
           </button>
-        ))}
-      </div>
-      {answered && q.feedback && (
-        <FeedbackBlock><MarkdownView content={q.feedback} /></FeedbackBlock>
-      )}
+        );
+      })}
+    </div>
+  );
+}
+
+function QcmQuestion({ q, onNext }) {
+  const [chosen, setChosen] = React.useState(null);
+  const [revealed, setRevealed] = React.useState(false);
+  const answered = chosen !== null || revealed;
+  return (
+    <>
+      <QuizImage url={q.image_url} />
+      <div style={{ fontFamily: T.serif, fontSize: 22, lineHeight: 1.6, color: T.ink, marginBottom: 36, fontStyle: 'italic' }}>{q.question}</div>
+      <OptionList options={q.options} correct_index={q.correct_index} answered={answered} chosen={chosen} onChoose={i => { if (!answered) setChosen(i); }}/>
+      {answered && q.feedback && <FeedbackBlock><MarkdownView content={q.feedback} /></FeedbackBlock>}
       <div style={{ display: 'flex', gap: 12 }}>
         {!answered && <button onClick={() => setRevealed(true)} style={ghostBtn}>RÉVÉLER</button>}
-        {answered && <button onClick={onNext} style={primaryBtn}><span>QUESTION SUIVANTE</span><span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15 }}>→</span></button>}
+        {answered && <button onClick={onNext} style={primaryBtn}><span>SUIVANT</span><span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15 }}>→</span></button>}
       </div>
     </>
   );
 }
 
-// ── THÉORIQUE ────────────────────────────────────────────────────────────────
 function TheoriqueQuestion({ q, onNext }) {
   const [revealed, setRevealed] = React.useState(false);
   return (
     <>
       <QuizImage url={q.image_url} />
-      <div style={{ fontFamily: T.serif, fontSize: 22, lineHeight: 1.6, color: T.ink, marginBottom: 36, fontStyle: 'italic' }}>
-        {q.question}
-      </div>
-      {revealed && q.answer && (
-        <FeedbackBlock><MarkdownView content={q.answer} /></FeedbackBlock>
-      )}
+      <div style={{ fontFamily: T.serif, fontSize: 22, lineHeight: 1.6, color: T.ink, marginBottom: 36, fontStyle: 'italic' }}>{q.question}</div>
+      {revealed && q.answer && <FeedbackBlock><MarkdownView content={q.answer} /></FeedbackBlock>}
       <div style={{ display: 'flex', gap: 12 }}>
         {!revealed && <button onClick={() => setRevealed(true)} style={ghostBtn}>RÉVÉLER LA RÉPONSE</button>}
-        {revealed && <button onClick={onNext} style={primaryBtn}><span>QUESTION SUIVANTE</span><span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15 }}>→</span></button>}
+        {revealed && <button onClick={onNext} style={primaryBtn}><span>SUIVANT</span><span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15 }}>→</span></button>}
       </div>
     </>
   );
 }
 
-// ── CAS CLINIQUE ─────────────────────────────────────────────────────────────
 function CasCliniqueQuestion({ q, onNext }) {
   const sqs = Array.isArray(q.sub_questions) ? q.sub_questions : [];
   const [sqIdx, setSqIdx] = React.useState(0);
   const [chosen, setChosen] = React.useState(null);
   const [revealed, setRevealed] = React.useState(false);
-
   const sq = sqs[sqIdx] || null;
   const answered = chosen !== null || revealed;
   const isLast = sqIdx >= sqs.length - 1;
-
   const nextSQ = () => {
     if (isLast) { onNext(); return; }
-    setSqIdx(i => i + 1);
-    setChosen(null);
-    setRevealed(false);
+    setSqIdx(i => i + 1); setChosen(null); setRevealed(false);
   };
-
-  const optBg = (i) => {
-    if (!answered || !sq) return 'transparent';
-    if (i === sq.correct_index) return 'rgba(76,175,80,0.12)';
-    if (i === chosen && chosen !== sq.correct_index) return 'rgba(229,57,53,0.10)';
-    return 'transparent';
-  };
-  const optBorder = (i) => {
-    if (!answered || !sq) return T.rule;
-    if (i === sq.correct_index) return '#4caf50';
-    if (i === chosen && chosen !== sq.correct_index) return '#e53935';
-    return T.ruleSoft;
-  };
-  const optOpacity = (i) => {
-    if (!answered || !sq) return 1;
-    if (i === sq.correct_index || i === chosen) return 1;
-    return 0.45;
-  };
-
   return (
     <>
       <QuizImage url={q.image_url} />
-      {/* Context block */}
       <div style={{ padding: '18px 22px', background: T.paper, borderLeft: `4px solid ${T.ocre}`, marginBottom: 32 }}>
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.18em', marginBottom: 8 }}>CONTEXTE CLINIQUE</div>
         <MarkdownView content={q.context} />
       </div>
-
       {sq ? (
         <>
-          <div style={{ fontFamily: T.serif, fontSize: 22, lineHeight: 1.6, color: T.ink, marginBottom: 36, fontStyle: 'italic' }}>
-            {sq.question}
+          <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.16em', marginBottom: 14 }}>
+            SOUS-QUESTION {sqIdx + 1} / {sqs.length}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
-            {(sq.options || []).map((opt, i) => (
-              <button key={i} onClick={() => { if (!answered) setChosen(i); }} style={{
-                display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 18px',
-                border: `1px solid ${optBorder(i)}`,
-                background: optBg(i), opacity: optOpacity(i),
-                cursor: answered ? 'default' : 'pointer',
-                fontFamily: T.serif, fontSize: 15, lineHeight: 1.5, color: T.ink,
-                transition: 'background 0.3s, border-color 0.3s, opacity 0.3s',
-                textAlign: 'left', width: '100%',
-              }}>
-                <span style={{ fontFamily: T.mono, fontSize: 11, color: T.ink3, letterSpacing: '0.1em', flexShrink: 0, paddingTop: 2 }}>{LETTERS[i]}</span>
-                <span style={{ flex: 1 }}>{opt}</span>
-                {answered && i === sq.correct_index && <span style={{ fontFamily: T.mono, fontSize: 12, color: '#4caf50', flexShrink: 0, paddingTop: 2 }}>✓</span>}
-                {answered && i === chosen && chosen !== sq.correct_index && <span style={{ fontFamily: T.mono, fontSize: 12, color: '#e53935', flexShrink: 0, paddingTop: 2 }}>✗</span>}
-              </button>
-            ))}
-          </div>
-          {answered && sq.feedback && (
-            <FeedbackBlock><MarkdownView content={sq.feedback} /></FeedbackBlock>
-          )}
+          <div style={{ fontFamily: T.serif, fontSize: 22, lineHeight: 1.6, color: T.ink, marginBottom: 36, fontStyle: 'italic' }}>{sq.question}</div>
+          <OptionList options={sq.options} correct_index={sq.correct_index} answered={answered} chosen={chosen} onChoose={i => { if (!answered) setChosen(i); }}/>
+          {answered && sq.feedback && <FeedbackBlock><MarkdownView content={sq.feedback} /></FeedbackBlock>}
           <div style={{ display: 'flex', gap: 12 }}>
             {!answered && <button onClick={() => setRevealed(true)} style={ghostBtn}>RÉVÉLER</button>}
-            {answered && (
-              <button onClick={nextSQ} style={primaryBtn}>
-                <span>{isLast ? 'CAS SUIVANT' : 'SOUS-QUESTION SUIVANTE'}</span>
-                <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15 }}>→</span>
-              </button>
-            )}
+            {answered && <button onClick={nextSQ} style={primaryBtn}><span>{isLast ? 'CAS SUIVANT' : 'SOUS-QUESTION SUIVANTE'}</span><span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15 }}>→</span></button>}
           </div>
         </>
       ) : (
@@ -214,138 +289,87 @@ function CasCliniqueQuestion({ q, onNext }) {
   );
 }
 
-// ── Main screen ───────────────────────────────────────────────────────────────
-export default function QuizScreen({ navigate }) {
-  const [filterDiff, setFilterDiff] = React.useState('all');
-  const [filterSys,  setFilterSys]  = React.useState(null);
-  const [filterType, setFilterType] = React.useState('all');
-  const { questions, loading } = useQuiz(filterSys);
-  const { systems } = useSystems();
-
+// ── Session (questions en cours) ──────────────────────────────────────────────
+function Session({ mode, diff, onQuit }) {
+  const { questions, loading } = useQuiz(null);
   const filtered = React.useMemo(() => {
-    let q = questions;
-    if (filterDiff !== 'all') q = q.filter(x => String(x.difficulty || 1) === filterDiff);
-    if (filterType !== 'all') q = q.filter(x => (x.type || 'qcm') === filterType);
+    let q = questions.filter(x => (x.type || 'qcm') === mode);
+    if (diff !== 'all') q = q.filter(x => String(x.difficulty || 1) === diff);
     return q;
-  }, [questions, filterDiff, filterType]);
+  }, [questions, mode, diff]);
 
   const [idx, setIdx] = React.useState(0);
-  const [key, setKey] = React.useState(0); // forces remount on question change
-
-  React.useEffect(() => { setIdx(0); setKey(k => k + 1); }, [filterDiff, filterSys, filterType]);
+  const [key, setKey] = React.useState(0);
 
   const current = filtered[idx] || null;
+  const next = () => { const ni = (idx + 1) % Math.max(filtered.length, 1); setIdx(ni); setKey(k => k + 1); };
   const diffLabel = (d) => d === 1 ? '★' : d === 2 ? '★★' : '★★★';
+  const modeLabel = MODES.find(m => m.id === mode)?.label || mode;
 
-  const next = () => {
-    if (!filtered.length) return;
-    const nextIdx = (idx + 1) % filtered.length;
-    setIdx(nextIdx);
-    setKey(k => k + 1);
-  };
+  if (loading) return (
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: T.serif, fontStyle: 'italic', color: T.ink3 }}>Chargement…</div>
+  );
 
-  const typeLabel = (t) => t === 'cas_clinique' ? 'Cas · ' : t === 'theorique' ? 'Théorique · ' : '';
+  return (
+    <div style={{ flex: 1, padding: '40px 56px 64px', maxWidth: 860, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
 
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, fontSize: 18 }}>
-        Chargement…
+      {/* Session header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <span style={{ fontFamily: T.mono, fontSize: 9, padding: '3px 8px', border: `1px solid ${T.rule}`, color: T.ink3, letterSpacing: '0.1em' }}>{modeLabel.toUpperCase()}</span>
+          {diff !== 'all' && <span style={{ fontFamily: T.mono, fontSize: 10, color: T.ocre }}>{DIFFS.find(d => d.id === diff)?.stars}</span>}
+        </div>
+        <span style={{ fontFamily: T.mono, fontSize: 10, color: T.ink3, letterSpacing: '0.14em' }}>
+          {current ? `QUESTION ${idx + 1} / ${filtered.length}` : ''}
+        </span>
+        <button onClick={onQuit} style={{ ...ghostBtn, padding: '5px 12px', fontSize: 10 }}>← QUITTER</button>
       </div>
-    );
-  }
+
+      {!current ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, paddingTop: 60 }}>
+          <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 22, color: T.ink3, textAlign: 'center' }}>
+            Aucune question disponible pour ce mode et cette difficulté.
+          </div>
+          <button onClick={onQuit} style={ghostBtn}>← RETOUR</button>
+        </div>
+      ) : (
+        <>
+          {(current.type === 'qcm' || !current.type) && <QcmQuestion key={`q-${key}`} q={current} onNext={next} />}
+          {current.type === 'theorique' && <TheoriqueQuestion key={`t-${key}`} q={current} onNext={next} />}
+          {current.type === 'cas_clinique' && <CasCliniqueQuestion key={`c-${key}`} q={current} onNext={next} />}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+export default function QuizScreen({ navigate }) {
+  const [session, setSession] = React.useState(null); // null = lobby, {mode, diff} = playing
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: T.serif, background: T.bg }}>
-
       <TopBar navigate={navigate} center="FORMATION" />
 
-      {/* Title */}
-      <div style={{ padding: '40px 56px 28px', borderBottom: `1.5px double ${T.rule}`, background: T.paper }}>
-        <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 18, color: T.ocre, marginBottom: 6 }}>Formation</div>
-        <h1 style={{ fontFamily: T.serif, fontSize: 80, fontWeight: 500, letterSpacing: '-0.025em', lineHeight: 0.92, fontStyle: 'italic', margin: 0 }}>
-          Quiz
-        </h1>
-        <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 18, color: T.ink2, marginTop: 14, maxWidth: 680, lineHeight: 1.5 }}>
-          Questions à choix multiples — sélectionne la bonne réponse ou révèle-la directement.
+      {/* Header — compact */}
+      <div style={{ padding: '24px 56px 20px', borderBottom: `1px solid ${T.rule}`, background: T.paper }}>
+        <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ocre, marginBottom: 2 }}>Formation</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 16 }}>
+          <h1 style={{ fontFamily: T.serif, fontSize: 36, fontWeight: 500, letterSpacing: '-0.02em', fontStyle: 'italic', margin: 0, lineHeight: 1 }}>
+            Quiz
+          </h1>
+          {session && (
+            <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15, color: T.ink3 }}>
+              — {MODES.find(m => m.id === session.mode)?.title}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Filters */}
-      <div style={{ padding: '16px 56px', borderBottom: `1px solid ${T.rule}`, background: T.paper, display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap', fontFamily: T.mono, fontSize: 10 }}>
-        <span style={{ color: T.ink3, letterSpacing: '0.16em' }}>FILTRES</span>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: T.ink3, letterSpacing: '0.12em' }}>TYPE</span>
-          <div style={{ display: 'flex' }}>
-            {[['all','Tous'],['qcm','QCM'],['cas_clinique','Cas cliniques'],['theorique','Théoriques']].map(([v, l], i) => (
-              <FilterBtn key={v} active={filterType === v} onClick={() => setFilterType(v)} borderLeft={i > 0}>{l}</FilterBtn>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: T.ink3, letterSpacing: '0.12em' }}>DIFFICULTÉ</span>
-          <div style={{ display: 'flex' }}>
-            {[['all','Tous'],['1','★'],['2','★★'],['3','★★★']].map(([v, l], i) => (
-              <FilterBtn key={v} active={filterDiff === v} onClick={() => setFilterDiff(v)} borderLeft={i > 0}>{l}</FilterBtn>
-            ))}
-          </div>
-        </div>
-
-        {systems.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ color: T.ink3, letterSpacing: '0.12em' }}>SYSTÈME</span>
-            <div style={{ display: 'flex' }}>
-              <FilterBtn active={filterSys === null} onClick={() => setFilterSys(null)}>Tous</FilterBtn>
-              {systems.map(s => (
-                <FilterBtn key={s.id} active={filterSys === s.id} onClick={() => setFilterSys(s.id)} borderLeft={false}>
-                  {s.short || s.name}
-                </FilterBtn>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <span style={{ flex: 1 }} />
-        <span style={{ fontStyle: 'italic', fontFamily: T.serif, fontSize: 13, color: T.ink3 }}>
-          {filtered.length} question{filtered.length !== 1 ? 's' : ''} dans le tirage
-        </span>
-      </div>
-
-      {/* Body */}
-      {!current ? (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16, padding: 40 }}>
-          <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 22, color: T.ink3, textAlign: 'center' }}>
-            Aucune question pour ces filtres.
-          </div>
-          <button onClick={() => { setFilterDiff('all'); setFilterSys(null); setFilterType('all'); }} style={ghostBtn}>
-            RÉINITIALISER
-          </button>
-        </div>
+      {session === null ? (
+        <Lobby onStart={(mode, diff) => setSession({ mode, diff })} />
       ) : (
-        <div style={{ flex: 1, padding: '40px 56px 64px', maxWidth: 860, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
-
-          {/* Progress */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 32 }}>
-            <span style={{ fontFamily: T.mono, fontSize: 10, color: T.ink3, letterSpacing: '0.14em' }}>
-              {typeLabel(current.type || 'qcm')}QUESTION {idx + 1} / {filtered.length}
-            </span>
-            <span style={{ fontFamily: T.mono, fontSize: 11, color: T.ocre, letterSpacing: '0.1em' }}>
-              {diffLabel(current.difficulty || 1)}
-            </span>
-          </div>
-
-          {/* Per-type rendering — key forces full remount on question change */}
-          {(current.type === 'qcm' || !current.type) && (
-            <QcmQuestion key={`qcm-${key}`} q={current} onNext={next} />
-          )}
-          {current.type === 'theorique' && (
-            <TheoriqueQuestion key={`th-${key}`} q={current} onNext={next} />
-          )}
-          {current.type === 'cas_clinique' && (
-            <CasCliniqueQuestion key={`cc-${key}`} q={current} onNext={next} />
-          )}
-        </div>
+        <Session mode={session.mode} diff={session.diff} onQuit={() => setSession(null)} />
       )}
     </div>
   );
