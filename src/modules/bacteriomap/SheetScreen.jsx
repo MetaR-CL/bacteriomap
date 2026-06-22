@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase.js';
 import TopBar from './TopBar.jsx'
 import MarkdownView from './MarkdownView.jsx'
 import { useIsMobile } from '../../hooks/useIsMobile.js';
+import { useCompare } from '../../context/CompareContext.jsx';
 
 const GRAM_MAP = { positif: '+', négatif: '−', aucun: 'F' }
 
@@ -193,6 +194,7 @@ function SectionTitle({ n, title, anchor, accent, right }) {
 
 export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vivid = false, showImages = true }) {
   const mobile = useIsMobile();
+  const { add, has, basket } = useCompare();
   const [b, setB] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [antiTab, setAntiTab] = React.useState('tableau');
@@ -308,13 +310,22 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
             <div style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:15, color:T.ink2, lineHeight:1.5, maxWidth:740 }}>
               {b.identif || b.clinical_info || ''}
             </div>
-            {badges.length > 0 && (
-              <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'flex-end' }}>
+            <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'flex-end', alignItems:'center' }}>
                 {badges.map(p => (
                   <span key={p.l} style={{ fontFamily:T.mono, fontSize:9, padding:'3px 8px', border:`1px solid ${p.col === T.red ? T.red : T.rule}`, color:p.col, letterSpacing:'0.08em' }}>{p.l}</span>
                 ))}
-              </div>
-            )}
+                <button
+                  onClick={() => { if (!has(b.id) && basket.length < 4) add(b) }}
+                  disabled={has(b.id) || basket.length >= 4}
+                  style={{
+                    fontFamily: T.mono, fontSize: 9, letterSpacing: '0.1em',
+                    padding: '3px 10px', cursor: has(b.id) || basket.length >= 4 ? 'default' : 'pointer',
+                    background: has(b.id) ? accent : 'transparent',
+                    border: `1px solid ${has(b.id) ? accent : T.rule}`,
+                    color: has(b.id) ? '#fff' : T.ink2,
+                  }}
+                >{has(b.id) ? '✓ COMPARER' : '+ COMPARER'}</button>
+          </div>
           </div>
         </div>
       </div>

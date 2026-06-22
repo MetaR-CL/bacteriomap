@@ -4,6 +4,7 @@ import { gramColor, MorphoSVG } from './shared.jsx'
 import { useSystems } from '../../hooks/useSystems.js'
 import { useBacteria } from '../../hooks/useBacteria.js'
 import { useIsMobile } from '../../hooks/useIsMobile.js'
+import { useCompare } from '../../context/CompareContext.jsx'
 import TopBar from './TopBar.jsx'
 
 const GRAM_MAP = { positif: '+', negatif: '−', aucun: 'F' }
@@ -17,6 +18,7 @@ function normalize(b) {
 
 export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, showImages = true }) {
   const { systems, loading: sysLoading } = useSystems()
+  const { add, has, basket } = useCompare()
   const [activeZoneId, setActiveZoneId] = React.useState(null)
   const [filter, setFilter] = React.useState('all')
   const mobile = useIsMobile()
@@ -174,6 +176,18 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 6px 24px -8px ${accent}44` }}
                     onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}
                   >
+                    {/* Compare toggle */}
+                    <button
+                      onClick={e => { e.stopPropagation(); if (!has(b.id) && basket.length < 4) add(b) }}
+                      title={has(b.id) ? 'Dans la comparaison' : basket.length >= 4 ? 'Maximum 4 germes' : 'Ajouter à la comparaison'}
+                      style={{
+                        position: 'absolute', top: 6, right: 6, zIndex: 2,
+                        width: 22, height: 22, padding: 0, border: 'none',
+                        background: has(b.id) ? accent : 'rgba(0,0,0,0.25)',
+                        color: '#fff', fontSize: 13, cursor: has(b.id) || basket.length >= 4 ? 'default' : 'pointer',
+                        opacity: basket.length >= 4 && !has(b.id) ? 0.4 : 1,
+                      }}
+                    >{has(b.id) ? '✓' : '+'}</button>
                     <div style={{ height: mobile ? 120 : 180, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
                       {img ? (
                         <img src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
@@ -222,6 +236,17 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                       style={{ background: 'var(--paper)', border: '0.5px solid var(--ruleSoft)', cursor: 'pointer', position: 'relative', opacity: 0.75 }}
                       onClick={() => navigate('sheet', { bacteriaId: b.name, systemId })}
                     >
+                      <button
+                        onClick={e => { e.stopPropagation(); if (!has(b.id) && basket.length < 4) add(b) }}
+                        title={has(b.id) ? 'Dans la comparaison' : basket.length >= 4 ? 'Maximum 4 germes' : 'Ajouter à la comparaison'}
+                        style={{
+                          position: 'absolute', top: 6, right: 6, zIndex: 2,
+                          width: 22, height: 22, padding: 0, border: 'none',
+                          background: has(b.id) ? accent : 'rgba(0,0,0,0.25)',
+                          color: '#fff', fontSize: 13, cursor: has(b.id) || basket.length >= 4 ? 'default' : 'pointer',
+                          opacity: basket.length >= 4 && !has(b.id) ? 0.4 : 1,
+                        }}
+                      >{has(b.id) ? '✓' : '+'}</button>
                       <div style={{ height: mobile ? 100 : 140, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
                         {img ? (
                           <img src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.4)' }}/>
