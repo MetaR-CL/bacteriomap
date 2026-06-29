@@ -116,45 +116,66 @@ function Dashboard({ onNavigate }) {
 }
 
 export default function AdminShell({ navigate }) {
-  const [unlocked, setUnlocked] = React.useState(() => sessionStorage.getItem('bm.adminUnlocked') === '1')
-  const [pwInput, setPwInput]   = React.useState('')
-  const [pwError, setPwError]   = React.useState('')
-  const [tab, setTab]           = React.useState('dashboard')
+  const [session, setSession] = React.useState(null)
+  const [loading, setLoading] = React.useState(true)
+  const [email, setEmail]     = React.useState('')
+  const [password, setPassword] = React.useState('')
+  const [error, setError]     = React.useState('')
+  const [tab, setTab]         = React.useState('dashboard')
   const mobile = useIsMobile()
 
-  const tryUnlock = () => {
-    if (pwInput === 'admin') {
-      sessionStorage.setItem('bm.adminUnlocked', '1')
-      setUnlocked(true)
-      setPwError('')
-    } else {
-      setPwError('Mot de passe incorrect.')
-    }
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const tryLogin = async () => {
+    setError('')
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) setError('Identifiants incorrects.')
   }
 
-  if (!unlocked) {
+  if (loading) return null
+
+  if (!session) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.bg }}>
         <div style={{ maxWidth: 420, width: '100%', background: T.paper, border: `0.5px solid ${T.rule}`, padding: '44px 40px' }}>
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15, color: 'var(--accent)', marginBottom: 4 }}>Annexe administrative</div>
           <h1 style={{ fontFamily: T.serif, fontSize: 48, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1, fontStyle: 'italic', margin: 0 }}>Atelier</h1>
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 14, color: T.ink2, marginTop: 14, lineHeight: 1.5 }}>
-            L'accès est protégé. Indiquez votre mot de passe.
+            L'accès est protégé. Connectez-vous avec vos identifiants.
           </div>
-          <div style={{ marginTop: 28 }}>
-            <div style={{ fontFamily: T.mono, fontSize: 10, color: T.ink3, letterSpacing: '0.16em', marginBottom: 8 }}>MOT DE PASSE</div>
-            <input
-              type="password"
-              value={pwInput}
-              onChange={e => setPwInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') tryUnlock() }}
-              autoFocus
-              style={{ width: '100%', padding: '10px 12px', background: T.bg, border: `1px solid ${T.rule}`, fontFamily: T.mono, fontSize: 14, color: T.ink, outline: 'none', boxSizing: 'border-box' }}
-            />
-            {pwError && (
-              <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--red)', marginTop: 8, letterSpacing: '0.06em' }}>{pwError}</div>
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <div style={{ fontFamily: T.mono, fontSize: 10, color: T.ink3, letterSpacing: '0.16em', marginBottom: 8 }}>EMAIL</div>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') tryLogin() }}
+                autoFocus
+                style={{ width: '100%', padding: '10px 12px', background: T.bg, border: `1px solid ${T.rule}`, fontFamily: T.mono, fontSize: 14, color: T.ink, outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div>
+              <div style={{ fontFamily: T.mono, fontSize: 10, color: T.ink3, letterSpacing: '0.16em', marginBottom: 8 }}>MOT DE PASSE</div>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') tryLogin() }}
+                style={{ width: '100%', padding: '10px 12px', background: T.bg, border: `1px solid ${T.rule}`, fontFamily: T.mono, fontSize: 14, color: T.ink, outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+            {error && (
+              <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--red)', letterSpacing: '0.06em' }}>{error}</div>
             )}
-            <button onClick={tryUnlock} style={{ marginTop: 14, width: '100%', padding: '12px 18px', background: T.ink, color: T.paper, border: 'none', fontFamily: T.mono, fontSize: 11, letterSpacing: '0.16em', cursor: 'pointer' }}>
+            <button onClick={tryLogin} style={{ width: '100%', padding: '12px 18px', background: T.ink, color: T.paper, border: 'none', fontFamily: T.mono, fontSize: 11, letterSpacing: '0.16em', cursor: 'pointer' }}>
               ENTRER
             </button>
           </div>
@@ -166,7 +187,6 @@ export default function AdminShell({ navigate }) {
   if (mobile) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: T.bg }}>
-        {/* Mobile top nav */}
         <div style={{ position: 'sticky', top: 0, zIndex: 10, background: T.paper, borderBottom: `0.5px solid ${T.rule}`, padding: '10px 14px', display: 'flex', gap: 10, alignItems: 'center' }}>
           <select
             value={tab}
@@ -237,10 +257,10 @@ export default function AdminShell({ navigate }) {
             ← Quitter l'atelier
           </button>
           <button
-            onClick={() => { sessionStorage.removeItem('bm.adminUnlocked'); setUnlocked(false) }}
+            onClick={() => supabase.auth.signOut()}
             style={{ width: '100%', marginTop: 6, padding: '8px 12px', background: 'transparent', border: `1px solid ${T.rule}`, fontFamily: T.mono, fontSize: 10, letterSpacing: '0.08em', color: 'var(--red)', cursor: 'pointer', textAlign: 'left' }}
           >
-            Verrouiller
+            Déconnexion
           </button>
         </div>
       </div>
