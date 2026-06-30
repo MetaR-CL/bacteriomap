@@ -1,0 +1,15 @@
+{
+  "name": "Bacteriomap — Atlas de microbiologie clinique",
+  "short_name": "Bacteriomap",
+  "description": "Atlas de microbiologie clinique pour les techniciens du CHUV",
+  "start_url": "/bacteriomap/",
+  "scope": "/bacteriomap/",
+  "display": "standalone",
+  "background_color": "#faf6ec",
+  "theme_color": "#faf6ec",
+  "icons": [
+    { "src": "/bacteriomap/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/bacteriomap/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/bacteriomap/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
