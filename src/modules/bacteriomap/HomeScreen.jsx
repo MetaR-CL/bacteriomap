@@ -24,15 +24,13 @@ const SYSTEM_MORPHO = {
 
 function BacterioMark({ size = 26 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" style={{ display: 'block' }}>
-      <circle cx="16" cy="16" r="13" stroke={T.ink2} strokeWidth="1.2" fill={T.paper} />
-      <circle cx="16" cy="16" r="13" stroke={T.ocre} strokeWidth="1.2" fill="none" strokeDasharray="0.5 3.2" />
-      <circle cx="12" cy="12.5" r="2.6" fill={T.ocre} fillOpacity="0.85" />
-      <circle cx="18.5" cy="11" r="1.7" fill={T.ink2} fillOpacity="0.7" />
-      <rect x="17.5" y="17.5" width="6.5" height="2.6" rx="1.3" transform="rotate(18 17.5 17.5)" fill={T.ink2} fillOpacity="0.55" />
-      <circle cx="11.5" cy="19.5" r="1.3" fill={T.ocre} fillOpacity="0.6" />
-      <circle cx="15.5" cy="16" r="0.9" fill={T.ink2} fillOpacity="0.45" />
-    </svg>
+    <img
+      src={`${import.meta.env.BASE_URL}icon-192.png`}
+      alt="Bacteriomap"
+      width={size}
+      height={size}
+      style={{ display: 'block', borderRadius: '50%' }}
+    />
   )
 }
 
