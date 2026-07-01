@@ -9,8 +9,9 @@ import ZoneScreen    from './modules/bacteriomap/ZoneScreen.jsx';
 import SheetScreen   from './modules/bacteriomap/SheetScreen.jsx';
 import QuizScreen    from './modules/bacteriomap/QuizScreen.jsx';
 import AdminScreen   from './modules/bacteriomap/AdminScreen.jsx';
-import CompareScreen from './modules/bacteriomap/CompareScreen.jsx';
-import CompareBar    from './modules/bacteriomap/CompareBar.jsx';
+import CompareScreen     from './modules/bacteriomap/CompareScreen.jsx';
+import CompareBar        from './modules/bacteriomap/CompareBar.jsx';
+import PathologieScreen  from './modules/bacteriomap/PathologieScreen.jsx';
 import { CompareProvider } from './context/CompareContext.jsx';
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
@@ -112,6 +113,40 @@ function MoonIcon() {
   );
 }
 
+import { supabase } from './lib/supabase.js';
+import { getSystemPalette } from './modules/bacteriomap/shared.jsx';
+
+function PathologieLoader({ navigate, params, vivid }) {
+  const { pathologieId, systemId, zoneId } = params || {}
+  const [pathologie, setPathologie] = React.useState(null)
+  const [zoneLabel, setZoneLabel] = React.useState('')
+  const palette = getSystemPalette(systemId)
+
+  React.useEffect(() => {
+    if (!pathologieId) return
+    supabase.from('bacterio_pathologies').select('*').eq('id', pathologieId).single()
+      .then(({ data }) => { if (data) setPathologie(data) })
+  }, [pathologieId])
+
+  React.useEffect(() => {
+    if (!zoneId) return
+    supabase.from('bacterio_zones').select('label, name').eq('id', zoneId).single()
+      .then(({ data }) => { if (data) setZoneLabel(data.label || data.name || '') })
+  }, [zoneId])
+
+  return (
+    <PathologieScreen
+      navigate={navigate}
+      pathologieId={pathologieId}
+      pathologie={pathologie}
+      systemId={systemId}
+      zoneLabel={zoneLabel}
+      accent={palette?.accent}
+      vivid={vivid}
+    />
+  )
+}
+
 export default function App() {
   const [dark, setDark] = useDarkMode();
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
@@ -162,9 +197,10 @@ export default function App() {
   if (route.name === 'home')  screen = <HomeScreen  navigate={navigate} />;
   if (route.name === 'zone')  screen = <ZoneScreen  navigate={navigate} systemId={route.params.systemId} vivid={t.vivid} showImages={t.showImages} />;
   if (route.name === 'sheet') screen = <SheetScreen navigate={navigate} bacteriaId={route.params.bacteriaId} systemId={route.params.systemId || 'orl'} vivid={t.vivid} showImages={t.showImages} />;
-  if (route.name === 'quiz')    screen = <QuizScreen    navigate={navigate} />;
-  if (route.name === 'admin')   screen = <AdminScreen   navigate={navigate} />;
-  if (route.name === 'compare') screen = <CompareScreen navigate={navigate} />;
+  if (route.name === 'quiz')       screen = <QuizScreen       navigate={navigate} />;
+  if (route.name === 'admin')      screen = <AdminScreen      navigate={navigate} />;
+  if (route.name === 'compare')    screen = <CompareScreen    navigate={navigate} />;
+  if (route.name === 'pathologie') screen = <PathologieLoader navigate={navigate} params={route.params} vivid={t.vivid} />;
 
   return (
     <CompareProvider>
