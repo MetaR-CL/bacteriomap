@@ -3,6 +3,7 @@ import { T } from './data.js'
 import { gramColor, MorphoSVG } from './shared.jsx'
 import { useSystems } from '../../hooks/useSystems.js'
 import { useBacteria } from '../../hooks/useBacteria.js'
+import { usePathologies } from '../../hooks/usePathologies.js'
 import { useIsMobile } from '../../hooks/useIsMobile.js'
 import { useCompare } from '../../context/CompareContext.jsx'
 import TopBar from './TopBar.jsx'
@@ -20,7 +21,6 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
   const { systems, loading: sysLoading } = useSystems()
   const { add, has, basket } = useCompare()
   const [activeZoneId, setActiveZoneId] = React.useState(null)
-  const [filter, setFilter] = React.useState('all')
   const mobile = useIsMobile()
 
   const sys = systems.find(s => s.slug === systemId) || systems[0]
@@ -34,7 +34,6 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
 
   React.useEffect(() => {
     setActiveZoneId(null)
-    setFilter('all')
   }, [systemId])
 
   const activeZone = zones.find(z => z.id === activeZoneId) || zones[0] || null
@@ -43,15 +42,25 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
   const zoneIdToFetch = zoneReady ? (activeZoneId ?? zones[0]?.id ?? null) : null
   const { bacteria, loading: bacteriaLoading } = useBacteria(zoneIdToFetch)
   const { bacteria: flora, loading: floraLoading } = useBacteria(zoneIdToFetch, true)
+  const { pathologies, loading: pathoLoading } = usePathologies(zoneIdToFetch)
 
-  const filtered = bacteria.map(normalize).filter(b => {
-    if (filter === 'all') return true
-    if (filter === 'gp')  return b.gram === '+'
-    if (filter === 'gm')  return b.gram === '−'
-    if (filter === 'f')   return b.gram === 'F'
-    if (filter === 'urg') return b.urgence
-    return true
-  })
+  // Bacteria IDs already linked to at least one pathologie
+  const [linkedBacteriaIds, setLinkedBacteriaIds] = React.useState(new Set())
+
+  React.useEffect(() => {
+    if (!zoneIdToFetch || pathoLoading || pathologies.length === 0) {
+      setLinkedBacteriaIds(new Set())
+      return
+    }
+    const ids = pathologies.map(p => p.id)
+    import('../../lib/supabase').then(({ supabase }) => {
+      supabase
+        .from('bacterio_pathologie_germes')
+        .select('bacteria_id')
+        .in('pathologie_id', ids)
+        .then(({ data }) => setLinkedBacteriaIds(new Set((data || []).map(r => r.bacteria_id))))
+    })
+  }, [zoneIdToFetch, pathologies.length, pathoLoading]) // eslint-disable-line
 
   if (sysLoading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: T.serif, color: T.ink3, fontStyle: 'italic' }}>
@@ -66,6 +75,58 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
   )
 
   const accent = sys.color || 'var(--accent)'
+
+  // Germes sans pathologie (pathogènes de la zone non liés à aucune pathologie)
+  const orphanBacteria = bacteria.map(normalize).filter(b => !linkedBacteriaIds.has(b.id))
+
+  function BactCard({ b, height = 180, opacity = 1, imgFilter }) {
+    const c = gramColor(b.gram)
+    const img = b.bacterio_images?.[0]
+    const inBasket = has(b.id)
+    return (
+      <div
+        style={{ background: 'var(--paper)', border: '0.5px solid var(--rule)', cursor: 'pointer', position: 'relative', transition: 'transform .14s, box-shadow .14s', opacity }}
+        onClick={() => navigate('sheet', { bacteriaId: b.name, systemId })}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 6px 24px -8px ${accent}44` }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}
+      >
+        <button
+          onClick={e => { e.stopPropagation(); if (!inBasket && basket.length < 4) add(b) }}
+          title={inBasket ? 'Dans la comparaison' : basket.length >= 4 ? 'Maximum 4 germes' : 'Ajouter à la comparaison'}
+          style={{
+            position: 'absolute', top: 6, right: 6, zIndex: 2,
+            width: 22, height: 22, padding: 0, border: 'none',
+            background: inBasket ? accent : 'rgba(0,0,0,0.25)',
+            color: '#fff', fontSize: 13, cursor: inBasket || basket.length >= 4 ? 'default' : 'pointer',
+            opacity: basket.length >= 4 && !inBasket ? 0.4 : 1,
+          }}
+        >{inBasket ? '✓' : '+'}</button>
+        <div style={{ height: mobile ? 120 : height, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
+          {img ? (
+            <img src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: imgFilter }} />
+          ) : (
+            <svg viewBox="0 0 100 100" width={mobile ? 80 : 120} height={mobile ? 80 : 120}>
+              <MorphoSVG kind={b.morpho} size={100} stroke={c.stroke} fill={c.fill} fillOpacity={0.3} strokeWidth={1.6} vivid={vivid} />
+            </svg>
+          )}
+        </div>
+        <div style={{ padding: mobile ? '8px 10px' : '12px 14px' }}>
+          <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: mobile ? 14 : 18, fontWeight: 500, color: 'var(--ink)', marginBottom: 4 }}>{b.name}</div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', fontFamily: T.mono, fontSize: mobile ? 9 : 10 }}>
+            <span style={{ color: c.stroke }}>GRAM {b.gram}</span>
+            {!mobile && b.freq && (
+              <>
+                <span style={{ color: 'var(--ink3)' }}>·</span>
+                <span style={{ color: 'var(--ink3)' }}>{b.freq}</span>
+              </>
+            )}
+            <span style={{ flex: 1 }} />
+            <span style={{ color: 'var(--accent)' }}>↗</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: T.serif, '--accent': accent, background: 'var(--bg)' }}>
@@ -137,134 +198,78 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
           </aside>
         )}
 
-        {/* Bacteria grid */}
+        {/* Main content */}
         <main style={{ padding: mobile ? '16px' : '32px 40px' }}>
 
-          {/* Filters */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20, alignItems: 'center', fontFamily: T.mono, fontSize: 10, flexWrap: 'wrap' }}>
-            <span style={{ color: 'var(--ink3)', letterSpacing: '0.14em', marginRight: 4 }}>FILTRES</span>
-            {[['all','TOUS'],['gp','G+'],['gm','G−'],['f','F'],['urg','↑']].map(([v, l]) => (
-              <button key={v} onClick={() => setFilter(v)} style={{
-                padding: '4px 10px',
-                background: filter === v ? 'var(--ink)' : 'transparent',
-                color: filter === v ? 'var(--paper)' : 'var(--ink2)',
-                border: `1px solid ${filter === v ? 'var(--ink)' : 'var(--rule)'}`,
-                fontFamily: T.mono, fontSize: 10, letterSpacing: '0.06em', cursor: 'pointer',
-              }}>{l}</button>
-            ))}
-            <span style={{ flex: 1 }}/>
-            {activeZone && !mobile && (
-              <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)' }}>
-                {activeZone.label || activeZone.name}
-              </span>
-            )}
-          </div>
-
-          {bacteriaLoading && (
+          {/* ── Pathologies ── */}
+          {(pathoLoading || bacteriaLoading) ? (
             <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: 40 }}>Chargement…</div>
-          )}
-
-          {!bacteriaLoading && (
-            <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: mobile ? 12 : 20 }}>
-              {filtered.map(b => {
-                const c = gramColor(b.gram)
-                const img = b.bacterio_images?.[0]
-                return (
-                  <div key={b.id}
-                    style={{ background: 'var(--paper)', border: '0.5px solid var(--rule)', cursor: 'pointer', position: 'relative', transition: 'transform .14s, box-shadow .14s' }}
-                    onClick={() => navigate('sheet', { bacteriaId: b.name, systemId })}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 6px 24px -8px ${accent}44` }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}
-                  >
-                    {/* Compare toggle */}
-                    <button
-                      onClick={e => { e.stopPropagation(); if (!has(b.id) && basket.length < 4) add(b) }}
-                      title={has(b.id) ? 'Dans la comparaison' : basket.length >= 4 ? 'Maximum 4 germes' : 'Ajouter à la comparaison'}
-                      style={{
-                        position: 'absolute', top: 6, right: 6, zIndex: 2,
-                        width: 22, height: 22, padding: 0, border: 'none',
-                        background: has(b.id) ? accent : 'rgba(0,0,0,0.25)',
-                        color: '#fff', fontSize: 13, cursor: has(b.id) || basket.length >= 4 ? 'default' : 'pointer',
-                        opacity: basket.length >= 4 && !has(b.id) ? 0.4 : 1,
-                      }}
-                    >{has(b.id) ? '✓' : '+'}</button>
-                    <div style={{ height: mobile ? 120 : 180, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
-                      {img ? (
-                        <img src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
-                      ) : (
-                        <svg viewBox="0 0 100 100" width={mobile ? 80 : 120} height={mobile ? 80 : 120}>
-                          <MorphoSVG kind={b.morpho} size={100} stroke={c.stroke} fill={c.fill} fillOpacity={0.3} strokeWidth={1.6} vivid={vivid}/>
-                        </svg>
-                      )}
-                    </div>
-                    <div style={{ padding: mobile ? '8px 10px' : '12px 14px' }}>
-                      <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: mobile ? 14 : 18, fontWeight: 500, color: 'var(--ink)', marginBottom: 4 }}>{b.name}</div>
-                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', fontFamily: T.mono, fontSize: mobile ? 9 : 10 }}>
-                        <span style={{ color: c.stroke }}>GRAM {b.gram}</span>
-                        {!mobile && (
-                          <>
-                            <span style={{ color: 'var(--ink3)' }}>·</span>
-                            <span style={{ color: 'var(--ink3)' }}>{b.freq || 'inconnu'}</span>
-                          </>
-                        )}
-                        <span style={{ flex: 1 }}/>
-                        <span style={{ color: 'var(--accent)' }}>↗</span>
-                      </div>
-                    </div>
+          ) : (
+            <>
+              {pathologies.length > 0 && (
+                <>
+                  <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid var(--rule)' }}>
+                    PATHOLOGIES
                   </div>
-                )
-              })}
-              {filtered.length === 0 && (
-                <div style={{ gridColumn: '1/-1', fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: 40, textAlign: 'center' }}>
-                  Aucune bactérie dans cette zone.
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
+                    {pathologies.map(p => (
+                      <div
+                        key={p.id}
+                        onClick={() => navigate('pathologie', { pathologieId: p.id, systemId, zoneId: activeZoneId ?? zones[0]?.id })}
+                        style={{
+                          background: 'var(--paper)', border: '0.5px solid var(--rule)',
+                          padding: mobile ? '14px 16px' : '16px 22px',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16,
+                          transition: 'background .12s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = `${accent}0d` }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--paper)' }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: mobile ? 16 : 19, fontWeight: 500, color: 'var(--ink)' }}>{p.nom}</div>
+                          {p.description && !mobile && (
+                            <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.description}</div>
+                          )}
+                        </div>
+                        <span style={{ fontFamily: T.mono, fontSize: 12, color: accent }}>›</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* ── Autres pathogènes (sans pathologie) ── */}
+              {orphanBacteria.length > 0 && (
+                <>
+                  <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid var(--rule)' }}>
+                    {pathologies.length > 0 ? 'AUTRES PATHOGÈNES' : 'PATHOGÈNES'}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: mobile ? 12 : 20, marginBottom: 32 }}>
+                    {orphanBacteria.map(b => <BactCard key={b.id} b={b} height={180} />)}
+                  </div>
+                </>
+              )}
+
+              {pathologies.length === 0 && orphanBacteria.length === 0 && (
+                <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: 40, textAlign: 'center' }}>
+                  Aucun pathogène dans cette zone.
                 </div>
               )}
-            </div>
-          )}
 
-          {!floraLoading && flora.length > 0 && (
-            <div style={{ marginTop: 40 }}>
-              <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 16, paddingBottom: 8, borderBottom: '1px solid var(--rule)' }}>
-                FLORE COMMENSALE
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: mobile ? 12 : 20 }}>
-                {flora.map(normalize).map(b => {
-                  const c = gramColor(b.gram)
-                  const img = b.bacterio_images?.[0]
-                  return (
-                    <div key={b.id}
-                      style={{ background: 'var(--paper)', border: '0.5px solid var(--ruleSoft)', cursor: 'pointer', position: 'relative', opacity: 0.75 }}
-                      onClick={() => navigate('sheet', { bacteriaId: b.name, systemId })}
-                    >
-                      <button
-                        onClick={e => { e.stopPropagation(); if (!has(b.id) && basket.length < 4) add(b) }}
-                        title={has(b.id) ? 'Dans la comparaison' : basket.length >= 4 ? 'Maximum 4 germes' : 'Ajouter à la comparaison'}
-                        style={{
-                          position: 'absolute', top: 6, right: 6, zIndex: 2,
-                          width: 22, height: 22, padding: 0, border: 'none',
-                          background: has(b.id) ? accent : 'rgba(0,0,0,0.25)',
-                          color: '#fff', fontSize: 13, cursor: has(b.id) || basket.length >= 4 ? 'default' : 'pointer',
-                          opacity: basket.length >= 4 && !has(b.id) ? 0.4 : 1,
-                        }}
-                      >{has(b.id) ? '✓' : '+'}</button>
-                      <div style={{ height: mobile ? 100 : 140, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
-                        {img ? (
-                          <img src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.4)' }}/>
-                        ) : (
-                          <svg viewBox="0 0 100 100" width={mobile ? 70 : 90} height={mobile ? 70 : 90}>
-                            <MorphoSVG kind={b.morpho} size={100} stroke={c.stroke} fill={c.fill} fillOpacity={0.2} strokeWidth={1.4}/>
-                          </svg>
-                        )}
-                      </div>
-                      <div style={{ padding: mobile ? '8px 10px' : '10px 14px' }}>
-                        <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: mobile ? 13 : 16, color: 'var(--ink)', marginBottom: 3 }}>{b.name}</div>
-                        <div style={{ fontFamily: T.mono, fontSize: 9, color: 'var(--ink3)' }}>GRAM {b.gram}</div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+              {/* ── Flore commensale ── */}
+              {!floraLoading && flora.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 16, paddingBottom: 8, borderBottom: '1px solid var(--rule)' }}>
+                    FLORE COMMENSALE
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: mobile ? 12 : 20 }}>
+                    {flora.map(normalize).map(b => (
+                      <BactCard key={b.id} b={b} height={140} opacity={0.75} imgFilter="grayscale(0.4)" />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
