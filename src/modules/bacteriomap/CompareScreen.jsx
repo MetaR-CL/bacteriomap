@@ -28,7 +28,6 @@ function getFields(b) {
     { key: 'COAGULASE',             val: BOOL(b.coagulase) },
     { key: 'SPORULATION',           val: BOOL(b.sporulation) },
     { key: 'ATMOSPHÈRE',            val: b.atmosphere || null },
-    { key: 'FRÉQUENCE',             val: b.freq || null },
     { key: 'BSL',                   val: b.bsl3 ? '3' : '2' },
     { key: 'MILIEUX PRINCIPAUX',    val: milieuxStr || null },
     { key: 'RÉSISTANCES NAT.',      val: resistNat.length ? resistNat.join(', ') : null },

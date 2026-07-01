@@ -97,12 +97,6 @@ export default function PathologieScreen({ navigate, pathologieId, pathologie, s
                     <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: mobile ? 14 : 18, fontWeight: 500, color: 'var(--ink)', marginBottom: 4 }}>{b.name}</div>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', fontFamily: T.mono, fontSize: mobile ? 9 : 10 }}>
                       <span style={{ color: c.stroke }}>GRAM {b.gram}</span>
-                      {!mobile && b.freq && (
-                        <>
-                          <span style={{ color: 'var(--ink3)' }}>·</span>
-                          <span style={{ color: 'var(--ink3)' }}>{b.freq}</span>
-                        </>
-                      )}
                       <span style={{ flex: 1 }} />
                       <span style={{ color: accentColor }}>↗</span>
                     </div>

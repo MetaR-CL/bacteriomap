@@ -142,7 +142,7 @@ export default function AdminBacteria() {
   }
 
   const addBact = async () => {
-    const row = { name: `Nouvelle bactérie ${bacteria.length + 1}`, type: 'bacterie', gram: 'positif', morphology: 'cocci-cluster', shape: 'cocci en amas', freq: 'fréquent', atmosphere: 'aéro-anaérobie facultatif', urgence: false, declaration: false, bsl3: false }
+    const row = { name: `Nouvelle bactérie ${bacteria.length + 1}`, type: 'bacterie', gram: 'positif', morphology: 'cocci-cluster', shape: 'cocci en amas' }
     setSaving(true); setError(null)
     try {
       const id = await upsert(row)
@@ -246,22 +246,16 @@ export default function AdminBacteria() {
         <Field label="Forme courte">
           <input type="text" value={d.shape || ''} onChange={e => setDraft(p => ({ ...p, shape: e.target.value }))} style={inpStyle}/>
         </Field>
-        <Field label="Fréquence">
-          <select value={d.freq || 'fréquent'} onChange={e => setDraft(p => ({ ...p, freq: e.target.value }))} style={selStyle}>
-            {['fréquent','occasionnel','rare'].map(f => <option key={f} value={f}>{f}</option>)}
-          </select>
-        </Field>
-        <Field label="Drapeaux">
-          <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', paddingTop: 4 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: T.serif, fontSize: 14, color: T.ink2, cursor: 'pointer' }}>
-              <input type="checkbox" checked={!!d.declaration} onChange={e => setDraft(p => ({ ...p, declaration: e.target.checked }))}/>
-              Déclaration obligatoire
-            </label>
-          </div>
-        </Field>
 
         {/* TESTS RAPIDES */}
         <SectionTitle fieldKey="microscopie" isHidden={isHiddenField('microscopie')} onToggle={toggleHidden}>MILIEUX &amp; MICROSCOPIE</SectionTitle>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
+          {[['catalase','Catalase'],['oxydase','Oxydase'],['coagulase','Coagulase'],['sporulation','Sporulation']].map(([k,l]) => (
+            <Field key={k} label={l}>
+              <BoolSelect value={d[k]} onChange={v => setDraft(p => ({ ...p, [k]: v }))}/>
+            </Field>
+          ))}
+        </div>
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.1em', marginBottom: 10 }}>TESTS SUPPLÉMENTAIRES</div>
         {(d.tests_rapides || []).map((t, i) => (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: 8, marginBottom: 8, alignItems: 'center' }}>

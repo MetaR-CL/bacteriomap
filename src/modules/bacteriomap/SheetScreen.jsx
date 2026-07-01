@@ -258,7 +258,7 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
     b.oxydase     != null && { k: 'Oxydase',     v: b.oxydase     ? '+' : '−' },
     b.coagulase   != null && { k: 'Coagulase',   v: b.coagulase   ? '+' : '−' },
     b.sporulation != null && { k: 'Sporulation', v: b.sporulation ? '+' : '−' },
-    ...(Array.isArray(b.tests_rapides) ? b.tests_rapides : []),
+    ...(Array.isArray(b.tests_rapides) ? b.tests_rapides.map(t => ({ k: t.k || t.name || '', v: t.v || t.value || '' })).filter(t => t.k) : []),
   ].filter(Boolean);
 
   const hidden = new Set(Array.isArray(b.hidden_fields) ? b.hidden_fields : [])
