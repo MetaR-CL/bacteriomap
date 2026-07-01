@@ -214,37 +214,17 @@ export default function AdminBacteria() {
             {['fréquent','occasionnel','rare'].map(f => <option key={f} value={f}>{f}</option>)}
           </select>
         </Field>
-        <Field label="Atmosphère">
-          <select value={d.atmosphere || 'aéro-anaérobie facultatif'} onChange={e => setDraft(p => ({ ...p, atmosphere: e.target.value }))} style={selStyle}>
-            {['aérobie strict','anaérobie strict','aéro-anaérobie facultatif','micro-aérophile'].map(v => <option key={v} value={v}>{v}</option>)}
-          </select>
-        </Field>
         <Field label="Drapeaux">
           <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', paddingTop: 4 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: T.serif, fontSize: 14, color: T.ink2, cursor: 'pointer' }}>
-              <input type="checkbox" checked={!!d.urgence} onChange={e => setDraft(p => ({ ...p, urgence: e.target.checked }))}/>
-              Urgence
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: T.serif, fontSize: 14, color: T.ink2, cursor: 'pointer' }}>
               <input type="checkbox" checked={!!d.declaration} onChange={e => setDraft(p => ({ ...p, declaration: e.target.checked }))}/>
               Déclaration obligatoire
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: T.serif, fontSize: 14, color: T.ink2, cursor: 'pointer' }}>
-              <input type="checkbox" checked={!!d.bsl3} onChange={e => setDraft(p => ({ ...p, bsl3: e.target.checked }))}/>
-              BSL3
             </label>
           </div>
         </Field>
 
         {/* TESTS RAPIDES */}
         <SectionTitle>TESTS RAPIDES</SectionTitle>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
-          {[['catalase','Catalase'],['oxydase','Oxydase'],['coagulase','Coagulase'],['sporulation','Sporulation']].map(([k,l]) => (
-            <Field key={k} label={l}>
-              <BoolSelect value={d[k]} onChange={v => setDraft(p => ({ ...p, [k]: v }))}/>
-            </Field>
-          ))}
-        </div>
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.1em', marginBottom: 10 }}>TESTS SUPPLÉMENTAIRES</div>
         {(d.tests_rapides || []).map((t, i) => (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: 8, marginBottom: 8, alignItems: 'center' }}>
