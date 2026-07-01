@@ -270,12 +270,13 @@ export default function AdminShell({ navigate }) {
 
       {/* Main content */}
       <div style={{ flex: 1, minWidth: 0, padding: '36px 48px 60px', overflowY: 'auto' }}>
-        {tab === 'dashboard' && <Dashboard onNavigate={setTab} />}
-        {tab === 'systems'   && <AdminSystems />}
-        {tab === 'bacteria'  && <AdminBacteria />}
-        {tab === 'milieux'   && <AdminMilieux />}
-        {tab === 'quiz'      && <AdminQuiz />}
-        {tab === 'palette'   && <AdminPalette />}
+        {tab === 'dashboard'    && <Dashboard onNavigate={setTab} />}
+        {tab === 'systems'      && <AdminSystems />}
+        {tab === 'bacteria'     && <AdminBacteria />}
+        {tab === 'milieux'      && <AdminMilieux />}
+        {tab === 'pathologies'  && <AdminPathologies />}
+        {tab === 'quiz'         && <AdminQuiz />}
+        {tab === 'palette'      && <AdminPalette />}
       </div>
     </div>
   )
