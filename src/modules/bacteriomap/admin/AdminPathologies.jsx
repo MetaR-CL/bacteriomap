@@ -81,6 +81,10 @@ export default function AdminPathologies() {
   // Bacteria search filter
   const [bacteriaSearch, setBacteriaSearch] = React.useState('')
 
+  // Image upload
+  const [uploading, setUploading] = React.useState(false)
+  const imgInputRef = React.useRef(null)
+
   const flash = (msg) => { setError(null); setSuccess(msg); setTimeout(() => setSuccess(null), 3000) }
   const flashErr = (msg) => { setSuccess(null); setError(msg) }
 
@@ -126,6 +130,33 @@ export default function AdminPathologies() {
       .eq('pathologie_id', activePatho.id)
       .then(({ data }) => setLinkedIds(new Set((data || []).map(r => r.bacteria_id))))
   }, [activePatho?.id])
+
+  const uploadImage = async (file) => {
+    if (!activePatho || !file) return
+    setUploading(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `pathologies/${activePatho.id}-${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage.from('bacteriomap-images').upload(path, file, { upsert: true })
+      if (upErr) throw upErr
+      const { data: { publicUrl } } = supabase.storage.from('bacteriomap-images').getPublicUrl(path)
+      await supabase.from('bacterio_pathologies').update({ image_url: publicUrl }).eq('id', activePatho.id)
+      setActivePatho(prev => ({ ...prev, image_url: publicUrl }))
+      setPathologies(ps => ps.map(p => p.id === activePatho.id ? { ...p, image_url: publicUrl } : p))
+      flash('Image enregistrée')
+    } catch (err) { flashErr(err.message) }
+    setUploading(false)
+  }
+
+  const removeImage = async () => {
+    if (!activePatho?.image_url) return
+    try {
+      await supabase.from('bacterio_pathologies').update({ image_url: null }).eq('id', activePatho.id)
+      setActivePatho(prev => ({ ...prev, image_url: null }))
+      setPathologies(ps => ps.map(p => p.id === activePatho.id ? { ...p, image_url: null } : p))
+      flash('Image retirée')
+    } catch (err) { flashErr(err.message) }
+  }
 
   const addPathologie = async () => {
     if (!newNom.trim()) return
@@ -281,6 +312,28 @@ export default function AdminPathologies() {
                 <div>
                   <Label>ORDRE</Label>
                   <input type="number" value={editOrdre} onChange={e => setEditOrdre(e.target.value)} style={{ ...monoInp, width: 100 }} />
+                </div>
+                <div>
+                  <Label>IMAGE</Label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    {activePatho.image_url && (
+                      <div style={{ width: 72, height: 52, overflow: 'hidden', flexShrink: 0, border: '1px solid var(--ruleSoft)' }}>
+                        <img src={activePatho.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                    <input ref={imgInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => { if (e.target.files[0]) uploadImage(e.target.files[0]); e.target.value = '' }} />
+                    <button onClick={() => imgInputRef.current?.click()} disabled={uploading}
+                      style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10 }}>
+                      {uploading ? 'Envoi…' : activePatho.image_url ? 'Remplacer' : '+ Importer'}
+                    </button>
+                    {activePatho.image_url && (
+                      <button onClick={removeImage}
+                        style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10, color: 'var(--red)', borderColor: 'var(--red)' }}>
+                        Retirer
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
               <div style={{ marginTop: 16 }}>
