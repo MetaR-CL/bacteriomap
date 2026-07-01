@@ -211,27 +211,43 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                   <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid var(--rule)' }}>
                     PATHOLOGIES
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: mobile ? 12 : 20, marginBottom: 32 }}>
                     {pathologies.map(p => (
                       <div
                         key={p.id}
                         onClick={() => navigate('pathologie', { pathologieId: p.id, systemId, zoneId: activeZoneId ?? zones[0]?.id })}
                         style={{
-                          background: 'var(--paper)', border: '0.5px solid var(--rule)',
-                          padding: mobile ? '14px 16px' : '16px 22px',
-                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16,
-                          transition: 'background .12s',
+                          background: 'var(--paper)',
+                          border: '0.5px solid var(--rule)',
+                          borderTop: `3px solid ${accent}`,
+                          cursor: 'pointer', position: 'relative',
+                          transition: 'transform .14s, box-shadow .14s',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = `${accent}0d` }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--paper)' }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 6px 24px -8px ${accent}44` }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}
                       >
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: mobile ? 16 : 19, fontWeight: 500, color: 'var(--ink)' }}>{p.nom}</div>
-                          {p.description && !mobile && (
-                            <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: 'var(--ink3)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.description}</div>
+                        {/* Thumbnail */}
+                        <div style={{ height: mobile ? 120 : 180, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
+                          {p.image_url ? (
+                            <img src={p.image_url} alt={p.nom} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <svg viewBox="0 0 100 100" width={mobile ? 70 : 100} height={mobile ? 70 : 100} fill="none">
+                              <rect x="50" y="12" width="40" height="40" rx="3" transform="rotate(45 50 12)" fill={accent} fillOpacity="0.18" stroke={accent} strokeWidth="1.6" />
+                              <circle cx="50" cy="52" r="10" fill={accent} fillOpacity="0.32" />
+                              <line x1="50" y1="62" x2="50" y2="80" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
+                              <line x1="40" y1="72" x2="60" y2="72" stroke={accent} strokeWidth="1.6" strokeLinecap="round" />
+                            </svg>
                           )}
                         </div>
-                        <span style={{ fontFamily: T.mono, fontSize: 12, color: accent }}>›</span>
+                        {/* Info */}
+                        <div style={{ padding: mobile ? '8px 10px' : '12px 14px' }}>
+                          <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: mobile ? 14 : 18, fontWeight: 500, color: 'var(--ink)', marginBottom: 4 }}>{p.nom}</div>
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center', fontFamily: T.mono, fontSize: mobile ? 9 : 10 }}>
+                            <span style={{ color: accent }}>{p.germe_count ?? 0} germe{(p.germe_count ?? 0) !== 1 ? 's' : ''}</span>
+                            <span style={{ flex: 1 }} />
+                            <span style={{ color: accent }}>›</span>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>

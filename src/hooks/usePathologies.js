@@ -8,12 +8,20 @@ export function usePathologies(zoneId = null) {
   useEffect(() => {
     if (zoneId === null) { setPathologies([]); return }
     setLoading(true)
+    // Select pathologies + count linked germes in one query
     supabase
       .from('bacterio_pathologies')
-      .select('*')
+      .select('*, bacterio_pathologie_germes(bacteria_id)')
       .eq('zone_id', zoneId)
       .order('ordre')
-      .then(({ data }) => { setPathologies(data || []); setLoading(false) })
+      .then(({ data }) => {
+        const enriched = (data || []).map(p => ({
+          ...p,
+          germe_count: Array.isArray(p.bacterio_pathologie_germes) ? p.bacterio_pathologie_germes.length : 0,
+        }))
+        setPathologies(enriched)
+        setLoading(false)
+      })
   }, [zoneId])
 
   return { pathologies, loading }
