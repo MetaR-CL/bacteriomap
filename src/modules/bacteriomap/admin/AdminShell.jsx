@@ -7,14 +7,16 @@ import AdminBacteria from './AdminBacteria.jsx'
 import AdminMilieux from './AdminMilieux.jsx'
 import AdminQuiz from './AdminQuiz.jsx'
 import AdminPalette from './AdminPalette.jsx'
+import AdminPathologies from './AdminPathologies.jsx'
 
 const TABS = [
-  { id: 'dashboard', num: 'I',   label: 'Tableau de bord' },
-  { id: 'systems',   num: 'II',  label: 'Systèmes & Zones' },
-  { id: 'bacteria',  num: 'III', label: 'Bactéries' },
-  { id: 'milieux',   num: 'IV',  label: 'Milieux' },
-  { id: 'quiz',      num: 'V',   label: 'Formation' },
-  { id: 'palette',   num: 'VI',  label: 'Couleurs' },
+  { id: 'dashboard',    num: 'I',    label: 'Tableau de bord' },
+  { id: 'systems',      num: 'II',   label: 'Systèmes & Zones' },
+  { id: 'bacteria',     num: 'III',  label: 'Bactéries' },
+  { id: 'milieux',      num: 'IV',   label: 'Milieux' },
+  { id: 'pathologies',  num: 'V',    label: 'Pathologies' },
+  { id: 'quiz',         num: 'VI',   label: 'Formation' },
+  { id: 'palette',      num: 'VII',  label: 'Couleurs' },
 ]
 
 function Dashboard({ onNavigate }) {
@@ -202,8 +204,9 @@ export default function AdminShell({ navigate }) {
           {tab === 'systems'   && <AdminSystems />}
           {tab === 'bacteria'  && <AdminBacteria />}
           {tab === 'milieux'   && <AdminMilieux />}
-          {tab === 'quiz'      && <AdminQuiz />}
-          {tab === 'palette'   && <AdminPalette />}
+          {tab === 'pathologies' && <AdminPathologies />}
+          {tab === 'quiz'        && <AdminQuiz />}
+          {tab === 'palette'     && <AdminPalette />}
         </div>
       </div>
     )
