@@ -25,10 +25,36 @@ const arrowBtn = {
   fontFamily: 'inherit', fontSize: 12, color: 'var(--ink2)', cursor: 'pointer', flexShrink: 0,
 }
 
-function SectionTitle({ children }) {
+function EyeOpen() {
   return (
-    <div style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', marginTop: 28, marginBottom: 12, paddingTop: 20, borderTop: '1px solid var(--ruleSoft)' }}>
-      {children}
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  )
+}
+function EyeOff() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+  )
+}
+
+function SectionTitle({ children, fieldKey, isHidden, onToggle }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: '"IBM Plex Mono", monospace', fontSize: 9, color: 'var(--ink3)', letterSpacing: '0.18em', marginTop: 28, marginBottom: 12, paddingTop: 20, borderTop: '1px solid var(--ruleSoft)' }}>
+      <span>{children}</span>
+      {fieldKey && onToggle && (
+        <button
+          onClick={() => onToggle(fieldKey)}
+          title={isHidden ? 'Afficher sur la fiche publique' : 'Masquer sur la fiche publique'}
+          style={{ background: 'transparent', border: `1px solid ${isHidden ? 'var(--red)' : 'var(--rule)'}`, color: isHidden ? 'var(--red)' : 'var(--ink3)', padding: '2px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, lineHeight: 1 }}
+        >
+          {isHidden ? <EyeOff /> : <EyeOpen />}
+        </button>
+      )}
     </div>
   )
 }
@@ -102,6 +128,17 @@ export default function AdminBacteria() {
     setError(null)
     setSuccessMsg(msg)
     setTimeout(() => setSuccessMsg(null), 3000)
+  }
+
+  const isHiddenField = (key) => (d.hidden_fields || []).includes(key)
+
+  const toggleHidden = async (key) => {
+    const cur = draftRef.current?.hidden_fields || []
+    const next = cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key]
+    setDraft(p => ({ ...p, hidden_fields: next }))
+    if (draftRef.current?.id) {
+      await supabase.from('bacterio_bacteria').update({ hidden_fields: next }).eq('id', draftRef.current.id)
+    }
   }
 
   const addBact = async () => {
@@ -224,7 +261,7 @@ export default function AdminBacteria() {
         </Field>
 
         {/* TESTS RAPIDES */}
-        <SectionTitle>TESTS RAPIDES</SectionTitle>
+        <SectionTitle fieldKey="microscopie" isHidden={isHiddenField('microscopie')} onToggle={toggleHidden}>MILIEUX &amp; MICROSCOPIE</SectionTitle>
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.1em', marginBottom: 10 }}>TESTS SUPPLÉMENTAIRES</div>
         {(d.tests_rapides || []).map((t, i) => (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: 8, marginBottom: 8, alignItems: 'center' }}>
@@ -236,7 +273,7 @@ export default function AdminBacteria() {
         <button onClick={() => setDraft(p => ({...p, tests_rapides: [...(p.tests_rapides||[]),{name:'',value:''}]}))} style={{...ghostBtn, fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter un test</button>
 
         {/* MILIEUX */}
-        <SectionTitle>MILIEUX UTILISÉS</SectionTitle>
+        <SectionTitle>MILIEUX</SectionTitle>
         {milieux.length === 0 ? (
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, fontSize: 13 }}>Aucun milieu configuré.</div>
         ) : (
@@ -284,7 +321,7 @@ export default function AdminBacteria() {
         )}
 
         {/* IDENTIFICATION */}
-        <SectionTitle>IDENTIFICATION</SectionTitle>
+        <SectionTitle fieldKey="identif" isHidden={isHiddenField('identif')} onToggle={toggleHidden}>IDENTIFICATION</SectionTitle>
         <textarea
           value={d.identif || ''}
           onChange={e => setDraft(p => ({...p, identif: e.target.value}))}
@@ -295,7 +332,7 @@ export default function AdminBacteria() {
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
 
         {/* RÉSISTANCES NATURELLES */}
-        <SectionTitle>RÉSISTANCES NATURELLES</SectionTitle>
+        <SectionTitle fieldKey="resist_nat" isHidden={isHiddenField('resist_nat')} onToggle={toggleHidden}>RÉSISTANCES NATURELLES</SectionTitle>
         {(d.resist_nat || []).map((item, i) => (
           <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
             <input type="text" value={item} onChange={e => { const n = (d.resist_nat||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,resist_nat:n})) }} style={{...inpStyle,flex:1}}/>
@@ -305,7 +342,7 @@ export default function AdminBacteria() {
         <button onClick={() => setDraft(p=>({...p,resist_nat:[...(p.resist_nat||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
 
         {/* RÉSISTANCES ACQUISES */}
-        <SectionTitle>RÉSISTANCES ACQUISES</SectionTitle>
+        <SectionTitle fieldKey="resist_acq" isHidden={isHiddenField('resist_acq')} onToggle={toggleHidden}>RÉSISTANCES ACQUISES</SectionTitle>
         {(d.resist_acq || []).map((item, i) => (
           <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
             <input type="text" value={item} onChange={e => { const n = (d.resist_acq||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,resist_acq:n})) }} style={{...inpStyle,flex:1}}/>
@@ -315,7 +352,7 @@ export default function AdminBacteria() {
         <button onClick={() => setDraft(p=>({...p,resist_acq:[...(p.resist_acq||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
 
         {/* VIRULENCE */}
-        <SectionTitle>VIRULENCE</SectionTitle>
+        <SectionTitle fieldKey="virulence" isHidden={isHiddenField('virulence')} onToggle={toggleHidden}>VIRULENCE</SectionTitle>
         {(d.virulence || []).map((item, i) => (
           <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
             <input type="text" value={item} onChange={e => { const n = (d.virulence||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,virulence:n})) }} style={{...inpStyle,flex:1}}/>
@@ -325,7 +362,7 @@ export default function AdminBacteria() {
         <button onClick={() => setDraft(p=>({...p,virulence:[...(p.virulence||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
 
         {/* CLINIQUE & TRAITEMENT */}
-        <SectionTitle>CLINIQUE &amp; TRAITEMENT</SectionTitle>
+        <SectionTitle fieldKey="clinique" isHidden={isHiddenField('clinique')} onToggle={toggleHidden}>CLINIQUE &amp; TRAITEMENT</SectionTitle>
         <Field label="Description clinique" wide>
           <textarea value={d.clinical_info || ''} onChange={e => setDraft(p=>({...p,clinical_info:e.target.value}))} rows={3} style={taStyle}/>
           <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
@@ -336,7 +373,7 @@ export default function AdminBacteria() {
         </Field>
 
         {/* ANTIBIOGRAMME */}
-        <SectionTitle>ANTIBIOGRAMME</SectionTitle>
+        <SectionTitle fieldKey="antibiogramme" isHidden={isHiddenField('antibiogramme')} onToggle={toggleHidden}>ANTIBIOGRAMME</SectionTitle>
         {(d.antibiogramme || []).length > 0 && (
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 12 }}>
             <thead>
@@ -373,7 +410,7 @@ export default function AdminBacteria() {
         <button onClick={() => setDraft(p=>({...p,antibiogramme:[...(p.antibiogramme||[]),{ab:'',sens:'S'}]}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter une ligne</button>
 
         {/* COMMENTAIRE */}
-        <SectionTitle>COMMENTAIRE</SectionTitle>
+        <SectionTitle fieldKey="commentaire" isHidden={isHiddenField('commentaire')} onToggle={toggleHidden}>COMMENTAIRE</SectionTitle>
         <textarea value={d.commentaire || ''} onChange={e => setDraft(p=>({...p,commentaire:e.target.value}))} rows={3} placeholder="Notes libres…" style={taStyle}/>
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
 
@@ -448,7 +485,7 @@ export default function AdminBacteria() {
         )}
 
         {/* IMAGES */}
-        <SectionTitle>IMAGES</SectionTitle>
+        <SectionTitle fieldKey="images" isHidden={isHiddenField('images')} onToggle={toggleHidden}>IMAGES</SectionTitle>
         {images.length > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 16 }}>
             {images.map(img => (

@@ -261,15 +261,17 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
     ...(Array.isArray(b.tests_rapides) ? b.tests_rapides : []),
   ].filter(Boolean);
 
-  // Visible sections (hide empty ones)
+  const hidden = new Set(Array.isArray(b.hidden_fields) ? b.hidden_fields : [])
+
+  // Visible sections (hide empty ones + admin-hidden ones)
   const allSections = [
-    { id:'s02', n:'02', label:'Microscopie & culture', show: true },
-    { id:'s03', n:'03', label:'Identification',        show: !!b.identif },
-    { id:'s04', n:'04', label:'Clinique',              show: !!(b.clinical_info || b.clinique) },
-    { id:'s05', n:'05', label:'Antibiogramme',         show: antibiogramme.length > 0 },
-    { id:'s06', n:'06', label:'Résistances',           show: resistNat.length > 0 || resistAcq.length > 0 },
-    { id:'s07', n:'07', label:'Virulence',             show: virulence.length > 0 },
-    { id:'s08', n:'08', label:'Remarques',             show: !!b.commentaire },
+    { id:'s02', n:'02', label:'Microscopie & culture', show: !hidden.has('microscopie') },
+    { id:'s03', n:'03', label:'Identification',        show: !!b.identif && !hidden.has('identif') },
+    { id:'s04', n:'04', label:'Clinique',              show: !!(b.clinical_info || b.clinique) && !hidden.has('clinique') },
+    { id:'s05', n:'05', label:'Antibiogramme',         show: antibiogramme.length > 0 && !hidden.has('antibiogramme') },
+    { id:'s06', n:'06', label:'Résistances',           show: (resistNat.length > 0 && !hidden.has('resist_nat')) || (resistAcq.length > 0 && !hidden.has('resist_acq')) },
+    { id:'s07', n:'07', label:'Virulence',             show: virulence.length > 0 && !hidden.has('virulence') },
+    { id:'s08', n:'08', label:'Remarques',             show: !!b.commentaire && !hidden.has('commentaire') },
   ];
   const sections = allSections.filter(s => s.show);
 
@@ -303,16 +305,18 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
       </div>
 
       {/* ── Carrousel planches ── */}
-      <div style={{ padding: mobile ? '12px 16px 16px' : '24px 48px 20px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
-        <div style={{ maxWidth:1100, margin:'0 auto' }}>
-          {images.length > 1 && (
-            <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:14 }}>
-              <span style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink3 }}>cliquer pour agrandir · ←/→ pour naviguer</span>
-            </div>
-          )}
-          <Carrousel images={images} accent={accent} onOpen={setLightbox}/>
+      {!hidden.has('images') && (
+        <div style={{ padding: mobile ? '12px 16px 16px' : '24px 48px 20px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
+          <div style={{ maxWidth:1100, margin:'0 auto' }}>
+            {images.length > 1 && (
+              <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:14 }}>
+                <span style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink3 }}>cliquer pour agrandir · ←/→ pour naviguer</span>
+              </div>
+            )}
+            <Carrousel images={images} accent={accent} onOpen={setLightbox}/>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Body : sommaire + main column ── */}
       <div style={{ background:T.paper, flex:1 }}>
@@ -321,57 +325,61 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
           {/* Main column */}
           <main style={{ minWidth:0, padding: mobile ? '0' : undefined }}>
 
-            {/* §02 Microscopie & culture — always shown */}
-            <SectionTitle n="02" title="Microscopie & culture" anchor="s02" accent={accent}/>
-            {milieux.length > 0 ? (
-              <div style={{ display:'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap:10, marginBottom:14 }}>
-                {milieux.map((m, i) => {
-                  const mName = typeof m === 'string' ? m : (m.name || JSON.stringify(m));
-                  const mNote = typeof m === 'object' ? m.note : null;
-                  const mPrim = typeof m === 'object' ? m.primary : false;
-                  return (
-                    <div key={mName + i} style={{ background:T.bg, border:`0.5px solid ${T.rule}`, padding:'10px 12px', borderLeft:`3px solid ${mPrim ? accent : T.rule}` }}>
-                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-                        <div style={{ fontFamily:T.serif, fontSize:15, fontWeight:500 }}>{mName}</div>
-                        {mPrim && <span style={{ fontFamily:T.mono, fontSize:9, color:accent, letterSpacing:'0.12em' }}>1ʳᵉ</span>}
-                      </div>
-                      {mNote && <div style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink2, marginTop:3, lineHeight:1.4 }}>{mNote}</div>}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:13, color:T.ink3, marginBottom:14 }}>Données non renseignées.</p>
-            )}
-            {rapidTests.length > 0 && (
-              <div style={{ display:'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : `repeat(${Math.min(rapidTests.length, 4)}, 1fr)`, border:`1px solid ${T.rule}`, marginBottom:8 }}>
-                {rapidTests.map((r, i) => (
-                  <div key={r.k} style={{ padding:'8px 12px', borderRight: i < rapidTests.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', background: i % 2 === 0 ? T.bg : T.paper }}>
-                    <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.1em' }}>{r.k}</div>
-                    <div style={{ fontFamily:T.serif, fontSize:26, lineHeight:1, marginTop:4, fontWeight:500 }}>{r.v}</div>
+            {/* §02 Microscopie & culture */}
+            {!hidden.has('microscopie') && (
+              <>
+                <SectionTitle n="02" title="Microscopie & culture" anchor="s02" accent={accent}/>
+                {milieux.length > 0 ? (
+                  <div style={{ display:'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap:10, marginBottom:14 }}>
+                    {milieux.map((m, i) => {
+                      const mName = typeof m === 'string' ? m : (m.name || JSON.stringify(m));
+                      const mNote = typeof m === 'object' ? m.note : null;
+                      const mPrim = typeof m === 'object' ? m.primary : false;
+                      return (
+                        <div key={mName + i} style={{ background:T.bg, border:`0.5px solid ${T.rule}`, padding:'10px 12px', borderLeft:`3px solid ${mPrim ? accent : T.rule}` }}>
+                          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+                            <div style={{ fontFamily:T.serif, fontSize:15, fontWeight:500 }}>{mName}</div>
+                            {mPrim && <span style={{ fontFamily:T.mono, fontSize:9, color:accent, letterSpacing:'0.12em' }}>1ʳᵉ</span>}
+                          </div>
+                          {mNote && <div style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink2, marginTop:3, lineHeight:1.4 }}>{mNote}</div>}
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
+                ) : (
+                  <p style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:13, color:T.ink3, marginBottom:14 }}>Données non renseignées.</p>
+                )}
+                {rapidTests.length > 0 && (
+                  <div style={{ display:'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : `repeat(${Math.min(rapidTests.length, 4)}, 1fr)`, border:`1px solid ${T.rule}`, marginBottom:8 }}>
+                    {rapidTests.map((r, i) => (
+                      <div key={r.k} style={{ padding:'8px 12px', borderRight: i < rapidTests.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', background: i % 2 === 0 ? T.bg : T.paper }}>
+                        <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.1em' }}>{r.k}</div>
+                        <div style={{ fontFamily:T.serif, fontSize:26, lineHeight:1, marginTop:4, fontWeight:500 }}>{r.v}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
 
-            {/* §03 Identification — hidden if empty */}
-            {!!b.identif && (
+            {/* §03 Identification */}
+            {!!b.identif && !hidden.has('identif') && (
               <>
                 <SectionTitle n="03" title="Identification" anchor="s03" accent={accent}/>
                 <MarkdownView content={b.identif} />
               </>
             )}
 
-            {/* §04 Clinique — hidden if empty */}
-            {!!(b.clinical_info || b.clinique) && (
+            {/* §04 Clinique */}
+            {!!(b.clinical_info || b.clinique) && !hidden.has('clinique') && (
               <>
                 <SectionTitle n="04" title="Signification clinique" anchor="s04" accent={accent}/>
                 <MarkdownView content={b.clinical_info || b.clinique} />
               </>
             )}
 
-            {/* §05 Antibiogramme — hidden if no data */}
-            {antibiogramme.length > 0 && (
+            {/* §05 Antibiogramme */}
+            {antibiogramme.length > 0 && !hidden.has('antibiogramme') && (
               <>
                 <SectionTitle n="05" title="Antibiogramme" anchor="s05" accent={accent} right={
                   <div style={{ display:'flex', gap:4 }}>
@@ -402,37 +410,41 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
               </>
             )}
 
-            {/* §06 Résistances — hidden if both arrays empty */}
-            {(resistNat.length > 0 || resistAcq.length > 0) && (
+            {/* §06 Résistances */}
+            {((resistNat.length > 0 && !hidden.has('resist_nat')) || (resistAcq.length > 0 && !hidden.has('resist_acq'))) && (
               <>
                 <SectionTitle n="06" title="Résistances" anchor="s06" accent={accent}/>
                 <div style={{ display:'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap:24, fontFamily:T.serif }}>
-                  <div>
-                    <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginBottom:6 }}>NATURELLES</div>
-                    {resistNat.length > 0 ? (
-                      <ul style={{ paddingLeft:16, margin:0, fontSize:13.5, lineHeight:1.6 }}>
-                        {resistNat.map(x=><li key={x}>{x}</li>)}
-                      </ul>
-                    ) : (
-                      <p style={{ fontStyle:'italic', fontSize:13, color:T.ink3, margin:0 }}>—</p>
-                    )}
-                  </div>
-                  <div>
-                    <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginBottom:6 }}>ACQUISES</div>
-                    {resistAcq.length > 0 ? (
-                      <ul style={{ paddingLeft:16, margin:0, fontSize:13.5, lineHeight:1.6 }}>
-                        {resistAcq.map(x=><li key={x}>{x}</li>)}
-                      </ul>
-                    ) : (
-                      <p style={{ fontStyle:'italic', fontSize:13, color:T.ink3, margin:0 }}>—</p>
-                    )}
-                  </div>
+                  {!hidden.has('resist_nat') && (
+                    <div>
+                      <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginBottom:6 }}>NATURELLES</div>
+                      {resistNat.length > 0 ? (
+                        <ul style={{ paddingLeft:16, margin:0, fontSize:13.5, lineHeight:1.6 }}>
+                          {resistNat.map(x=><li key={x}>{x}</li>)}
+                        </ul>
+                      ) : (
+                        <p style={{ fontStyle:'italic', fontSize:13, color:T.ink3, margin:0 }}>—</p>
+                      )}
+                    </div>
+                  )}
+                  {!hidden.has('resist_acq') && (
+                    <div>
+                      <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginBottom:6 }}>ACQUISES</div>
+                      {resistAcq.length > 0 ? (
+                        <ul style={{ paddingLeft:16, margin:0, fontSize:13.5, lineHeight:1.6 }}>
+                          {resistAcq.map(x=><li key={x}>{x}</li>)}
+                        </ul>
+                      ) : (
+                        <p style={{ fontStyle:'italic', fontSize:13, color:T.ink3, margin:0 }}>—</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </>
             )}
 
-            {/* §07 Virulence — hidden if empty */}
-            {virulence.length > 0 && (
+            {/* §07 Virulence */}
+            {virulence.length > 0 && !hidden.has('virulence') && (
               <>
                 <SectionTitle n="07" title="Facteurs de virulence" anchor="s07" accent={accent}/>
                 <ul style={{ listStyle:'none', padding:0, margin:0, display:'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap:'0 24px', borderTop:`1px solid ${T.ruleSoft}` }}>
@@ -446,8 +458,8 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
               </>
             )}
 
-            {/* §08 Remarques — hidden if empty */}
-            {!!b.commentaire && (
+            {/* §08 Remarques */}
+            {!!b.commentaire && !hidden.has('commentaire') && (
               <>
                 <SectionTitle n="08" title="Remarques" anchor="s08" accent={accent}/>
                 <MarkdownView content={b.commentaire} />
