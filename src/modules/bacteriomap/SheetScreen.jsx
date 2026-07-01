@@ -261,27 +261,6 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
     ...(Array.isArray(b.tests_rapides) ? b.tests_rapides : []),
   ].filter(Boolean);
 
-  // Meta bar — skip null boolean fields
-  const metaItems = [
-    { k: 'GRAM', v: gram },
-    b.catalase    != null && { k: 'CATALASE',    v: b.catalase    ? '+' : '−' },
-    b.oxydase     != null && { k: 'OXYDASE',     v: b.oxydase     ? '+' : '−' },
-    b.coagulase   != null && { k: 'COAGULASE',   v: b.coagulase   ? '+' : '−' },
-    b.sporulation != null && { k: 'SPORULATION', v: b.sporulation ? '+' : '−' },
-    b.atmosphere  && { k: 'O₂', v: b.atmosphere },
-    { k: 'BSL', v: b.bsl3 ? '3' : '2' },
-  ].filter(Boolean);
-
-  const showAntiboPanel = !!b.antibio;
-  const premierAb = b.antibio ? b.antibio.split(/[.;]/)[0].trim() : '';
-
-  const badges = [
-    b.urgence     && { l: 'URGENCE',      col: T.red   },
-    b.bsl3        && { l: 'BSL-3',        col: T.ink2  },
-    b.freq        && { l: b.freq.toUpperCase(), col: T.ink2 },
-    b.declaration && { l: 'DÉCLARATION',  col: T.ink2  },
-  ].filter(Boolean);
-
   // Visible sections (hide empty ones)
   const allSections = [
     { id:'s02', n:'02', label:'Microscopie & culture', show: true },
@@ -303,52 +282,23 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
       <div style={{ padding: mobile ? '16px 16px 12px' : '28px 48px 16px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
         <div style={{ maxWidth:1100, margin:'0 auto' }}>
           <div style={{ fontFamily:T.mono, fontSize:10, color:accent, letterSpacing:'0.2em', marginBottom:8 }}>GENRE {genus.toUpperCase()}</div>
-          <h1 style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:32, fontWeight:500, letterSpacing:'-0.022em', lineHeight:0.95, margin:0 }}>
-            {b.name}
-          </h1>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr auto', alignItems:'end', gap:32, marginTop:14 }}>
-            <div style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:15, color:T.ink2, lineHeight:1.5, maxWidth:740 }}>
-              {b.identif || b.clinical_info || ''}
-            </div>
-            <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'flex-end', alignItems:'center' }}>
-                {badges.map(p => (
-                  <span key={p.l} style={{ fontFamily:T.mono, fontSize:9, padding:'3px 8px', border:`1px solid ${p.col === T.red ? T.red : T.rule}`, color:p.col, letterSpacing:'0.08em' }}>{p.l}</span>
-                ))}
-                <button
-                  onClick={() => { if (!has(b.id) && basket.length < 4) add(b) }}
-                  disabled={has(b.id) || basket.length >= 4}
-                  style={{
-                    fontFamily: T.mono, fontSize: 9, letterSpacing: '0.1em',
-                    padding: '3px 10px', cursor: has(b.id) || basket.length >= 4 ? 'default' : 'pointer',
-                    background: has(b.id) ? accent : 'transparent',
-                    border: `1px solid ${has(b.id) ? accent : T.rule}`,
-                    color: has(b.id) ? '#fff' : T.ink2,
-                  }}
-                >{has(b.id) ? '✓ COMPARER' : '+ COMPARER'}</button>
+          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:16 }}>
+            <h1 style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:32, fontWeight:500, letterSpacing:'-0.022em', lineHeight:0.95, margin:0 }}>
+              {b.name}
+            </h1>
+            <button
+              onClick={() => { if (!has(b.id) && basket.length < 4) add(b) }}
+              disabled={has(b.id) || basket.length >= 4}
+              style={{
+                fontFamily: T.mono, fontSize: 9, letterSpacing: '0.1em',
+                padding: '3px 10px', cursor: has(b.id) || basket.length >= 4 ? 'default' : 'pointer',
+                background: has(b.id) ? accent : 'transparent',
+                border: `1px solid ${has(b.id) ? accent : T.rule}`,
+                color: has(b.id) ? '#fff' : T.ink2,
+                flexShrink: 0,
+              }}
+            >{has(b.id) ? '✓ COMPARER' : '+ COMPARER'}</button>
           </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Sticky meta bar ── */}
-      <div style={{ position:'sticky', top:0, zIndex:50, background:T.paper, borderBottom:`1px solid ${T.rule}`, boxShadow:'0 1px 0 rgba(0,0,0,0.02)' }}>
-        <div style={{ maxWidth:1100, margin:'0 auto',
-          ...(mobile
-            ? { display:'flex', flexWrap:'wrap' }
-            : { display:'grid', gridTemplateColumns:`repeat(${metaItems.length}, 1fr)${showAntiboPanel ? ' 220px' : ''}` }),
-          alignItems:'stretch' }}>
-          {metaItems.map((m, i) => (
-            <div key={m.k} style={{ padding:'8px 12px', borderLeft: mobile ? 'none' : (i === 0 ? 'none' : `1px solid ${T.ruleSoft}`), borderRight: mobile ? `1px solid ${T.ruleSoft}` : 'none', borderBottom: mobile ? `1px solid ${T.ruleSoft}` : 'none', display:'flex', flexDirection:'column', gap:2, minWidth: mobile ? 80 : 'auto' }}>
-              <span style={{ fontFamily:T.mono, fontSize:8.5, color:T.ink3, letterSpacing:'0.14em' }}>{m.k}</span>
-              <span style={{ fontFamily:T.serif, fontSize: mobile ? 16 : 20, lineHeight:1, fontWeight:500 }}>{m.v}</span>
-            </div>
-          ))}
-          {showAntiboPanel && (
-            <div style={{ borderLeft: mobile ? 'none' : `1px solid ${T.rule}`, borderTop: mobile ? `1px solid ${T.rule}` : 'none', background:T.qrBg, color:T.qrInk, padding:'8px 14px', display:'flex', flexDirection:'column', justifyContent:'center', flex: mobile ? '1 0 100%' : 'none' }}>
-              <span style={{ fontFamily:T.mono, fontSize:8.5, color:T.qrMute, letterSpacing:'0.16em' }}>1ʳᵉ INTENTION</span>
-              <span style={{ fontFamily:T.serif, fontSize:14, fontWeight:500, lineHeight:1.2, marginTop:2 }}>{premierAb}</span>
-            </div>
-          )}
         </div>
       </div>
 
