@@ -67,7 +67,7 @@ export default function AdminPalette() {
         <button onClick={resetAll} style={{ padding: '6px 12px', background: 'transparent', border: `1px solid ${T.rule}`, fontFamily: T.mono, fontSize: 10, letterSpacing: '0.1em', color: T.ink2, cursor: 'pointer' }}>TOUT RÉINITIALISER</button>
       </div>
       <ErrorBanner msg={error}/>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
         {systems.map(sys => {
           const accent = sys.color || '#888', tint = sys.tint || '#eee', deep = sys.deep || '#333'
           const def = SYSTEM_PALETTES[sys.slug] || {}
@@ -81,7 +81,7 @@ export default function AdminPalette() {
                 </div>
                 {isCustom && <button onClick={() => resetSystem(sys.id)} style={{ padding: '3px 8px', background: 'transparent', border: `1px solid ${T.rule}`, fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.1em', cursor: 'pointer' }}>RÉINIT.</button>}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 10 }}>
                 <ColorField label="Accent" value={accent} onChange={v => setColor(sys.id, 'accent', v)}/>
                 <ColorField label="Teinte" value={tint}   onChange={v => setColor(sys.id, 'tint',   v)}/>
                 <ColorField label="Profond" value={deep}  onChange={v => setColor(sys.id, 'deep',   v)}/>

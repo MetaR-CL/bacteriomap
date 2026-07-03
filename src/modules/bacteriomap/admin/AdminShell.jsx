@@ -218,7 +218,7 @@ export default function AdminShell({ navigate }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: T.bg }}>
       {/* Sidebar */}
-      <div style={{ width: 220, flexShrink: 0, background: T.paper, borderRight: `0.5px solid ${T.rule}`, display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
+      <div style={{ width: 190, flexShrink: 0, background: T.paper, borderRight: `0.5px solid ${T.rule}`, display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
         <div style={{ padding: '24px 20px 20px', borderBottom: `0.5px solid ${T.rule}` }}>
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 11, color: 'var(--accent)', marginBottom: 2, letterSpacing: '0.02em' }}>Bacteriomap</div>
           <div style={{ fontFamily: T.serif, fontSize: 22, fontWeight: 500, fontStyle: 'italic', color: T.ink }}>Atelier</div>
@@ -272,7 +272,7 @@ export default function AdminShell({ navigate }) {
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, minWidth: 0, padding: '36px 48px 60px', overflowY: 'auto' }}>
+      <div style={{ flex: 1, minWidth: 0, padding: '28px 32px 60px', overflowY: 'auto' }}>
         {tab === 'dashboard'    && <Dashboard onNavigate={setTab} />}
         {tab === 'systems'      && <AdminSystems />}
         {tab === 'bacteria'     && <AdminBacteria />}

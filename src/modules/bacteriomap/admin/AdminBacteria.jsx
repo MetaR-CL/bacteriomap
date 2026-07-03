@@ -61,7 +61,7 @@ function SectionTitle({ children, fieldKey, isHidden, onToggle }) {
 
 function Field({ label, hint, wide, children }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: wide ? '1fr' : '160px 1fr', gap: wide ? 6 : 14, alignItems: 'baseline', padding: '8px 0', borderBottom: '1px dotted var(--ruleSoft)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: wide ? '1fr' : 'minmax(90px, 140px) 1fr', gap: wide ? 6 : 12, alignItems: 'baseline', padding: '8px 0', borderBottom: '1px dotted var(--ruleSoft)' }}>
       <div>
         <div style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 10, color: 'var(--ink2)', letterSpacing: '0.08em' }}>{label}</div>
         {hint && <div style={{ fontFamily: '"Newsreader", serif', fontStyle: 'italic', fontSize: 11, color: 'var(--ink3)' }}>{hint}</div>}
@@ -171,7 +171,7 @@ export default function AdminBacteria() {
 
   // ── Left panel ──────────────────────────────────────────────────────────────
   const listPanel = (
-    <div style={{ width: 280, flexShrink: 0 }}>
+    <div style={{ width: 220, minWidth: 160, flexShrink: 1 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 14 }}>
         <h2 style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500, fontStyle: 'italic', margin: 0 }}>Bactéries</h2>
         <span style={{ fontFamily: T.mono, fontSize: 10, color: T.ink3, letterSpacing: '0.1em', flex: 1, textAlign: 'right' }}>{filtered.length}/{bacteria.length}</span>
@@ -189,7 +189,7 @@ export default function AdminBacteria() {
       {bactLoading ? (
         <div style={{ padding: 24, textAlign: 'center', fontFamily: T.serif, fontStyle: 'italic', color: T.ink3 }}>Chargement…</div>
       ) : (
-        <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, maxHeight: 'calc(100vh - 320px)', overflowY: 'auto' }}>
+        <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, maxHeight: 'min(calc(100vh - 280px), 600px)', overflowY: 'auto' }}>
           {filtered.map((b, i) => {
             const c = gramColor(b.gram)
             const isSel = current?.id === b.id
@@ -209,7 +209,7 @@ export default function AdminBacteria() {
 
   // ── Form panel ──────────────────────────────────────────────────────────────
   const formPanel = draft ? (
-    <div style={{ flex: 1, minWidth: 0 }}>
+    <div style={{ flex: 1, minWidth: 300 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 18 }}>
         <h2 style={{ fontFamily: T.serif, fontSize: 26, fontWeight: 500, fontStyle: 'italic', margin: 0, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.name}</h2>
       </div>
@@ -249,7 +249,7 @@ export default function AdminBacteria() {
 
         {/* TESTS RAPIDES */}
         <SectionTitle fieldKey="microscopie" isHidden={isHiddenField('microscopie')} onToggle={toggleHidden}>MILIEUX &amp; MICROSCOPIE</SectionTitle>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
           {[['catalase','Catalase'],['oxydase','Oxydase'],['coagulase','Coagulase'],['sporulation','Sporulation']].map(([k,l]) => (
             <Field key={k} label={l}>
               <BoolSelect value={d[k]} onChange={v => setDraft(p => ({ ...p, [k]: v }))}/>
@@ -258,9 +258,9 @@ export default function AdminBacteria() {
         </div>
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.1em', marginBottom: 10 }}>TESTS SUPPLÉMENTAIRES</div>
         {(d.tests_rapides || []).map((t, i) => (
-          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 140px auto', gap: 8, marginBottom: 8, alignItems: 'center' }}>
-            <input type="text" placeholder="Nom du test" value={t.name || ''} onChange={e => { const n = (d.tests_rapides || []).map((x,j) => j===i ? {...x,name:e.target.value} : x); setDraft(p => ({...p,tests_rapides:n})) }} style={inpStyle}/>
-            <input type="text" placeholder="Valeur" value={t.value || ''} onChange={e => { const n = (d.tests_rapides || []).map((x,j) => j===i ? {...x,value:e.target.value} : x); setDraft(p => ({...p,tests_rapides:n})) }} style={inpStyle}/>
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr minmax(70px, 120px) auto', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+            <input type="text" placeholder="Nom du test" value={t.name || ''} onChange={e => { const n = (d.tests_rapides || []).map((x,j) => j===i ? {...x,name:e.target.value} : x); setDraft(p => ({...p,tests_rapides:n})) }} style={{...inpStyle, minWidth: 0}}/>
+            <input type="text" placeholder="Valeur" value={t.value || ''} onChange={e => { const n = (d.tests_rapides || []).map((x,j) => j===i ? {...x,value:e.target.value} : x); setDraft(p => ({...p,tests_rapides:n})) }} style={{...inpStyle, minWidth: 0, width: 100}}/>
             <button onClick={() => setDraft(p => ({...p, tests_rapides: (p.tests_rapides||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
           </div>
         ))}
@@ -288,7 +288,7 @@ export default function AdminBacteria() {
                       }
                     }}
                   />
-                  <span style={{ fontFamily: T.serif, fontSize: 14, color: T.ink, minWidth: 180 }}>{m.name}</span>
+                  <span style={{ fontFamily: T.serif, fontSize: 14, color: T.ink, minWidth: 120, flexShrink: 0 }}>{m.name}</span>
                   {isChecked && (
                     <>
                       <input
@@ -413,7 +413,7 @@ export default function AdminBacteria() {
         {sysLoading ? (
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: T.ink3 }}>Chargement des zones…</div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
             {systems.map(sys => {
               const zones = [...(sys.bacterio_zones || [])].sort((a, b) => a.position - b.position)
               if (!zones.length) return null
@@ -448,7 +448,7 @@ export default function AdminBacteria() {
         {sysLoading ? (
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: T.ink3 }}>Chargement des zones…</div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
             {systems.map(sys => {
               const zones = [...(sys.bacterio_zones || [])].sort((a, b) => a.position - b.position)
               if (!zones.length) return null
@@ -481,7 +481,7 @@ export default function AdminBacteria() {
         {/* IMAGES */}
         <SectionTitle fieldKey="images" isHidden={isHiddenField('images')} onToggle={toggleHidden}>IMAGES</SectionTitle>
         {images.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
             {images.map(img => (
               <div key={img.id} style={{ background: T.paper, border: `0.5px solid ${T.rule}`, overflow: 'hidden', position: 'relative' }}>
                 <img src={img.url} alt={img.caption || ''} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }}/>
@@ -563,7 +563,7 @@ export default function AdminBacteria() {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         {listPanel}
         {formPanel}
       </div>
