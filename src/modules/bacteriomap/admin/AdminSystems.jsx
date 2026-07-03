@@ -71,6 +71,25 @@ export default function AdminSystems() {
   const [newSysShort, setNewSysShort] = React.useState('')
   const [newSysSub, setNewSysSub]     = React.useState('')
 
+  // Drag & drop system reordering
+  const dragSysFrom = React.useRef(null)
+  const [dragOverSysIdx, setDragOverSysIdx] = React.useState(null)
+
+  const dropSys = async () => {
+    const from = dragSysFrom.current
+    const to = dragOverSysIdx
+    setDragOverSysIdx(null)
+    dragSysFrom.current = null
+    if (from === null || to === null || from === to) return
+    const reordered = [...systems]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
+    setError(null)
+    try {
+      await Promise.all(reordered.map((s, idx) => updateSystem(s.id, { position: idx })))
+    } catch (err) { setError(err.message) }
+  }
+
   // Image upload
   const [uploading, setUploading] = React.useState(false)
   const imgInputRef = React.useRef(null)
@@ -257,14 +276,19 @@ export default function AdminSystems() {
             {systems.map((sys, i) => {
               const isSel = activeSys === sys.id
               const accent = sys.color || 'var(--accent)'
+              const isOver = dragOverSysIdx === i && dragSysFrom.current !== null && dragSysFrom.current !== i
               return (
                 <div
                   key={sys.id}
-                  onClick={() => setAndPersistSys(sys.id)}
+                  draggable
+                  onDragStart={() => { dragSysFrom.current = i }}
+                  onDragOver={e => { e.preventDefault(); setDragOverSysIdx(i) }}
+                  onDrop={dropSys}
+                  onDragEnd={() => { setDragOverSysIdx(null); dragSysFrom.current = null }}
                   style={{
                     padding: '12px 14px',
                     borderBottom: i < systems.length - 1 ? `1px solid var(--ruleSoft)` : 'none',
-                    cursor: 'pointer',
+                    borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent',
                     background: isSel ? T.bg : 'transparent',
                     borderLeft: isSel ? `3px solid ${accent}` : '3px solid transparent',
                     display: 'flex',
@@ -272,8 +296,9 @@ export default function AdminSystems() {
                     gap: 10,
                   }}
                 >
+                  <span style={{ cursor: 'grab', color: T.ink3, fontSize: 16, userSelect: 'none', lineHeight: 1, flexShrink: 0 }}>⠿</span>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: accent, flexShrink: 0 }}/>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ flex: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => setAndPersistSys(sys.id)}>
                     <div style={{ fontFamily: T.serif, fontSize: 14, fontWeight: 500, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {sys.name}
                     </div>
