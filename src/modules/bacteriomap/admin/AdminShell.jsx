@@ -297,8 +297,8 @@ export default function AdminShell({ navigate }) {
         </div>
       </div>
 
-      {/* Main content */}
-      <div style={{ flex: 1, minWidth: 0, padding: '28px 32px 60px', overflowY: 'auto' }}>
+      {/* Main content — height:100vh makes this the actual scroll container so position:sticky works */}
+      <div style={{ flex: 1, minWidth: 0, padding: '28px 32px 60px', overflowY: 'auto', height: '100vh' }}>
         {tab === 'dashboard'    && <Dashboard onNavigate={setTab} />}
         {tab === 'systems'      && <AdminSystems />}
         {tab === 'bacteria'     && <AdminBacteria />}
