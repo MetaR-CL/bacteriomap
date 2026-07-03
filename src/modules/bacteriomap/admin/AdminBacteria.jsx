@@ -720,8 +720,9 @@ export default function AdminBacteria() {
       onClick={() => setPreviewOpen(v => !v)}
       title={previewOpen ? 'Masquer la prévisualisation' : 'Afficher la prévisualisation'}
       style={{
+        position: 'sticky',
+        top: 20,
         alignSelf: 'flex-start',
-        marginTop: 40,
         padding: '6px 10px',
         background: 'transparent',
         border: `1px solid ${T.rule}`,
