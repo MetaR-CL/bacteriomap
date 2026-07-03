@@ -60,8 +60,9 @@ export function usePathologieBacteria(pathologieId = null) {
     setLoading(true)
     supabase
       .from('bacterio_pathologie_germes')
-      .select('bacteria_id, bacterio_bacteria(*, bacterio_images(*))')
+      .select('bacteria_id, ordre, bacterio_bacteria(*, bacterio_images(*))')
       .eq('pathologie_id', pathologieId)
+      .order('ordre')
       .then(({ data }) => {
         setBacteria((data || []).map(r => r.bacterio_bacteria).filter(Boolean))
         setLoading(false)
