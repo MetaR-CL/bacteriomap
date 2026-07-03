@@ -5,6 +5,7 @@ import { useAdminSystems } from '../../../hooks/useAdminSystems.js'
 import { useAdminMilieux } from '../../../hooks/useAdminMilieux.js'
 import { gramColor } from '../shared.jsx'
 import { supabase } from '../../../lib/supabase.js'
+import { SheetView } from '../SheetScreen.jsx'
 
 const primaryBtn = {
   padding: '8px 16px', background: 'var(--accent)', color: 'var(--paper)', border: 'none',
@@ -91,6 +92,7 @@ export default function AdminBacteria() {
     const v = sessionStorage.getItem('admin_bacteria_id')
     return v ? Number(v) : null
   })
+  const [previewOpen, setPreviewOpen] = React.useState(() => window.innerWidth >= 1200)
   const [draft, setDraft]           = React.useState(null)
   const draftRef                    = React.useRef(null)
   const [search, setSearch]         = React.useState('')
@@ -638,11 +640,52 @@ export default function AdminBacteria() {
     </div>
   )
 
+  // ── Preview toggle button ────────────────────────────────────────────────
+  const previewToggle = draft ? (
+    <button
+      onClick={() => setPreviewOpen(v => !v)}
+      title={previewOpen ? 'Masquer la prévisualisation' : 'Afficher la prévisualisation'}
+      style={{
+        alignSelf: 'flex-start',
+        marginTop: 40,
+        padding: '6px 10px',
+        background: 'transparent',
+        border: `1px solid ${T.rule}`,
+        fontFamily: T.mono, fontSize: 9, letterSpacing: '0.12em', color: T.ink3,
+        cursor: 'pointer', writingMode: 'vertical-rl', textOrientation: 'mixed',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {previewOpen ? '◂ PREVIEW' : '▸ PREVIEW'}
+    </button>
+  ) : null
+
+  // ── Preview panel ────────────────────────────────────────────────────────
+  const previewPanel = draft && previewOpen ? (
+    <div style={{
+      width: 380, flexShrink: 0,
+      border: `0.5px solid ${T.rule}`,
+      background: T.bg,
+      overflowY: 'auto',
+      maxHeight: 'calc(100vh - 120px)',
+      position: 'sticky',
+      top: 20,
+    }}>
+      <div style={{ padding: '8px 14px', background: T.paper, borderBottom: `0.5px solid ${T.rule}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: '0.16em', color: T.ink3 }}>PRÉVISUALISATION</span>
+        <span style={{ fontFamily: T.mono, fontSize: 8, color: T.ink3, opacity: 0.6 }}>live · non enregistré</span>
+      </div>
+      <SheetView b={draft} images={images} systemId="orl" compact />
+    </div>
+  ) : null
+
   return (
     <div>
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         {listPanel}
         {formPanel}
+        {previewToggle}
+        {previewPanel}
       </div>
     </div>
   )

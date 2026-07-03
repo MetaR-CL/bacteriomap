@@ -192,14 +192,195 @@ function SectionTitle({ n, title, anchor, accent, right }) {
   );
 }
 
+// ── SheetView — pure rendering, no fetch, no TopBar, no Lightbox ─────────────
+// Exported so AdminBacteria can use it for the live preview panel.
+export function SheetView({ b, images: imagesProp, systemId = 'orl', compact = false }) {
+  const [antiTab, setAntiTab] = React.useState('tableau');
+  const [lightbox, setLightbox] = React.useState(null);
+
+  if (!b) return null;
+
+  const palette = getSystemPalette(systemId);
+  const accent = palette.accent;
+  const genus = b.name?.split(' ')[0] || '';
+
+  const images = imagesProp ?? (Array.isArray(b.bacterio_images) ? b.bacterio_images : []);
+  const milieux = parseJSONField(b.milieux);
+  const antibiogramme = parseJSONField(b.antibiogramme);
+  const resistNat = Array.isArray(b.resist_nat) ? b.resist_nat : [];
+  const resistAcq = Array.isArray(b.resist_acq) ? b.resist_acq : [];
+  const virulence = Array.isArray(b.virulence) ? b.virulence : [];
+
+  const rapidTests = [
+    b.catalase    != null && { k: 'Catalase',    v: b.catalase    ? '+' : '−' },
+    b.oxydase     != null && { k: 'Oxydase',     v: b.oxydase     ? '+' : '−' },
+    b.coagulase   != null && { k: 'Coagulase',   v: b.coagulase   ? '+' : '−' },
+    b.sporulation != null && { k: 'Sporulation', v: b.sporulation ? '+' : '−' },
+    ...(Array.isArray(b.tests_rapides) ? b.tests_rapides.map(t => ({ k: t.k || t.name || '', v: t.v || t.value || '' })).filter(t => t.k) : []),
+  ].filter(Boolean);
+
+  const hidden = new Set(Array.isArray(b.hidden_fields) ? b.hidden_fields : []);
+
+  return (
+    <div style={{ fontFamily: T.serif, '--accent': accent, background: T.bg }}>
+
+      {/* Title block */}
+      <div style={{ padding: compact ? '12px 16px' : '20px 28px 14px', background: T.paper, borderBottom: `1px solid ${T.rule}` }}>
+        <div style={{ fontFamily: T.mono, fontSize: 9, color: accent, letterSpacing: '0.2em', marginBottom: 6 }}>GENRE {genus.toUpperCase()}</div>
+        <h2 style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: compact ? 22 : 28, fontWeight: 500, letterSpacing: '-0.022em', lineHeight: 1, margin: 0 }}>
+          {b.name}
+        </h2>
+      </div>
+
+      {/* Carrousel */}
+      {!hidden.has('images') && images.length > 0 && (
+        <div style={{ padding: compact ? '10px 16px' : '16px 28px', background: T.paper, borderBottom: `1px solid ${T.rule}` }}>
+          <Carrousel images={images} accent={accent} onOpen={setLightbox} />
+        </div>
+      )}
+
+      {/* Sections */}
+      <div style={{ background: T.paper, padding: compact ? '12px 16px 32px' : '20px 28px 48px' }}>
+
+        {!hidden.has('microscopie') && (
+          <>
+            <SectionTitle n="02" title="Microscopie & culture" anchor={null} accent={accent} />
+            {milieux.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, marginBottom: 12 }}>
+                {milieux.map((m, i) => {
+                  const mName = typeof m === 'string' ? m : (m.name || '');
+                  const mNote = typeof m === 'object' ? m.note : null;
+                  const mPrim = typeof m === 'object' ? m.primary : false;
+                  return (
+                    <div key={mName + i} style={{ background: T.bg, border: `0.5px solid ${T.rule}`, padding: '8px 10px', borderLeft: `3px solid ${mPrim ? accent : T.rule}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div style={{ fontFamily: T.serif, fontSize: 14, fontWeight: 500 }}>{mName}</div>
+                        {mPrim && <span style={{ fontFamily: T.mono, fontSize: 9, color: accent }}>1ʳᵉ</span>}
+                      </div>
+                      {mNote && <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 12, color: T.ink2, marginTop: 2 }}>{mNote}</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink3, marginBottom: 12 }}>Données non renseignées.</p>
+            )}
+            {rapidTests.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(rapidTests.length, 4)}, 1fr)`, border: `1px solid ${T.rule}`, marginBottom: 8 }}>
+                {rapidTests.map((r, i) => (
+                  <div key={r.k} style={{ padding: '6px 10px', borderRight: i < rapidTests.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', background: i % 2 === 0 ? T.bg : T.paper }}>
+                    <div style={{ fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.1em' }}>{r.k}</div>
+                    <div style={{ fontFamily: T.serif, fontSize: 22, lineHeight: 1, marginTop: 3, fontWeight: 500 }}>{r.v}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {!!b.identif && !hidden.has('identif') && (
+          <>
+            <SectionTitle n="03" title="Identification" anchor={null} accent={accent} />
+            <MarkdownView content={b.identif} />
+          </>
+        )}
+
+        {!!(b.clinical_info || b.clinique) && !hidden.has('clinique') && (
+          <>
+            <SectionTitle n="04" title="Signification clinique" anchor={null} accent={accent} />
+            <MarkdownView content={b.clinical_info || b.clinique} />
+          </>
+        )}
+
+        {antibiogramme.length > 0 && !hidden.has('antibiogramme') && (
+          <>
+            <SectionTitle n="05" title="Antibiogramme" anchor={null} accent={accent} right={
+              <div style={{ display: 'flex', gap: 4 }}>
+                {['tableau', 'résumé'].map(k => (
+                  <button key={k} onClick={() => setAntiTab(k)} style={{ padding: '2px 6px', background: antiTab === k ? T.ink : 'transparent', color: antiTab === k ? T.paper : T.ink3, border: `1px solid ${antiTab === k ? T.ink : T.rule}`, fontFamily: T.mono, fontSize: 9, cursor: 'pointer' }}>{k.toUpperCase()}</button>
+                ))}
+              </div>
+            } />
+            {antiTab === 'tableau' ? (
+              <div style={{ border: `1px solid ${T.rule}` }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px', padding: '5px 10px', background: T.bgSoft, fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.1em', borderBottom: `1px solid ${T.rule}` }}>
+                  <span>ANTIBIOTIQUE</span><span>S/I/R</span>
+                </div>
+                {antibiogramme.map((row, i) => {
+                  const sens = row.sens || '?';
+                  const col = sens === 'S' ? T.green : sens === 'R' ? T.red : accent;
+                  return (
+                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 60px', padding: '6px 10px', borderBottom: i < antibiogramme.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', fontFamily: T.serif, fontSize: 13, alignItems: 'center', background: i % 2 === 0 ? T.paper : T.bg }}>
+                      <span style={{ fontStyle: 'italic' }}>{row.ab}</span>
+                      <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 600, color: col }}>{sens}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <MarkdownView content={b.antibio} />
+            )}
+          </>
+        )}
+
+        {((resistNat.length > 0 && !hidden.has('resist_nat')) || (resistAcq.length > 0 && !hidden.has('resist_acq'))) && (
+          <>
+            <SectionTitle n="06" title="Résistances" anchor={null} accent={accent} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, fontFamily: T.serif }}>
+              {!hidden.has('resist_nat') && (
+                <div>
+                  <div style={{ fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.12em', marginBottom: 4 }}>NATURELLES</div>
+                  <ul style={{ paddingLeft: 14, margin: 0, fontSize: 13, lineHeight: 1.55 }}>
+                    {resistNat.map(x => <li key={x}>{x}</li>)}
+                  </ul>
+                </div>
+              )}
+              {!hidden.has('resist_acq') && (
+                <div>
+                  <div style={{ fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.12em', marginBottom: 4 }}>ACQUISES</div>
+                  <ul style={{ paddingLeft: 14, margin: 0, fontSize: 13, lineHeight: 1.55 }}>
+                    {resistAcq.map(x => <li key={x}>{x}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {virulence.length > 0 && !hidden.has('virulence') && (
+          <>
+            <SectionTitle n="07" title="Facteurs de virulence" anchor={null} accent={accent} />
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, borderTop: `1px solid ${T.ruleSoft}` }}>
+              {virulence.map((v, i) => (
+                <li key={v} style={{ padding: '5px 0', borderBottom: `1px solid ${T.ruleSoft}`, fontFamily: T.serif, fontSize: 13, display: 'flex', gap: 8 }}>
+                  <span style={{ fontFamily: T.mono, fontSize: 9, color: accent }}>0{i + 1}</span>
+                  <span>{v}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {!!b.commentaire && !hidden.has('commentaire') && (
+          <>
+            <SectionTitle n="08" title="Remarques" anchor={null} accent={accent} />
+            <MarkdownView content={b.commentaire} />
+          </>
+        )}
+
+      </div>
+
+      <Lightbox bact={b} openIdx={lightbox} onClose={() => setLightbox(null)} images={images} />
+    </div>
+  );
+}
+
+// ── SheetScreen — full page with fetch, TopBar, and SheetView ────────────────
 export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vivid = false, showImages = true }) {
   const mobile = useIsMobile();
   const { add, has, basket } = useCompare();
   const [b, setB] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
-  const [antiTab, setAntiTab] = React.useState('tableau');
-  const [lightbox, setLightbox] = React.useState(null);
-  const [activeAnchor, setActiveAnchor] = React.useState('s02');
 
   React.useEffect(() => {
     setLoading(true);
@@ -212,80 +393,34 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
       .then(({ data }) => { if (data) setB(data); setLoading(false); });
   }, [bacteriaId]);
 
-  // Scroll-spy (re-runs when b changes so IDs are in DOM)
-  React.useEffect(() => {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) setActiveAnchor(e.target.id); });
-    }, { rootMargin: '-30% 0px -60% 0px' });
-    ['s02','s03','s04','s05','s06','s07','s08'].forEach(id => {
-      const el = document.getElementById(id); if (el) io.observe(el);
-    });
-    return () => io.disconnect();
-  }, [b]);
-
   if (loading) return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:T.serif, color:T.ink3, fontStyle:'italic' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: T.serif, color: T.ink3, fontStyle: 'italic' }}>
       Chargement…
     </div>
   );
 
   if (!b) return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:T.serif, color:T.ink3, fontStyle:'italic' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: T.serif, color: T.ink3, fontStyle: 'italic' }}>
       Bactérie introuvable.
     </div>
   );
 
-  // ── Derived data ──────────────────────────────────────────────────────────
-
-  const gram = GRAM_MAP[b.gram] || b.gram || '?';
   const palette = getSystemPalette(systemId);
   const accent = palette.accent;
-  const sys = SYSTEMS.find(s => s.id === systemId) || SYSTEMS[2];
-  const sysIdx = SYSTEMS.indexOf(sys);
-  const sysRoman = ['I','II','III','IV','V','VI','VII','VIII','IX','X'][sysIdx];
   const genus = b.name?.split(' ')[0] || '';
-
   const images = Array.isArray(b.bacterio_images) ? b.bacterio_images : [];
-  const milieux = parseJSONField(b.milieux);
-  const antibiogramme = parseJSONField(b.antibiogramme);
-  const resistNat = Array.isArray(b.resist_nat) ? b.resist_nat : [];
-  const resistAcq = Array.isArray(b.resist_acq) ? b.resist_acq : [];
-  const virulence = Array.isArray(b.virulence) ? b.virulence : [];
-
-  // Rapid tests — only include fields with values (not null)
-  const rapidTests = [
-    b.catalase    != null && { k: 'Catalase',    v: b.catalase    ? '+' : '−' },
-    b.oxydase     != null && { k: 'Oxydase',     v: b.oxydase     ? '+' : '−' },
-    b.coagulase   != null && { k: 'Coagulase',   v: b.coagulase   ? '+' : '−' },
-    b.sporulation != null && { k: 'Sporulation', v: b.sporulation ? '+' : '−' },
-    ...(Array.isArray(b.tests_rapides) ? b.tests_rapides.map(t => ({ k: t.k || t.name || '', v: t.v || t.value || '' })).filter(t => t.k) : []),
-  ].filter(Boolean);
-
-  const hidden = new Set(Array.isArray(b.hidden_fields) ? b.hidden_fields : [])
-
-  // Visible sections (hide empty ones + admin-hidden ones)
-  const allSections = [
-    { id:'s02', n:'02', label:'Microscopie & culture', show: !hidden.has('microscopie') },
-    { id:'s03', n:'03', label:'Identification',        show: !!b.identif && !hidden.has('identif') },
-    { id:'s04', n:'04', label:'Clinique',              show: !!(b.clinical_info || b.clinique) && !hidden.has('clinique') },
-    { id:'s05', n:'05', label:'Antibiogramme',         show: antibiogramme.length > 0 && !hidden.has('antibiogramme') },
-    { id:'s06', n:'06', label:'Résistances',           show: (resistNat.length > 0 && !hidden.has('resist_nat')) || (resistAcq.length > 0 && !hidden.has('resist_acq')) },
-    { id:'s07', n:'07', label:'Virulence',             show: virulence.length > 0 && !hidden.has('virulence') },
-    { id:'s08', n:'08', label:'Remarques',             show: !!b.commentaire && !hidden.has('commentaire') },
-  ];
-  const sections = allSections.filter(s => s.show);
 
   return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', fontFamily:T.serif, '--accent': accent, background:T.bg }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: T.serif, '--accent': accent, background: T.bg }}>
 
       <TopBar navigate={navigate} center={b?.name} onBack={() => navigate('zone', { systemId })} />
 
-      {/* ── Title block ── */}
-      <div style={{ padding: mobile ? '16px 16px 12px' : '28px 48px 16px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
-        <div style={{ maxWidth:1100, margin:'0 auto' }}>
-          <div style={{ fontFamily:T.mono, fontSize:10, color:accent, letterSpacing:'0.2em', marginBottom:8 }}>GENRE {genus.toUpperCase()}</div>
-          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:16 }}>
-            <h1 style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:32, fontWeight:500, letterSpacing:'-0.022em', lineHeight:0.95, margin:0 }}>
+      {/* Title block with compare button */}
+      <div style={{ padding: mobile ? '16px 16px 12px' : '28px 48px 16px', background: T.paper, borderBottom: `1px solid ${T.rule}` }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div style={{ fontFamily: T.mono, fontSize: 10, color: accent, letterSpacing: '0.2em', marginBottom: 8 }}>GENRE {genus.toUpperCase()}</div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+            <h1 style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 32, fontWeight: 500, letterSpacing: '-0.022em', lineHeight: 0.95, margin: 0 }}>
               {b.name}
             </h1>
             <button
@@ -304,174 +439,13 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
         </div>
       </div>
 
-      {/* ── Carrousel planches ── */}
-      {!hidden.has('images') && (
-        <div style={{ padding: mobile ? '12px 16px 16px' : '24px 48px 20px', background:T.paper, borderBottom:`1px solid ${T.rule}` }}>
-          <div style={{ maxWidth:1100, margin:'0 auto' }}>
-            {images.length > 1 && (
-              <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:14 }}>
-                <span style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink3 }}>cliquer pour agrandir · ←/→ pour naviguer</span>
-              </div>
-            )}
-            <Carrousel images={images} accent={accent} onOpen={setLightbox}/>
-          </div>
-        </div>
-      )}
-
-      {/* ── Body : sommaire + main column ── */}
-      <div style={{ background:T.paper, flex:1 }}>
-        <div style={{ maxWidth:1100, margin:'0 auto', padding: mobile ? '16px 16px 40px' : '28px 48px 64px' }}>
-
-          {/* Main column */}
-          <main style={{ minWidth:0, padding: mobile ? '0' : undefined }}>
-
-            {/* §02 Microscopie & culture */}
-            {!hidden.has('microscopie') && (
-              <>
-                <SectionTitle n="02" title="Microscopie & culture" anchor="s02" accent={accent}/>
-                {milieux.length > 0 ? (
-                  <div style={{ display:'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap:10, marginBottom:14 }}>
-                    {milieux.map((m, i) => {
-                      const mName = typeof m === 'string' ? m : (m.name || JSON.stringify(m));
-                      const mNote = typeof m === 'object' ? m.note : null;
-                      const mPrim = typeof m === 'object' ? m.primary : false;
-                      return (
-                        <div key={mName + i} style={{ background:T.bg, border:`0.5px solid ${T.rule}`, padding:'10px 12px', borderLeft:`3px solid ${mPrim ? accent : T.rule}` }}>
-                          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-                            <div style={{ fontFamily:T.serif, fontSize:15, fontWeight:500 }}>{mName}</div>
-                            {mPrim && <span style={{ fontFamily:T.mono, fontSize:9, color:accent, letterSpacing:'0.12em' }}>1ʳᵉ</span>}
-                          </div>
-                          {mNote && <div style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.ink2, marginTop:3, lineHeight:1.4 }}>{mNote}</div>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p style={{ fontFamily:T.serif, fontStyle:'italic', fontSize:13, color:T.ink3, marginBottom:14 }}>Données non renseignées.</p>
-                )}
-                {rapidTests.length > 0 && (
-                  <div style={{ display:'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : `repeat(${Math.min(rapidTests.length, 4)}, 1fr)`, border:`1px solid ${T.rule}`, marginBottom:8 }}>
-                    {rapidTests.map((r, i) => (
-                      <div key={r.k} style={{ padding:'8px 12px', borderRight: i < rapidTests.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', background: i % 2 === 0 ? T.bg : T.paper }}>
-                        <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.1em' }}>{r.k}</div>
-                        <div style={{ fontFamily:T.serif, fontSize:26, lineHeight:1, marginTop:4, fontWeight:500 }}>{r.v}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* §03 Identification */}
-            {!!b.identif && !hidden.has('identif') && (
-              <>
-                <SectionTitle n="03" title="Identification" anchor="s03" accent={accent}/>
-                <MarkdownView content={b.identif} />
-              </>
-            )}
-
-            {/* §04 Clinique */}
-            {!!(b.clinical_info || b.clinique) && !hidden.has('clinique') && (
-              <>
-                <SectionTitle n="04" title="Signification clinique" anchor="s04" accent={accent}/>
-                <MarkdownView content={b.clinical_info || b.clinique} />
-              </>
-            )}
-
-            {/* §05 Antibiogramme */}
-            {antibiogramme.length > 0 && !hidden.has('antibiogramme') && (
-              <>
-                <SectionTitle n="05" title="Antibiogramme" anchor="s05" accent={accent} right={
-                  <div style={{ display:'flex', gap:4 }}>
-                    {['tableau','résumé'].map(k=>(
-                      <button key={k} onClick={()=>setAntiTab(k)} style={{ padding:'2px 8px', background: antiTab===k ? T.ink : 'transparent', color: antiTab===k ? T.paper : T.ink3, border:`1px solid ${antiTab===k ? T.ink : T.rule}`, fontFamily:T.mono, fontSize:9, letterSpacing:'0.08em', cursor:'pointer' }}>{k.toUpperCase()}</button>
-                    ))}
-                  </div>
-                }/>
-                {antiTab === 'tableau' ? (
-                  <div style={{ border:`1px solid ${T.rule}` }}>
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 80px', padding:'6px 12px', background:T.bgSoft, fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.12em', borderBottom:`1px solid ${T.rule}` }}>
-                      <span>ANTIBIOTIQUE</span><span>S / I / R</span>
-                    </div>
-                    {antibiogramme.map((row, i) => {
-                      const sens = row.sens || row.statut || '?';
-                      const col = sens === 'S' ? T.green : sens === 'R' ? T.red : accent;
-                      return (
-                        <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 80px', padding:'7px 12px', borderBottom: i < antibiogramme.length-1 ? `1px solid ${T.ruleSoft}` : 'none', fontFamily:T.serif, fontSize:13, alignItems:'center', background: i%2===0 ? T.paper : T.bg }}>
-                          <span style={{ fontStyle:'italic', fontWeight:500 }}>{row.ab}</span>
-                          <span style={{ fontFamily:T.mono, fontSize:12, fontWeight:600, color:col }}>{sens}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <MarkdownView content={b.antibio} />
-                )}
-              </>
-            )}
-
-            {/* §06 Résistances */}
-            {((resistNat.length > 0 && !hidden.has('resist_nat')) || (resistAcq.length > 0 && !hidden.has('resist_acq'))) && (
-              <>
-                <SectionTitle n="06" title="Résistances" anchor="s06" accent={accent}/>
-                <div style={{ display:'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap:24, fontFamily:T.serif }}>
-                  {!hidden.has('resist_nat') && (
-                    <div>
-                      <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginBottom:6 }}>NATURELLES</div>
-                      {resistNat.length > 0 ? (
-                        <ul style={{ paddingLeft:16, margin:0, fontSize:13.5, lineHeight:1.6 }}>
-                          {resistNat.map(x=><li key={x}>{x}</li>)}
-                        </ul>
-                      ) : (
-                        <p style={{ fontStyle:'italic', fontSize:13, color:T.ink3, margin:0 }}>—</p>
-                      )}
-                    </div>
-                  )}
-                  {!hidden.has('resist_acq') && (
-                    <div>
-                      <div style={{ fontFamily:T.mono, fontSize:9, color:T.ink3, letterSpacing:'0.14em', marginBottom:6 }}>ACQUISES</div>
-                      {resistAcq.length > 0 ? (
-                        <ul style={{ paddingLeft:16, margin:0, fontSize:13.5, lineHeight:1.6 }}>
-                          {resistAcq.map(x=><li key={x}>{x}</li>)}
-                        </ul>
-                      ) : (
-                        <p style={{ fontStyle:'italic', fontSize:13, color:T.ink3, margin:0 }}>—</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* §07 Virulence */}
-            {virulence.length > 0 && !hidden.has('virulence') && (
-              <>
-                <SectionTitle n="07" title="Facteurs de virulence" anchor="s07" accent={accent}/>
-                <ul style={{ listStyle:'none', padding:0, margin:0, display:'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap:'0 24px', borderTop:`1px solid ${T.ruleSoft}` }}>
-                  {virulence.map((v, i)=>(
-                    <li key={v} style={{ padding:'6px 0', borderBottom:`1px solid ${T.ruleSoft}`, fontFamily:T.serif, fontSize:13.5, display:'flex', gap:10 }}>
-                      <span style={{ fontFamily:T.mono, fontSize:9.5, color:accent, letterSpacing:'0.05em' }}>0{i+1}</span>
-                      <span>{v}</span>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-
-            {/* §08 Remarques */}
-            {!!b.commentaire && !hidden.has('commentaire') && (
-              <>
-                <SectionTitle n="08" title="Remarques" anchor="s08" accent={accent}/>
-                <MarkdownView content={b.commentaire} />
-              </>
-            )}
-
-          </main>
+      {/* Body via SheetView */}
+      <div style={{ flex: 1 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <SheetView b={b} images={images} systemId={systemId} />
         </div>
       </div>
 
-      {/* ── Lightbox ── */}
-      <Lightbox bact={b} openIdx={lightbox} onClose={()=>setLightbox(null)} images={images}/>
     </div>
   );
 }
