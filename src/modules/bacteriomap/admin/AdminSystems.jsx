@@ -52,7 +52,10 @@ function Toast({ success, error }) {
 export default function AdminSystems() {
   const { systems, loading, updateSystem, insertSystem, upsertZone, removeZone, removeSystem } = useAdminSystems()
 
-  const [activeSys, setActiveSys]     = React.useState(null)
+  const [activeSys, setActiveSys]     = React.useState(() => {
+    const v = sessionStorage.getItem('admin_systems_id')
+    return v ? Number(v) : null
+  })
   const [sysName, setSysName]         = React.useState('')
   const [sysShort, setSysShort]       = React.useState('')
   const [sysSubtitle, setSysSubtitle] = React.useState('')
@@ -72,8 +75,15 @@ export default function AdminSystems() {
   const [uploading, setUploading] = React.useState(false)
   const imgInputRef = React.useRef(null)
 
+  const setAndPersistSys = (id) => {
+    sessionStorage.setItem('admin_systems_id', id)
+    setActiveSys(id)
+  }
+
   React.useEffect(() => {
-    if (!activeSys && systems.length > 0) setActiveSys(systems[0].id)
+    if (systems.length === 0) return
+    if (activeSys && systems.find(s => s.id === activeSys)) return
+    setAndPersistSys(systems[0].id)
   }, [systems.length]) // eslint-disable-line
 
   const active = systems.find(s => s.id === activeSys) || null
@@ -112,7 +122,7 @@ export default function AdminSystems() {
     try {
       await insertSystem({ name: newSysName.trim(), short: newSysShort.trim(), subtitle: newSysSub.trim() })
       const created = systems.find(s => s.name === newSysName.trim())
-      if (created) setActiveSys(created.id)
+      if (created) setAndPersistSys(created.id)
       setShowAddSys(false)
       setNewSysName(''); setNewSysShort(''); setNewSysSub('')
       flash('Système créé')
@@ -241,7 +251,7 @@ export default function AdminSystems() {
               return (
                 <div
                   key={sys.id}
-                  onClick={() => setActiveSys(sys.id)}
+                  onClick={() => setAndPersistSys(sys.id)}
                   style={{
                     padding: '12px 14px',
                     borderBottom: i < systems.length - 1 ? `1px solid var(--ruleSoft)` : 'none',

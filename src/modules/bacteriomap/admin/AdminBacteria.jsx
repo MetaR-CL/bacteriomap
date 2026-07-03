@@ -87,7 +87,10 @@ export default function AdminBacteria() {
   const { systems, loading: sysLoading } = useAdminSystems()
   const { milieux } = useAdminMilieux()
 
-  const [selectedId, setSelectedId] = React.useState(null)
+  const [selectedId, setSelectedId] = React.useState(() => {
+    const v = sessionStorage.getItem('admin_bacteria_id')
+    return v ? Number(v) : null
+  })
   const [draft, setDraft]           = React.useState(null)
   const draftRef                    = React.useRef(null)
   const [search, setSearch]         = React.useState('')
@@ -157,7 +160,14 @@ export default function AdminBacteria() {
   const filtered = bacteria.filter(b => b.name.toLowerCase().includes(search.toLowerCase()))
 
   React.useEffect(() => {
-    if (!selectedId && filtered.length > 0) selectBact(filtered[0])
+    if (bacteria.length === 0) return
+    if (selectedId) {
+      const found = bacteria.find(b => b.id === selectedId)
+      if (found && !draft) selectBact(found)
+      else if (!found) selectBact(bacteria[0])
+    } else {
+      selectBact(bacteria[0])
+    }
   }, [bacteria.length]) // eslint-disable-line
 
   const selectBact = (b) => {
@@ -167,6 +177,7 @@ export default function AdminBacteria() {
     }
     isLoadingRef.current = true
     const { bacterio_images: _, ...fields } = b
+    sessionStorage.setItem('admin_bacteria_id', b.id)
     setSelectedId(b.id)
     setDraft(fields)
     setSaveStatus('idle')
