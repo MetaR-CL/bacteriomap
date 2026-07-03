@@ -144,8 +144,13 @@ export default function AdminShell({ navigate }) {
   const [email, setEmail]     = React.useState('')
   const [password, setPassword] = React.useState('')
   const [error, setError]     = React.useState('')
-  const [tab, setTab]         = React.useState('dashboard')
+  const [tab, setTab]         = React.useState(() => sessionStorage.getItem('admin_tab') || 'dashboard')
   const mobile = useIsMobile()
+
+  const navigate_tab = React.useCallback((t) => {
+    sessionStorage.setItem('admin_tab', t)
+    setTab(t)
+  }, [])
 
   React.useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -216,7 +221,7 @@ export default function AdminShell({ navigate }) {
         <div style={{ position: 'sticky', top: 0, zIndex: 10, background: T.paper, borderBottom: `0.5px solid ${T.rule}`, padding: '10px 14px', display: 'flex', gap: 10, alignItems: 'center' }}>
           <select
             value={tab}
-            onChange={e => setTab(e.target.value)}
+            onChange={e => navigate_tab(e.target.value)}
             style={{ flex: 1, padding: '8px 10px', fontFamily: T.mono, fontSize: 11, color: T.ink, background: T.bg, border: `1px solid ${T.rule}`, outline: 'none' }}
           >
             {TABS.map(t => <option key={t.id} value={t.id}>{t.num} · {t.label}</option>)}
@@ -224,7 +229,7 @@ export default function AdminShell({ navigate }) {
           <button onClick={() => navigate('home')} style={{ padding: '8px 12px', background: 'transparent', border: `1px solid ${T.rule}`, fontFamily: T.mono, fontSize: 10, color: T.ink3, cursor: 'pointer' }}>← Quitter</button>
         </div>
         <div style={{ flex: 1, padding: '20px 16px 40px', overflowY: 'auto' }}>
-          {tab === 'dashboard' && <Dashboard onNavigate={setTab} />}
+          {tab === 'dashboard' && <Dashboard onNavigate={navigate_tab} />}
           {tab === 'systems'   && <AdminSystems />}
           {tab === 'bacteria'  && <AdminBacteria />}
           {tab === 'milieux'   && <AdminMilieux />}
@@ -251,7 +256,7 @@ export default function AdminShell({ navigate }) {
             return (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id)}
+                onClick={() => navigate_tab(t.id)}
                 style={{
                   width: '100%',
                   padding: '10px 18px',
