@@ -38,6 +38,18 @@ export function useAdminBacteria() {
     return data?.[0]?.id
   }
 
+  const duplicate = async (b) => {
+    const { id: _, bacterio_images: __, ...fields } = b
+    const { data, error } = await supabase
+      .from('bacterio_bacteria')
+      .insert({ ...fields, name: `${b.name} (copie)` })
+      .select('id')
+      .single()
+    if (error) throw error
+    await load()
+    return data.id
+  }
+
   const remove = async (id) => {
     const { error } = await supabase
       .from('bacterio_bacteria')
@@ -84,5 +96,5 @@ export function useAdminBacteria() {
     await load()
   }
 
-  return { bacteria, loading, upsert, remove, uploadImage, deleteImage, reload: load }
+  return { bacteria, loading, upsert, duplicate, remove, uploadImage, deleteImage, reload: load }
 }

@@ -84,7 +84,7 @@ function BoolSelect({ value, onChange }) {
 }
 
 export default function AdminBacteria() {
-  const { bacteria, loading: bactLoading, upsert, remove, uploadImage, deleteImage } = useAdminBacteria()
+  const { bacteria, loading: bactLoading, upsert, duplicate, remove, uploadImage, deleteImage } = useAdminBacteria()
   const { systems, loading: sysLoading } = useAdminSystems()
   const { milieux } = useAdminMilieux()
 
@@ -107,6 +107,7 @@ export default function AdminBacteria() {
 
   // Image upload busy
   const [imgBusy, setImgBusy] = React.useState(false)
+  const [duplicating, setDuplicating] = React.useState(null) // id being duplicated
 
   React.useEffect(() => { draftRef.current = draft }, [draft])
 
@@ -220,6 +221,25 @@ export default function AdminBacteria() {
     }
   }
 
+  const handleDuplicate = async (b, e) => {
+    e.stopPropagation()
+    setDuplicating(b.id)
+    try {
+      const newId = await duplicate(b)
+      // bacteria state will update via the hook's load(); store the id and
+      // let the useEffect below open it once the list refreshes
+      if (newId) {
+        sessionStorage.setItem('admin_bacteria_id', newId)
+        setSelectedId(newId)
+        setDraft(null) // will be filled by the useEffect when list reloads
+      }
+    } catch (err) {
+      setSaveError(err.message); setSaveStatus('error')
+    } finally {
+      setDuplicating(null)
+    }
+  }
+
   const deleteBact = async () => {
     if (!current) return
     if (!confirm(`Êtes-vous sûr ? La fiche « ${current.name} » sera définitivement supprimée.`)) return
@@ -280,7 +300,12 @@ export default function AdminBacteria() {
               <div key={b.id} onClick={() => selectBact(b)} style={{ padding: '10px 14px', borderBottom: i < filtered.length - 1 ? `1px solid var(--ruleSoft)` : 'none', cursor: 'pointer', background: isSel ? T.bg : 'transparent', borderLeft: isSel ? `3px solid ${c.stroke}` : '3px solid transparent', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.stroke, flexShrink: 0 }}/>
                 <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, fontWeight: 500, color: T.ink, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.name}</span>
-                <span style={{ fontFamily: T.mono, fontSize: 9, color: c.stroke, flexShrink: 0 }}>G{b.gram === 'positif' ? '+' : b.gram === 'negatif' ? '−' : b.gram === 'aucun' ? '*' : '?'}</span>
+                <button
+                  onClick={(e) => handleDuplicate(b, e)}
+                  disabled={duplicating === b.id}
+                  title="Dupliquer cette fiche"
+                  style={{ background: 'none', border: `1px solid var(--ruleSoft)`, color: T.ink3, cursor: 'pointer', padding: '1px 5px', fontFamily: T.mono, fontSize: 10, flexShrink: 0, opacity: duplicating === b.id ? 0.4 : 1 }}
+                >⧉</button>
               </div>
             )
           })}
