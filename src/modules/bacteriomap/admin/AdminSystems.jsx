@@ -214,7 +214,7 @@ export default function AdminSystems() {
       <h2 style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 500, fontStyle: 'italic', margin: '0 0 24px' }}>Systèmes &amp; Zones</h2>
       <Toast success={success} error={error}/>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 32, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 260px) 1fr', gap: 20, alignItems: 'start' }}>
 
         {/* Left: system list */}
         <div>
@@ -275,19 +275,19 @@ export default function AdminSystems() {
             <h3 style={{ fontFamily: T.serif, fontSize: 24, fontWeight: 500, fontStyle: 'italic', margin: '0 0 20px', color: T.ink }}>{active.name}</h3>
 
             <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, padding: '20px 24px', marginBottom: 24 }}>
-              <div style={{ padding: '8px 0', borderBottom: '1px dotted var(--ruleSoft)', display: 'grid', gridTemplateColumns: '140px 1fr', gap: 14, alignItems: 'baseline' }}>
+              <div style={{ padding: '8px 0', borderBottom: '1px dotted var(--ruleSoft)', display: 'grid', gridTemplateColumns: 'minmax(90px, 130px) 1fr', gap: 12, alignItems: 'baseline' }}>
                 <div style={{ fontFamily: T.mono, fontSize: 10, color: T.ink2, letterSpacing: '0.08em' }}>Nom complet</div>
                 <input type="text" value={sysName} onChange={e => setSysName(e.target.value)} style={inpStyle}/>
               </div>
-              <div style={{ padding: '8px 0', borderBottom: '1px dotted var(--ruleSoft)', display: 'grid', gridTemplateColumns: '140px 1fr', gap: 14, alignItems: 'baseline' }}>
+              <div style={{ padding: '8px 0', borderBottom: '1px dotted var(--ruleSoft)', display: 'grid', gridTemplateColumns: 'minmax(90px, 130px) 1fr', gap: 12, alignItems: 'baseline' }}>
                 <div style={{ fontFamily: T.mono, fontSize: 10, color: T.ink2, letterSpacing: '0.08em' }}>Nom court</div>
                 <input type="text" value={sysShort} onChange={e => setSysShort(e.target.value)} style={{ ...inpStyle, maxWidth: 160 }}/>
               </div>
-              <div style={{ padding: '8px 0', display: 'grid', gridTemplateColumns: '140px 1fr', gap: 14, alignItems: 'baseline' }}>
+              <div style={{ padding: '8px 0', display: 'grid', gridTemplateColumns: 'minmax(90px, 130px) 1fr', gap: 12, alignItems: 'baseline' }}>
                 <div style={{ fontFamily: T.mono, fontSize: 10, color: T.ink2, letterSpacing: '0.08em' }}>Sous-titre</div>
                 <input type="text" value={sysSubtitle} onChange={e => setSysSubtitle(e.target.value)} style={inpStyle}/>
               </div>
-              <div style={{ padding: '8px 0', borderTop: '1px dotted var(--ruleSoft)', marginTop: 8, display: 'grid', gridTemplateColumns: '140px 1fr', gap: 14, alignItems: 'center' }}>
+              <div style={{ padding: '8px 0', borderTop: '1px dotted var(--ruleSoft)', marginTop: 8, display: 'grid', gridTemplateColumns: 'minmax(90px, 130px) 1fr', gap: 12, alignItems: 'center' }}>
                 <div style={{ fontFamily: T.mono, fontSize: 10, color: T.ink2, letterSpacing: '0.08em' }}>Image chapitre</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   {active.image_url && (

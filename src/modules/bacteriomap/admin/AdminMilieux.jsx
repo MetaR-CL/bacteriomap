@@ -80,7 +80,7 @@ export default function AdminMilieux() {
 
       <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, overflow: 'hidden', marginBottom: 24 }}>
         {/* Table header */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px 100px auto', gap: 0, background: T.bg, borderBottom: `1px solid ${T.rule}`, padding: '8px 16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr minmax(80px, 160px) minmax(70px, 100px) auto', gap: 0, background: T.bg, borderBottom: `1px solid ${T.rule}`, padding: '8px 16px' }}>
           <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.14em' }}>NOM</div>
           <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.14em' }}>CATÉGORIE</div>
           <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.14em', textAlign: 'center' }}>SÉLECTIF</div>
@@ -93,7 +93,7 @@ export default function AdminMilieux() {
         ) : milieux.map((m, i) => {
           const e = getEdit(m)
           return (
-            <div key={m.id} style={{ display: 'grid', gridTemplateColumns: '1fr 180px 100px auto', gap: 0, alignItems: 'center', padding: '8px 16px', borderBottom: i < milieux.length - 1 ? `1px solid var(--ruleSoft)` : 'none' }}>
+            <div key={m.id} style={{ display: 'grid', gridTemplateColumns: '1fr minmax(80px, 160px) minmax(70px, 100px) auto', gap: 0, alignItems: 'center', padding: '8px 16px', borderBottom: i < milieux.length - 1 ? `1px solid var(--ruleSoft)` : 'none' }}>
               <input
                 type="text"
                 value={e.name}
@@ -126,7 +126,7 @@ export default function AdminMilieux() {
       {/* Add new */}
       <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, padding: '20px 20px' }}>
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.16em', marginBottom: 14 }}>NOUVEAU MILIEU</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px 100px auto', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr minmax(80px, 160px) minmax(70px, 100px) auto', gap: 10, alignItems: 'center' }}>
           <input
             type="text"
             placeholder="Nom du milieu…"

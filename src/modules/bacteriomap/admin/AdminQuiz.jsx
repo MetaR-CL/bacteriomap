@@ -33,7 +33,7 @@ function SectionTitle({ children }) {
 
 function Field({ label, hint, wide, children }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: wide ? '1fr' : '160px 1fr', gap: wide ? 6 : 14, alignItems: 'baseline', padding: '8px 0', borderBottom: '1px dotted var(--ruleSoft)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: wide ? '1fr' : 'minmax(90px, 140px) 1fr', gap: wide ? 6 : 12, alignItems: 'baseline', padding: '8px 0', borderBottom: '1px dotted var(--ruleSoft)' }}>
       <div>
         <div style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 10, color: 'var(--ink2)', letterSpacing: '0.08em' }}>{label}</div>
         {hint && <div style={{ fontFamily: '"Newsreader", serif', fontStyle: 'italic', fontSize: 11, color: 'var(--ink3)' }}>{hint}</div>}
@@ -229,7 +229,7 @@ export default function AdminQuiz() {
         </div>
       </div>
       <Toast success={success} error={error}/>
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 24, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 260px) 1fr', gap: 20, alignItems: 'start' }}>
 
         {/* Left: list */}
         <div style={{ background: T.paper, border: `0.5px solid ${T.rule}` }}>
@@ -276,7 +276,7 @@ export default function AdminQuiz() {
                 style={inpStyle}/>
             </Field>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginTop: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginTop: 8 }}>
               <div>
                 <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.1em', marginBottom: 6 }}>SYSTÈME</div>
                 <select value={d.system_id || ''} onChange={e => saveField({ system_id: e.target.value ? Number(e.target.value) : null })} style={selStyle}>

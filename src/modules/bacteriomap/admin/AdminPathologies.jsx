@@ -240,7 +240,7 @@ export default function AdminPathologies() {
         </select>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 32, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 240px) 1fr', gap: 20, alignItems: 'start' }}>
 
         {/* Left: pathologie list */}
         <div>
