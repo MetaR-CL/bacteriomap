@@ -180,6 +180,9 @@ export default function AdminShell({ navigate }) {
             <button onClick={tryLogin} style={{ width: '100%', padding: '12px 18px', background: T.ink, color: T.paper, border: 'none', fontFamily: T.mono, fontSize: 11, letterSpacing: '0.16em', cursor: 'pointer' }}>
               ENTRER
             </button>
+            <button onClick={() => navigate('home')} style={{ width: '100%', padding: '10px 18px', background: 'transparent', border: `1px solid ${T.rule}`, fontFamily: T.mono, fontSize: 10, letterSpacing: '0.12em', color: T.ink3, cursor: 'pointer' }}>
+              ← Retour à l'accueil
+            </button>
           </div>
         </div>
       </div>
