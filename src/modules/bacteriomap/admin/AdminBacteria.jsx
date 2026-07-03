@@ -189,6 +189,9 @@ export default function AdminBacteria() {
   const [imgBusy, setImgBusy] = React.useState(false)
   const [duplicating, setDuplicating] = React.useState(null) // id being duplicated
 
+  // Zone memberships — from junction table (not draft.zone_ids)
+  const [zoneLinkedIds, setZoneLinkedIds] = React.useState(new Set())
+
   // Drag & drop for inline arrays
   const dragArrayRef = React.useRef({ from: null, to: null, field: null })
   const [dragOverArray, setDragOverArray] = React.useState({ field: null, idx: null })
@@ -280,6 +283,15 @@ export default function AdminBacteria() {
     setSaveStatus('idle')
     setSaveError('')
   }
+
+  React.useEffect(() => {
+    if (!selectedId) { setZoneLinkedIds(new Set()); return }
+    supabase
+      .from('bacterio_zone_bacteria')
+      .select('zone_id')
+      .eq('bacteria_id', selectedId)
+      .then(({ data }) => setZoneLinkedIds(new Set((data || []).map(r => Number(r.zone_id)))))
+  }, [selectedId])
 
   const current = bacteria.find(b => b.id === selectedId) || null
   const images  = current?.bacterio_images || []
@@ -659,13 +671,20 @@ export default function AdminBacteria() {
                     <div style={{ fontFamily: T.mono, fontSize: 9, color: sys.color || T.ink2, letterSpacing: '0.1em', marginBottom: 8 }}>{sys.name.toUpperCase()}</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {zones.map(z => {
-                        const checked = (d.zone_ids || []).map(Number).includes(Number(z.id))
+                        const zid = Number(z.id)
+                        const checked = zoneLinkedIds.has(zid)
                         return (
                           <label key={z.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: T.serif, fontSize: 13, color: T.ink2, cursor: 'pointer' }}>
-                            <input type="checkbox" checked={checked} onChange={e => {
-                              const cur = (draftRef.current?.zone_ids || []).map(Number)
-                              const next = e.target.checked ? [...cur, Number(z.id)] : cur.filter(id => id !== Number(z.id))
-                              setDraft(p => ({...p, zone_ids: next}))
+                            <input type="checkbox" checked={checked} onChange={async () => {
+                              if (checked) {
+                                setZoneLinkedIds(s => { const n = new Set(s); n.delete(zid); return n })
+                                await supabase.from('bacterio_zone_bacteria').delete().eq('zone_id', zid).eq('bacteria_id', selectedId)
+                              } else {
+                                const { data: ex } = await supabase.from('bacterio_zone_bacteria').select('ordre').eq('zone_id', zid).order('ordre', { ascending: false }).limit(1)
+                                const ordre = ex?.length ? (ex[0].ordre + 1) : 0
+                                setZoneLinkedIds(s => new Set([...s, zid]))
+                                await supabase.from('bacterio_zone_bacteria').insert({ zone_id: zid, bacteria_id: selectedId, ordre })
+                              }
                             }}/>
                             {z.label || z.name}
                           </label>

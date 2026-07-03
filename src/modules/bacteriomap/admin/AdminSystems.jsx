@@ -90,6 +90,67 @@ export default function AdminSystems() {
     } catch (err) { setError(err.message) }
   }
 
+  // Bacteria per zone — drag & drop ordered list
+  const [activeSubZoneId, setActiveSubZoneId] = React.useState(null)
+  const [zoneBacteria, setZoneBacteria]       = React.useState([])
+  const [allBacteria, setAllBacteria]         = React.useState([])
+  const [bactSearch, setBactSearch]           = React.useState('')
+  const dragBactFrom = React.useRef(null)
+  const [dragOverBactIdx, setDragOverBactIdx] = React.useState(null)
+
+  React.useEffect(() => {
+    supabase.from('bacterio_bacteria').select('id, name').order('name')
+      .then(({ data }) => setAllBacteria(data || []))
+  }, [])
+
+  React.useEffect(() => { setActiveSubZoneId(null) }, [activeSys])
+
+  React.useEffect(() => {
+    if (!activeSubZoneId) { setZoneBacteria([]); return }
+    supabase
+      .from('bacterio_zone_bacteria')
+      .select('bacteria_id, ordre, bacterio_bacteria(id, name)')
+      .eq('zone_id', activeSubZoneId)
+      .order('ordre')
+      .then(({ data }) => setZoneBacteria((data || []).map(r => ({ bacteria_id: r.bacteria_id, ordre: r.ordre, name: r.bacterio_bacteria?.name || '' }))))
+  }, [activeSubZoneId])
+
+  const dropBact = async () => {
+    const from = dragBactFrom.current
+    const to = dragOverBactIdx
+    setDragOverBactIdx(null)
+    dragBactFrom.current = null
+    if (from === null || to === null || from === to) return
+    const reordered = [...zoneBacteria]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
+    const updated = reordered.map((g, idx) => ({ ...g, ordre: idx }))
+    setZoneBacteria(updated)
+    setError(null)
+    try {
+      await Promise.all(updated.map(g =>
+        supabase.from('bacterio_zone_bacteria').update({ ordre: g.ordre }).eq('zone_id', activeSubZoneId).eq('bacteria_id', g.bacteria_id)
+      ))
+    } catch (err) { setError(err.message) }
+  }
+
+  const addBact = async (bactId) => {
+    const ordre = zoneBacteria.length
+    const bact = allBacteria.find(b => b.id === bactId)
+    setError(null)
+    const { error: err } = await supabase.from('bacterio_zone_bacteria').insert({ zone_id: activeSubZoneId, bacteria_id: bactId, ordre })
+    if (err) { setError(err.message); return }
+    setZoneBacteria(gs => [...gs, { bacteria_id: bactId, ordre, name: bact?.name || '' }])
+    setBactSearch('')
+  }
+
+  const removeBact = async (bactId) => {
+    setError(null)
+    const { error: err } = await supabase.from('bacterio_zone_bacteria').delete().eq('zone_id', activeSubZoneId).eq('bacteria_id', bactId)
+    if (err) { setError(err.message); return }
+    setZoneBacteria(gs => gs.filter(g => g.bacteria_id !== bactId).map((g, idx) => ({ ...g, ordre: idx })))
+  }
+
   // Image upload
   const [uploading, setUploading] = React.useState(false)
   const imgInputRef = React.useRef(null)
@@ -381,6 +442,7 @@ export default function AdminSystems() {
                       borderBottom: i < sysSubs.length - 1 ? `1px solid var(--ruleSoft)` : 'none',
                       borderTop: dragOverZoneIdx === i && dragZoneFrom.current !== null && dragZoneFrom.current !== i ? `2px solid var(--accent)` : '2px solid transparent',
                       display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 10, alignItems: 'center',
+                      background: activeSubZoneId === z.id ? T.bg : 'transparent',
                     }}
                   >
                     <span style={{ cursor: 'grab', color: T.ink3, fontSize: 16, userSelect: 'none', lineHeight: 1, paddingRight: 2 }}>⠿</span>
@@ -391,6 +453,11 @@ export default function AdminSystems() {
                       style={{ border: 'none', background: 'transparent', fontFamily: T.serif, fontSize: 15, fontWeight: 500, color: T.ink, outline: 'none', width: '100%' }}
                     />
                     <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      <button
+                        onClick={() => setActiveSubZoneId(id => id === z.id ? null : z.id)}
+                        style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10, background: activeSubZoneId === z.id ? T.ink : 'transparent', color: activeSubZoneId === z.id ? T.paper : 'var(--ink2)' }}
+                        title="Gérer les bactéries de cette zone"
+                      >Bactéries</button>
                       <button onClick={() => saveZone(z)} style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10 }}>Enregistrer</button>
                       <button onClick={() => removeSub(z)} style={{ ...arrowBtn, color: 'var(--red)' }}>×</button>
                     </div>
@@ -418,6 +485,66 @@ export default function AdminSystems() {
               </div>
             ) : (
               <button onClick={() => setShowAddZone(true)} style={{ ...ghostBtn, marginBottom: 32 }}>+ Ajouter une zone</button>
+            )}
+
+            {activeSubZoneId && (
+              <>
+                <SectionTitle>BACTÉRIES — {sysSubs.find(z => z.id === activeSubZoneId)?.label || sysSubs.find(z => z.id === activeSubZoneId)?.name || 'Zone'}</SectionTitle>
+
+                {zoneBacteria.length > 0 && (
+                  <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, marginBottom: 12 }}>
+                    {zoneBacteria.map((g, i) => {
+                      const isOver = dragOverBactIdx === i && dragBactFrom.current !== null && dragBactFrom.current !== i
+                      return (
+                        <div
+                          key={g.bacteria_id}
+                          draggable
+                          onDragStart={() => { dragBactFrom.current = i }}
+                          onDragOver={e => { e.preventDefault(); setDragOverBactIdx(i) }}
+                          onDrop={dropBact}
+                          onDragEnd={() => { setDragOverBactIdx(null); dragBactFrom.current = null }}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '8px 14px',
+                            borderBottom: i < zoneBacteria.length - 1 ? `1px solid var(--ruleSoft)` : 'none',
+                            borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent',
+                          }}
+                        >
+                          <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
+                          <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 14, color: T.ink, flex: 1 }}>{g.name}</span>
+                          <button onClick={() => removeBact(g.bacteria_id)} style={{ ...arrowBtn, color: 'var(--red)' }}>×</button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                <div style={{ marginBottom: 8, position: 'relative' }}>
+                  <input
+                    type="text"
+                    placeholder="Ajouter un germe à cette zone…"
+                    value={bactSearch}
+                    onChange={e => setBactSearch(e.target.value)}
+                    style={{ ...inpStyle, maxWidth: 360 }}
+                  />
+                  {bactSearch && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, maxWidth: 360, background: T.paper, border: `0.5px solid ${T.rule}`, maxHeight: 220, overflowY: 'auto', zIndex: 10 }}>
+                      {allBacteria.filter(b => b.name.toLowerCase().includes(bactSearch.toLowerCase()) && !zoneBacteria.find(g => g.bacteria_id === b.id)).map((b, idx, arr) => (
+                        <div
+                          key={b.id}
+                          onClick={() => addBact(b.id)}
+                          style={{ padding: '8px 14px', cursor: 'pointer', borderBottom: idx < arr.length - 1 ? `1px solid var(--ruleSoft)` : 'none', fontFamily: T.serif, fontStyle: 'italic', fontSize: 14, color: T.ink }}
+                          onMouseEnter={e => e.currentTarget.style.background = T.bg}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >{b.name}</div>
+                      ))}
+                      {allBacteria.filter(b => b.name.toLowerCase().includes(bactSearch.toLowerCase()) && !zoneBacteria.find(g => g.bacteria_id === b.id)).length === 0 && (
+                        <div style={{ padding: '10px 14px', fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, fontSize: 13 }}>Aucun résultat ou déjà lié.</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             <div style={{ borderTop: `1px solid var(--ruleSoft)`, paddingTop: 24, marginTop: 8 }}>
