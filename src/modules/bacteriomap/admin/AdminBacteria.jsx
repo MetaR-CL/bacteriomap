@@ -479,29 +479,33 @@ export default function AdminBacteria() {
           milieux.length === 0 ? (
             <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, fontSize: 13 }}>Aucun milieu configuré.</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {milieux.map(m => {
-                const existing = (d.milieux || []).find(x => x.name === m.name)
-                const isChecked = !!existing
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {/* Checked milieux — draggable ordered list */}
+              {(d.milieux || []).map((m, i) => {
+                const drag = makeArrayDrag('milieux')
+                const isOver = dragOverArray.field === 'milieux' && dragOverArray.idx === i && dragArrayRef.current.from !== i
                 return (
-                  <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: `1px dotted var(--ruleSoft)` }}>
-                    <input type="checkbox" checked={isChecked} onChange={e => {
-                      if (e.target.checked) setDraft(p => ({...p, milieux: [...(p.milieux||[]), {name: m.name, note: '', primary: false}]}))
-                      else setDraft(p => ({...p, milieux: (p.milieux||[]).filter(x => x.name !== m.name)}))
-                    }}/>
+                  <div key={m.name} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: `1px dotted var(--ruleSoft)`, borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
+                    <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
+                    <input type="checkbox" checked onChange={() => setDraft(p => ({...p, milieux: (p.milieux||[]).filter(x => x.name !== m.name)}))}/>
                     <span style={{ fontFamily: T.serif, fontSize: 14, color: T.ink, minWidth: 120, flexShrink: 0 }}>{m.name}</span>
-                    {isChecked && (
-                      <>
-                        <input type="text" placeholder="Note…" value={existing.note || ''} onChange={e => setDraft(p => ({...p, milieux: (p.milieux||[]).map(x => x.name===m.name ? {...x, note:e.target.value} : x)}))} style={{ ...inpStyle, flex: 1, padding: '4px 8px', fontSize: 12 }}/>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: T.mono, fontSize: 10, color: T.ink2, cursor: 'pointer', flexShrink: 0 }}>
-                          <input type="checkbox" checked={!!existing.primary} onChange={e => setDraft(p => ({...p, milieux: (p.milieux||[]).map(x => x.name===m.name ? {...x, primary:e.target.checked} : x)}))}/>
-                          Primaire
-                        </label>
-                      </>
-                    )}
+                    <input type="text" placeholder="Note…" value={m.note || ''} onChange={e => setDraft(p => ({...p, milieux: (p.milieux||[]).map(x => x.name===m.name ? {...x, note:e.target.value} : x)}))} style={{ ...inpStyle, flex: 1, padding: '4px 8px', fontSize: 12 }}/>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: T.mono, fontSize: 10, color: T.ink2, cursor: 'pointer', flexShrink: 0 }}>
+                      <input type="checkbox" checked={!!m.primary} onChange={e => setDraft(p => ({...p, milieux: (p.milieux||[]).map(x => x.name===m.name ? {...x, primary:e.target.checked} : x)}))}/>
+                      Primaire
+                    </label>
                   </div>
                 )
               })}
+              {/* Unchecked milieux — just checkboxes to add */}
+              {milieux.filter(m => !(d.milieux||[]).find(x => x.name === m.name)).map(m => (
+                <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: `1px dotted var(--ruleSoft)`, opacity: 0.6 }}>
+                  <span style={{ width: 14, flexShrink: 0 }}/>
+                  <input type="checkbox" checked={false} onChange={() => setDraft(p => ({...p, milieux: [...(p.milieux||[]), {name: m.name, note: '', primary: false}]}))}/>
+                  <span style={{ fontFamily: T.serif, fontSize: 14, color: T.ink, minWidth: 120 }}>{m.name}</span>
+                </div>
+              ))}
             </div>
           )
         )}
