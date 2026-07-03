@@ -85,6 +85,28 @@ export default function AdminPathologies() {
 
   const [bacteriaSearch, setBacteriaSearch] = React.useState('')
   const [uploading, setUploading] = React.useState(false)
+
+  // Drag & drop pathologie reordering
+  const dragPathoFrom = React.useRef(null)
+  const [dragOverPathoIdx, setDragOverPathoIdx] = React.useState(null)
+
+  const dropPatho = async () => {
+    const from = dragPathoFrom.current
+    const to = dragOverPathoIdx
+    setDragOverPathoIdx(null)
+    dragPathoFrom.current = null
+    if (from === null || to === null || from === to) return
+    const reordered = [...pathologies]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
+    const updates = reordered.map((p, idx) => ({ ...p, ordre: idx }))
+    setPathologies(updates)
+    try {
+      await Promise.all(updates.map(p =>
+        supabase.from('bacterio_pathologies').update({ ordre: p.ordre }).eq('id', p.id)
+      ))
+    } catch (err) { flashErr(err.message) }
+  }
   const imgInputRef = React.useRef(null)
 
   const flash = (msg) => { setError(null); setSuccess(msg); setTimeout(() => setSuccess(null), 3000) }
@@ -337,17 +359,26 @@ export default function AdminPathologies() {
                 return (
                   <div
                     key={p.id}
+                    draggable
+                    onDragStart={() => { dragPathoFrom.current = i }}
+                    onDragOver={e => { e.preventDefault(); setDragOverPathoIdx(i) }}
+                    onDrop={dropPatho}
+                    onDragEnd={() => { setDragOverPathoIdx(null); dragPathoFrom.current = null }}
                     onClick={() => { setShowAdd(false); setActivePatho(p) }}
                     style={{
                       padding: '10px 14px',
                       borderBottom: i < pathologies.length - 1 ? '1px solid var(--ruleSoft)' : 'none',
+                      borderTop: dragOverPathoIdx === i && dragPathoFrom.current !== null && dragPathoFrom.current !== i ? '2px solid var(--accent)' : '2px solid transparent',
                       cursor: 'pointer',
                       background: isSel ? T.bg : 'transparent',
                       borderLeft: isSel ? '3px solid var(--accent)' : '3px solid transparent',
+                      display: 'flex', alignItems: 'center', gap: 8,
                     }}
                   >
-                    <div style={{ fontFamily: T.serif, fontSize: 14, fontWeight: 500, color: T.ink }}>{p.nom}</div>
-                    <div style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 9, color: T.ink3, marginTop: 2 }}>ordre {p.ordre}</div>
+                    <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', lineHeight: 1, flexShrink: 0 }}>⠿</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontFamily: T.serif, fontSize: 14, fontWeight: 500, color: T.ink }}>{p.nom}</div>
+                    </div>
                   </div>
                 )
               })
