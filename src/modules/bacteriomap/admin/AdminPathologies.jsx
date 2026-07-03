@@ -58,67 +58,84 @@ function SectionTitle({ children }) {
 
 export default function AdminPathologies() {
   const [zones, setZones] = React.useState([])
+  const [systems, setSystems] = React.useState([])
   const [bacteria, setBacteria] = React.useState([])
   const [pathologies, setPathologies] = React.useState([])
   const [loading, setLoading] = React.useState(true)
+
+  // Mode: 'zone' or 'system'
+  const [mode, setMode] = React.useState('zone')
+
   const [activeZoneId, setActiveZoneId] = React.useState(null)
-  const [activePatho, setActivePatho] = React.useState(null) // full pathologie object being edited
-  const [linkedIds, setLinkedIds] = React.useState(new Set()) // bacteria linked to activePatho
+  const [activeSystemId, setActiveSystemId] = React.useState(null)
+
+  const [activePatho, setActivePatho] = React.useState(null)
+  const [linkedIds, setLinkedIds] = React.useState(new Set())
   const [success, setSuccess] = React.useState(null)
   const [error, setError] = React.useState(null)
 
-  // New pathologie form
   const [showAdd, setShowAdd] = React.useState(false)
   const [newNom, setNewNom] = React.useState('')
   const [newDesc, setNewDesc] = React.useState('')
   const [newOrdre, setNewOrdre] = React.useState(0)
 
-  // Edit form state
   const [editNom, setEditNom] = React.useState('')
   const [editDesc, setEditDesc] = React.useState('')
   const [editOrdre, setEditOrdre] = React.useState(0)
 
-  // Bacteria search filter
   const [bacteriaSearch, setBacteriaSearch] = React.useState('')
-
-  // Image upload
   const [uploading, setUploading] = React.useState(false)
   const imgInputRef = React.useRef(null)
 
   const flash = (msg) => { setError(null); setSuccess(msg); setTimeout(() => setSuccess(null), 3000) }
   const flashErr = (msg) => { setSuccess(null); setError(msg) }
 
-  // Load zones + all bacteria once
   React.useEffect(() => {
     async function load() {
-      const [{ data: zData }, { data: bData }] = await Promise.all([
+      const [{ data: zData }, { data: sData }, { data: bData }] = await Promise.all([
         supabase.from('bacterio_zones').select('id, label, name').order('id'),
+        supabase.from('bacterio_systems').select('id, name, slug').order('position'),
         supabase.from('bacterio_bacteria').select('id, name').order('name'),
       ])
       setZones(zData || [])
+      setSystems(sData || [])
       setBacteria(bData || [])
       if (zData?.length) setActiveZoneId(zData[0].id)
+      if (sData?.length) setActiveSystemId(sData[0].id)
       setLoading(false)
     }
     load()
   }, [])
 
-  // Load pathologies for active zone
+  // Load pathologies when mode/active selection changes
   React.useEffect(() => {
-    if (!activeZoneId) return
-    supabase
-      .from('bacterio_pathologies')
-      .select('*')
-      .eq('zone_id', activeZoneId)
-      .order('ordre')
-      .then(({ data }) => {
-        setPathologies(data || [])
-        setActivePatho(null)
-        setLinkedIds(new Set())
-      })
-  }, [activeZoneId])
+    if (mode === 'zone') {
+      if (!activeZoneId) return
+      supabase
+        .from('bacterio_pathologies')
+        .select('*')
+        .eq('zone_id', activeZoneId)
+        .order('ordre')
+        .then(({ data }) => {
+          setPathologies(data || [])
+          setActivePatho(null)
+          setLinkedIds(new Set())
+        })
+    } else {
+      if (!activeSystemId) return
+      supabase
+        .from('bacterio_pathologies')
+        .select('*')
+        .eq('system_id', activeSystemId)
+        .order('ordre')
+        .then(({ data }) => {
+          setPathologies(data || [])
+          setActivePatho(null)
+          setLinkedIds(new Set())
+        })
+    }
+  }, [mode, activeZoneId, activeSystemId])
 
-  // Load linked bacteria when editing a pathologie
   React.useEffect(() => {
     if (!activePatho) { setLinkedIds(new Set()); return }
     setEditNom(activePatho.nom)
@@ -160,9 +177,19 @@ export default function AdminPathologies() {
 
   const addPathologie = async () => {
     if (!newNom.trim()) return
+    const insertData = {
+      nom: newNom.trim(),
+      description: newDesc.trim() || null,
+      ordre: Number(newOrdre) || 0,
+    }
+    if (mode === 'zone') {
+      insertData.zone_id = activeZoneId
+    } else {
+      insertData.system_id = activeSystemId
+    }
     const { data, error: err } = await supabase
       .from('bacterio_pathologies')
-      .insert({ zone_id: activeZoneId, nom: newNom.trim(), description: newDesc.trim() || null, ordre: Number(newOrdre) || 0 })
+      .insert(insertData)
       .select()
       .single()
     if (err) { flashErr(err.message); return }
@@ -219,25 +246,61 @@ export default function AdminPathologies() {
 
   if (loading) return <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, padding: 40 }}>Chargement…</div>
 
-  const activeZone = zones.find(z => z.id === activeZoneId)
-
   return (
     <div>
       <h2 style={{ fontFamily: T.serif, fontSize: 28, fontWeight: 500, fontStyle: 'italic', margin: '0 0 24px' }}>Pathologies</h2>
       <Toast success={success} error={error} />
 
-      {/* Zone selector */}
-      <div style={{ marginBottom: 24 }}>
-        <Label>ZONE</Label>
-        <select
-          value={activeZoneId ?? ''}
-          onChange={e => setActiveZoneId(Number(e.target.value))}
-          style={{ ...monoInp, width: 'auto', minWidth: 280 }}
-        >
-          {zones.map(z => (
-            <option key={z.id} value={z.id}>{z.label || z.name}</option>
-          ))}
-        </select>
+      {/* Mode toggle + selector */}
+      <div style={{ marginBottom: 24, display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <div>
+          <Label>TYPE</Label>
+          <div style={{ display: 'flex', gap: 0 }}>
+            {[{ val: 'zone', label: 'Par zone' }, { val: 'system', label: 'Par système' }].map(opt => (
+              <button
+                key={opt.val}
+                onClick={() => { setMode(opt.val); setShowAdd(false); setActivePatho(null) }}
+                style={{
+                  ...ghostBtn,
+                  padding: '6px 14px',
+                  background: mode === opt.val ? T.ink : 'transparent',
+                  color: mode === opt.val ? T.paper : 'var(--ink2)',
+                  borderRight: opt.val === 'zone' ? 'none' : '1px solid var(--rule)',
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {mode === 'zone' ? (
+          <div>
+            <Label>ZONE</Label>
+            <select
+              value={activeZoneId ?? ''}
+              onChange={e => setActiveZoneId(Number(e.target.value))}
+              style={{ ...monoInp, width: 'auto', minWidth: 260 }}
+            >
+              {zones.map(z => (
+                <option key={z.id} value={z.id}>{z.label || z.name}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div>
+            <Label>SYSTÈME</Label>
+            <select
+              value={activeSystemId ?? ''}
+              onChange={e => setActiveSystemId(Number(e.target.value))}
+              style={{ ...monoInp, width: 'auto', minWidth: 260 }}
+            >
+              {systems.map(s => (
+                <option key={s.id} value={s.id}>{s.name || s.slug}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 240px) 1fr', gap: 20, alignItems: 'start' }}>
@@ -266,7 +329,7 @@ export default function AdminPathologies() {
           <div style={{ background: T.paper, border: `0.5px solid ${T.rule}` }}>
             {pathologies.length === 0 ? (
               <div style={{ padding: '20px 16px', fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, fontSize: 13 }}>
-                Aucune pathologie pour cette zone.
+                Aucune pathologie ici.
               </div>
             ) : (
               pathologies.map((p, i) => {
@@ -298,7 +361,6 @@ export default function AdminPathologies() {
             <div style={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 9, color: T.ink3, letterSpacing: '0.18em', marginBottom: 8 }}>PATHOLOGIE</div>
             <h3 style={{ fontFamily: T.serif, fontSize: 22, fontWeight: 500, fontStyle: 'italic', margin: '0 0 20px', color: T.ink }}>{activePatho.nom}</h3>
 
-            {/* Edit fields */}
             <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, padding: '20px 24px', marginBottom: 24 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
@@ -341,7 +403,6 @@ export default function AdminPathologies() {
               </div>
             </div>
 
-            {/* Germes linked */}
             <SectionTitle>GERMES ASSOCIÉS ({linkedIds.size})</SectionTitle>
             <div style={{ marginBottom: 10 }}>
               <input
