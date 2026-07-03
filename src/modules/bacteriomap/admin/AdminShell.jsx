@@ -25,17 +25,30 @@ function Dashboard({ onNavigate }) {
 
   React.useEffect(() => {
     async function load() {
-      const [sys, zones, bact, quiz] = await Promise.all([
+      const [sys, zones, bact, quiz, patho, imgs, lastBact, lastZone, lastPatho] = await Promise.all([
         supabase.from('bacterio_systems').select('id', { count: 'exact', head: true }),
         supabase.from('bacterio_zones').select('id', { count: 'exact', head: true }),
         supabase.from('bacterio_bacteria').select('id', { count: 'exact', head: true }),
         supabase.from('bacterio_quiz').select('id', { count: 'exact', head: true }),
+        supabase.from('bacterio_pathologies').select('id', { count: 'exact', head: true }),
+        supabase.from('bacterio_bacteria').select('id', { count: 'exact', head: true }).not('image_url', 'is', null),
+        supabase.from('bacterio_bacteria').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('bacterio_zones').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('bacterio_pathologies').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
       ])
+      const dates = [lastBact.data?.updated_at, lastZone.data?.updated_at, lastPatho.data?.updated_at]
+        .filter(Boolean).map(d => new Date(d))
+      const lastModified = dates.length
+        ? new Date(Math.max(...dates)).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+        : null
       setCounts({
-        systems: sys.count ?? 0,
-        zones:   zones.count ?? 0,
-        bacteria: bact.count ?? 0,
-        quiz:    quiz.count ?? 0,
+        systems:      sys.count ?? 0,
+        zones:        zones.count ?? 0,
+        bacteria:     bact.count ?? 0,
+        quiz:         quiz.count ?? 0,
+        pathologies:  patho.count ?? 0,
+        images:       imgs.count ?? 0,
+        lastModified,
       })
       setLoading(false)
     }
@@ -67,7 +80,7 @@ function Dashboard({ onNavigate }) {
     <div>
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 16, color: 'var(--accent)', marginBottom: 6 }}>Bienvenue dans</div>
-        <h1 style={{ fontFamily: T.serif, fontSize: 52, fontWeight: 500, fontStyle: 'italic', margin: 0, letterSpacing: '-0.02em' }}>L'Atelier</h1>
+        <h1 style={{ fontFamily: T.serif, fontSize: 52, fontWeight: 500, fontStyle: 'italic', margin: 0, letterSpacing: '-0.02em' }}>L'Admin</h1>
         <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 14, color: T.ink2, marginTop: 8, maxWidth: 600, lineHeight: 1.55 }}>
           Interface de gestion des données Supabase : systèmes anatomiques, bactéries, milieux de culture et questions de quiz.
         </div>
@@ -76,18 +89,26 @@ function Dashboard({ onNavigate }) {
       {loading ? (
         <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: T.ink3 }}>Chargement des statistiques…</div>
       ) : (
-        <div style={{ display: 'flex', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 16, marginBottom: 32 }}>
           {[
-            { key: 'systems',  label: 'SYSTÈMES',  tab: 'systems' },
-            { key: 'zones',    label: 'ZONES',      tab: 'systems' },
-            { key: 'bacteria', label: 'BACTÉRIES',  tab: 'bacteria' },
-            { key: 'quiz',     label: 'QUESTIONS',  tab: 'quiz' },
+            { key: 'systems',     label: 'SYSTÈMES',    tab: 'systems' },
+            { key: 'zones',       label: 'ZONES',        tab: 'systems' },
+            { key: 'bacteria',    label: 'BACTÉRIES',    tab: 'bacteria' },
+            { key: 'pathologies', label: 'PATHOLOGIES',  tab: 'pathologies' },
+            { key: 'images',      label: 'IMAGES',       tab: 'bacteria' },
+            { key: 'quiz',        label: 'QUESTIONS',    tab: 'quiz' },
           ].map(({ key, label, tab }) => (
             <div key={key} style={cardStyle}>
               <div style={countStyle}>{counts?.[key] ?? '—'}</div>
               <div style={labelStyle}>{label}</div>
             </div>
           ))}
+          <div style={cardStyle}>
+            <div style={{ ...countStyle, fontSize: counts?.lastModified ? 18 : 40, paddingTop: counts?.lastModified ? 12 : 0 }}>
+              {counts?.lastModified ?? '—'}
+            </div>
+            <div style={labelStyle}>MODIFIÉ LE</div>
+          </div>
         </div>
       )}
 
@@ -148,7 +169,7 @@ export default function AdminShell({ navigate }) {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.bg }}>
         <div style={{ maxWidth: 420, width: '100%', background: T.paper, border: `0.5px solid ${T.rule}`, padding: '44px 40px' }}>
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 15, color: 'var(--accent)', marginBottom: 4 }}>Annexe administrative</div>
-          <h1 style={{ fontFamily: T.serif, fontSize: 48, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1, fontStyle: 'italic', margin: 0 }}>Atelier</h1>
+          <h1 style={{ fontFamily: T.serif, fontSize: 48, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1, fontStyle: 'italic', margin: 0 }}>Admin</h1>
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 14, color: T.ink2, marginTop: 14, lineHeight: 1.5 }}>
             L'accès est protégé. Connectez-vous avec vos identifiants.
           </div>
@@ -221,7 +242,7 @@ export default function AdminShell({ navigate }) {
       <div style={{ width: 190, flexShrink: 0, background: T.paper, borderRight: `0.5px solid ${T.rule}`, display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
         <div style={{ padding: '24px 20px 20px', borderBottom: `0.5px solid ${T.rule}` }}>
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 11, color: 'var(--accent)', marginBottom: 2, letterSpacing: '0.02em' }}>Bacteriomap</div>
-          <div style={{ fontFamily: T.serif, fontSize: 22, fontWeight: 500, fontStyle: 'italic', color: T.ink }}>Atelier</div>
+          <div style={{ fontFamily: T.serif, fontSize: 22, fontWeight: 500, fontStyle: 'italic', color: T.ink }}>Admin</div>
         </div>
 
         <nav style={{ flex: 1, padding: '12px 0' }}>
@@ -260,7 +281,7 @@ export default function AdminShell({ navigate }) {
             onClick={() => navigate('home')}
             style={{ width: '100%', padding: '8px 12px', background: 'transparent', border: `1px solid ${T.rule}`, fontFamily: T.mono, fontSize: 10, letterSpacing: '0.08em', color: T.ink3, cursor: 'pointer', textAlign: 'left' }}
           >
-            ← Quitter l'atelier
+            ← Quitter l'admin
           </button>
           <button
             onClick={() => supabase.auth.signOut()}
