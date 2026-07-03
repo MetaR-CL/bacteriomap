@@ -429,40 +429,103 @@ export default function AdminSystems() {
               </div>
             ) : (
               <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, marginBottom: 16 }}>
-                {sysSubs.map((z, i) => (
-                  <div
-                    key={z.id}
-                    draggable
-                    onDragStart={() => { dragZoneFrom.current = i }}
-                    onDragOver={e => { e.preventDefault(); setDragOverZoneIdx(i) }}
-                    onDrop={dropZone}
-                    onDragEnd={() => { setDragOverZoneIdx(null); dragZoneFrom.current = null }}
-                    style={{
-                      padding: '12px 16px',
-                      borderBottom: i < sysSubs.length - 1 ? `1px solid var(--ruleSoft)` : 'none',
-                      borderTop: dragOverZoneIdx === i && dragZoneFrom.current !== null && dragZoneFrom.current !== i ? `2px solid var(--accent)` : '2px solid transparent',
-                      display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 10, alignItems: 'center',
-                      background: activeSubZoneId === z.id ? T.bg : 'transparent',
-                    }}
-                  >
-                    <span style={{ cursor: 'grab', color: T.ink3, fontSize: 16, userSelect: 'none', lineHeight: 1, paddingRight: 2 }}>⠿</span>
-                    <input
-                      type="text"
-                      value={zoneVal(z, 'label')}
-                      onChange={e => patchZoneEdit(z.id, 'label', e.target.value)}
-                      style={{ border: 'none', background: 'transparent', fontFamily: T.serif, fontSize: 15, fontWeight: 500, color: T.ink, outline: 'none', width: '100%' }}
-                    />
-                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                      <button
-                        onClick={() => setActiveSubZoneId(id => id === z.id ? null : z.id)}
-                        style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10, background: activeSubZoneId === z.id ? T.ink : 'transparent', color: activeSubZoneId === z.id ? T.paper : 'var(--ink2)' }}
-                        title="Gérer les bactéries de cette zone"
-                      >Bactéries</button>
-                      <button onClick={() => saveZone(z)} style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10 }}>Enregistrer</button>
-                      <button onClick={() => removeSub(z)} style={{ ...arrowBtn, color: 'var(--red)' }}>×</button>
+                {sysSubs.map((z, i) => {
+                  const isExpanded = activeSubZoneId === z.id
+                  return (
+                    <div key={z.id}>
+                      {/* Zone row */}
+                      <div
+                        draggable
+                        onDragStart={() => { dragZoneFrom.current = i }}
+                        onDragOver={e => { e.preventDefault(); setDragOverZoneIdx(i) }}
+                        onDrop={dropZone}
+                        onDragEnd={() => { setDragOverZoneIdx(null); dragZoneFrom.current = null }}
+                        style={{
+                          padding: '12px 16px',
+                          borderBottom: isExpanded || i < sysSubs.length - 1 ? `1px solid var(--ruleSoft)` : 'none',
+                          borderTop: dragOverZoneIdx === i && dragZoneFrom.current !== null && dragZoneFrom.current !== i ? `2px solid var(--accent)` : '2px solid transparent',
+                          display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 10, alignItems: 'center',
+                          background: isExpanded ? T.bg : 'transparent',
+                        }}
+                      >
+                        <span style={{ cursor: 'grab', color: T.ink3, fontSize: 16, userSelect: 'none', lineHeight: 1, paddingRight: 2 }}>⠿</span>
+                        <input
+                          type="text"
+                          value={zoneVal(z, 'label')}
+                          onChange={e => patchZoneEdit(z.id, 'label', e.target.value)}
+                          style={{ border: 'none', background: 'transparent', fontFamily: T.serif, fontSize: 15, fontWeight: 500, color: T.ink, outline: 'none', width: '100%' }}
+                        />
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                          <button
+                            onClick={() => setActiveSubZoneId(id => id === z.id ? null : z.id)}
+                            style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10, background: isExpanded ? T.ink : 'transparent', color: isExpanded ? T.paper : 'var(--ink2)' }}
+                          >{isExpanded ? 'Masquer' : 'Bactéries'}</button>
+                          <button onClick={() => saveZone(z)} style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10 }}>Enregistrer</button>
+                          <button onClick={() => removeSub(z)} style={{ ...arrowBtn, color: 'var(--red)' }}>×</button>
+                        </div>
+                      </div>
+
+                      {/* Inline bacteria panel (accordion) */}
+                      {isExpanded && (
+                        <div style={{ padding: '14px 16px', background: T.bg, borderBottom: i < sysSubs.length - 1 ? `1px solid var(--ruleSoft)` : 'none' }}>
+                          {zoneBacteria.length > 0 ? (
+                            <div style={{ marginBottom: 10 }}>
+                              {zoneBacteria.map((g, gi) => {
+                                const isOver = dragOverBactIdx === gi && dragBactFrom.current !== null && dragBactFrom.current !== gi
+                                return (
+                                  <div
+                                    key={g.bacteria_id}
+                                    draggable
+                                    onDragStart={() => { dragBactFrom.current = gi }}
+                                    onDragOver={e => { e.preventDefault(); setDragOverBactIdx(gi) }}
+                                    onDrop={dropBact}
+                                    onDragEnd={() => { setDragOverBactIdx(null); dragBactFrom.current = null }}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', gap: 8,
+                                      padding: '5px 8px',
+                                      background: T.paper,
+                                      borderBottom: gi < zoneBacteria.length - 1 ? `1px solid var(--ruleSoft)` : 'none',
+                                      borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent',
+                                    }}
+                                  >
+                                    <span style={{ cursor: 'grab', color: T.ink3, fontSize: 13, userSelect: 'none', flexShrink: 0 }}>⠿</span>
+                                    <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink, flex: 1 }}>{g.name}</span>
+                                    <button onClick={() => removeBact(g.bacteria_id)} style={{ ...arrowBtn, color: 'var(--red)', width: 22, height: 22, fontSize: 11 }}>×</button>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, fontSize: 13, marginBottom: 10 }}>Aucune bactérie liée à cette zone.</div>
+                          )}
+                          <div style={{ position: 'relative' }}>
+                            <input
+                              type="text"
+                              placeholder="Ajouter un germe…"
+                              value={bactSearch}
+                              onChange={e => setBactSearch(e.target.value)}
+                              style={{ ...inpStyle, fontSize: 12, padding: '6px 8px' }}
+                            />
+                            {bactSearch && (
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: T.paper, border: `0.5px solid ${T.rule}`, maxHeight: 200, overflowY: 'auto', zIndex: 10 }}>
+                                {allBacteria.filter(b => b.name.toLowerCase().includes(bactSearch.toLowerCase()) && !zoneBacteria.find(g => g.bacteria_id === b.id)).map((b, idx, arr) => (
+                                  <div key={b.id} onClick={() => addBact(b.id)}
+                                    style={{ padding: '7px 10px', cursor: 'pointer', borderBottom: idx < arr.length - 1 ? `1px solid var(--ruleSoft)` : 'none', fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink }}
+                                    onMouseEnter={e => e.currentTarget.style.background = T.bg}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                  >{b.name}</div>
+                                ))}
+                                {allBacteria.filter(b => b.name.toLowerCase().includes(bactSearch.toLowerCase()) && !zoneBacteria.find(g => g.bacteria_id === b.id)).length === 0 && (
+                                  <div style={{ padding: '8px 10px', fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, fontSize: 12 }}>Aucun résultat.</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
 
