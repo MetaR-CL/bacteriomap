@@ -71,15 +71,6 @@ function Field({ label, hint, wide, children }) {
   )
 }
 
-function Toast({ success, error }) {
-  return (
-    <>
-      {success && <div style={{ padding: '8px 12px', background: '#e8f5e9', border: '1px solid #81c784', fontFamily: 'var(--mono)', fontSize: 11, color: '#2e7d32', marginBottom: 12, letterSpacing: '0.04em' }}>✓ {success}</div>}
-      {error && <div style={{ padding: '8px 12px', background: '#fde8e8', border: '1px solid #e87070', fontFamily: 'var(--mono)', fontSize: 11, color: '#c00', marginBottom: 12, letterSpacing: '0.04em' }}>✗ {error}</div>}
-    </>
-  )
-}
-
 function BoolSelect({ value, onChange }) {
   const v = value === true ? 'true' : value === false ? 'false' : 'null'
   return (
@@ -100,11 +91,68 @@ export default function AdminBacteria() {
   const [draft, setDraft]           = React.useState(null)
   const draftRef                    = React.useRef(null)
   const [search, setSearch]         = React.useState('')
-  const [saving, setSaving]         = React.useState(false)
-  const [error, setError]           = React.useState(null)
-  const [successMsg, setSuccessMsg] = React.useState(null)
+
+  // Autosave state
+  const [saveStatus, setSaveStatus] = React.useState('idle') // 'idle'|'pending'|'saving'|'saved'|'error'
+  const [savedTime,  setSavedTime]  = React.useState('')
+  const [saveError,  setSaveError]  = React.useState('')
+  const debounceRef   = React.useRef(null)
+  const pendingRef    = React.useRef(false) // unsaved changes exist
+  const isLoadingRef  = React.useRef(false) // suppress autosave on selectBact
+
+  // Image upload busy
+  const [imgBusy, setImgBusy] = React.useState(false)
 
   React.useEffect(() => { draftRef.current = draft }, [draft])
+
+  // ── Core save function (via ref to always get latest upsert) ──────────────
+  const saveImplRef = React.useRef(null)
+  saveImplRef.current = async (data) => {
+    if (!data?.id) return
+    setSaveStatus('saving')
+    try {
+      await upsert(data)
+      const now = new Date()
+      setSavedTime(`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`)
+      setSaveStatus('saved')
+      pendingRef.current = false
+    } catch (err) {
+      setSaveError(err.message || 'Erreur réseau')
+      setSaveStatus('error')
+    }
+  }
+
+  // Flush: cancel debounce and save immediately
+  const flushSave = React.useCallback((data) => {
+    if (debounceRef.current) { clearTimeout(debounceRef.current); debounceRef.current = null }
+    return saveImplRef.current(data)
+  }, [])
+
+  // Schedule a debounced save
+  const scheduleSave = React.useCallback((data) => {
+    if (!data?.id) return
+    pendingRef.current = true
+    setSaveStatus('pending')
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => saveImplRef.current(data), 800)
+  }, [])
+
+  // Trigger autosave whenever draft changes (skip initial load)
+  React.useEffect(() => {
+    if (isLoadingRef.current) { isLoadingRef.current = false; return }
+    scheduleSave(draft)
+  }, [draft]) // eslint-disable-line
+
+  // Flush on beforeunload (best-effort)
+  React.useEffect(() => {
+    const handler = () => {
+      if (pendingRef.current && draftRef.current) {
+        flushSave(draftRef.current)
+      }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [flushSave])
 
   const filtered = bacteria.filter(b => b.name.toLowerCase().includes(search.toLowerCase()))
 
@@ -113,22 +161,21 @@ export default function AdminBacteria() {
   }, [bacteria.length]) // eslint-disable-line
 
   const selectBact = (b) => {
+    // Flush any pending save for the current draft before switching
+    if (pendingRef.current && draftRef.current) {
+      flushSave(draftRef.current)
+    }
+    isLoadingRef.current = true
     const { bacterio_images: _, ...fields } = b
     setSelectedId(b.id)
     setDraft(fields)
-    setError(null)
-    setSuccessMsg(null)
+    setSaveStatus('idle')
+    setSaveError('')
   }
 
   const current = bacteria.find(b => b.id === selectedId) || null
   const images  = current?.bacterio_images || []
   const d       = draft || {}
-
-  const flash = (msg) => {
-    setError(null)
-    setSuccessMsg(msg)
-    setTimeout(() => setSuccessMsg(null), 3000)
-  }
 
   const isHiddenField = (key) => (d.hidden_fields || []).includes(key)
 
@@ -143,31 +190,54 @@ export default function AdminBacteria() {
 
   const addBact = async () => {
     const row = { name: `Nouvelle bactérie ${bacteria.length + 1}`, type: 'bacterie', gram: 'positif', morphology: 'cocci-cluster', shape: 'cocci en amas' }
-    setSaving(true); setError(null)
+    setSaveStatus('saving')
     try {
       const id = await upsert(row)
-      if (id) { setSelectedId(id); setDraft({ ...row, id }); flash('Fiche créée') }
-    } catch (err) { setError(err.message) }
-    finally { setSaving(false) }
-  }
-
-  const handleSave = async () => {
-    if (!draftRef.current) return
-    setSaving(true); setError(null)
-    try {
-      await upsert(draftRef.current)
-      flash('Fiche enregistrée')
-    } catch (err) { setError(err.message) }
-    finally { setSaving(false) }
+      if (id) {
+        isLoadingRef.current = true
+        setSelectedId(id)
+        setDraft({ ...row, id })
+        setSaveStatus('saved')
+        const now = new Date()
+        setSavedTime(`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`)
+      }
+    } catch (err) {
+      setSaveError(err.message)
+      setSaveStatus('error')
+    }
   }
 
   const deleteBact = async () => {
     if (!current) return
     if (!confirm(`Êtes-vous sûr ? La fiche « ${current.name} » sera définitivement supprimée.`)) return
-    setError(null)
-    try { await remove(current.id); setSelectedId(null); setDraft(null) }
-    catch (err) { setError(err.message) }
+    try { await remove(current.id); setSelectedId(null); setDraft(null); setSaveStatus('idle') }
+    catch (err) { setSaveError(err.message); setSaveStatus('error') }
   }
+
+  // ── Status indicator ─────────────────────────────────────────────────────
+  const statusBar = (
+    <div style={{ height: 20, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+      {saveStatus === 'pending' && (
+        <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: '0.14em', color: T.ink3 }}>EN ATTENTE…</span>
+      )}
+      {saveStatus === 'saving' && (
+        <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: '0.14em', color: T.ink3 }}>ENREGISTREMENT…</span>
+      )}
+      {saveStatus === 'saved' && (
+        <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: '0.14em', color: T.ink3 }}>ENREGISTRÉ · {savedTime}</span>
+      )}
+      {saveStatus === 'error' && (
+        <>
+          <span style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: '0.14em', color: 'var(--red)' }}>ERREUR —</span>
+          <button
+            onClick={() => flushSave(draftRef.current)}
+            style={{ fontFamily: T.mono, fontSize: 9, letterSpacing: '0.14em', color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+          >RÉESSAYER</button>
+          {saveError && <span style={{ fontFamily: T.mono, fontSize: 8, color: 'var(--red)', opacity: 0.7 }}>({saveError})</span>}
+        </>
+      )}
+    </div>
+  )
 
   // ── Left panel ──────────────────────────────────────────────────────────────
   const listPanel = (
@@ -176,7 +246,7 @@ export default function AdminBacteria() {
         <h2 style={{ fontFamily: T.serif, fontSize: 20, fontWeight: 500, fontStyle: 'italic', margin: 0 }}>Bactéries</h2>
         <span style={{ fontFamily: T.mono, fontSize: 10, color: T.ink3, letterSpacing: '0.1em', flex: 1, textAlign: 'right' }}>{filtered.length}/{bacteria.length}</span>
       </div>
-      <button onClick={addBact} disabled={saving} style={{ ...primaryBtn, width: '100%', padding: '9px 12px', marginBottom: 10, opacity: saving ? 0.6 : 1 }}>
+      <button onClick={addBact} style={{ ...primaryBtn, width: '100%', padding: '9px 12px', marginBottom: 10 }}>
         + NOUVELLE BACTÉRIE
       </button>
       <input
@@ -210,11 +280,11 @@ export default function AdminBacteria() {
   // ── Form panel ──────────────────────────────────────────────────────────────
   const formPanel = draft ? (
     <div style={{ flex: 1, minWidth: 300 }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 18 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 6 }}>
         <h2 style={{ fontFamily: T.serif, fontSize: 26, fontWeight: 500, fontStyle: 'italic', margin: 0, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.name}</h2>
       </div>
 
-      <Toast success={successMsg} error={error}/>
+      {statusBar}
 
       <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, padding: '24px 28px' }}>
 
@@ -489,10 +559,10 @@ export default function AdminBacteria() {
                   <span style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{img.caption || '—'}</span>
                   <button onClick={async () => {
                     if (!confirm('Supprimer cette image ?')) return
-                    setSaving(true); setError(null)
+                    setImgBusy(true)
                     try { await deleteImage(img.id, img.url) }
-                    catch (err) { setError(err.message) }
-                    finally { setSaving(false) }
+                    catch (err) { setSaveError(err.message); setSaveStatus('error') }
+                    finally { setImgBusy(false) }
                   }} style={{ ...arrowBtn, color: 'var(--red)', marginLeft: 4 }}>×</button>
                 </div>
                 <div style={{ padding: '0 8px 6px' }}>
@@ -525,15 +595,15 @@ export default function AdminBacteria() {
           </div>
         )}
         {d.id && (
-          <label style={{ display: 'inline-block', padding: '8px 14px', background: 'var(--accent)', color: 'var(--paper)', fontFamily: T.mono, fontSize: 10, letterSpacing: '0.1em', cursor: 'pointer' }}>
+          <label style={{ display: 'inline-block', padding: '8px 14px', background: 'var(--accent)', color: 'var(--paper)', fontFamily: T.mono, fontSize: 10, letterSpacing: '0.1em', cursor: imgBusy ? 'wait' : 'pointer', opacity: imgBusy ? 0.6 : 1 }}>
             + Ajouter une image
             <input type="file" accept="image/*" onChange={async e => {
               const file = e.target.files?.[0]
               if (!file) return
-              setSaving(true); setError(null)
+              setImgBusy(true)
               try { await uploadImage(d.id, file) }
-              catch (err) { setError(err.message) }
-              finally { setSaving(false) }
+              catch (err) { setSaveError(err.message); setSaveStatus('error') }
+              finally { setImgBusy(false) }
               e.target.value = ''
             }} style={{ display: 'none' }}/>
           </label>
@@ -542,12 +612,8 @@ export default function AdminBacteria() {
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink3 }}>Enregistrez d'abord la fiche pour pouvoir ajouter des images.</div>
         )}
 
-        {/* SAVE + DELETE */}
-        <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid var(--ruleSoft)`, display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={handleSave} disabled={saving} style={{ ...primaryBtn, padding: '12px 32px', fontSize: 12, opacity: saving ? 0.6 : 1 }}>
-            {saving ? 'ENREGISTREMENT…' : 'Enregistrer la fiche'}
-          </button>
-          <span style={{ flex: 1 }}/>
+        {/* DELETE */}
+        <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid var(--ruleSoft)`, display: 'flex', alignItems: 'center' }}>
           <button onClick={deleteBact} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--red)', fontFamily: '"IBM Plex Mono", monospace', fontSize: 11, letterSpacing: '0.1em', color: 'var(--red)', cursor: 'pointer' }}>
             Supprimer cette fiche
           </button>
