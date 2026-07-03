@@ -456,8 +456,8 @@ export default function AdminBacteria() {
           </>
         )}
 
-        {/* MILIEUX & MICROSCOPIE */}
-        <SectionTitle fieldKey="microscopie" isHidden={isHiddenField('microscopie')} onToggle={toggleHidden} sectionKey="s_microscopie" collapsed={isCollapsed('s_microscopie')} onCollapse={toggleSection}>MILIEUX &amp; MICROSCOPIE</SectionTitle>
+        {/* MICROSCOPIE & CULTURE */}
+        <SectionTitle fieldKey="microscopie" isHidden={isHiddenField('microscopie')} onToggle={toggleHidden} sectionKey="s_microscopie" collapsed={isCollapsed('s_microscopie')} onCollapse={toggleSection}>MICROSCOPIE &amp; CULTURE</SectionTitle>
         {!isCollapsed('s_microscopie') && (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
@@ -531,78 +531,21 @@ export default function AdminBacteria() {
           </>
         )}
 
-        {/* RÉSISTANCES NATURELLES */}
-        <SectionTitle fieldKey="resist_nat" isHidden={isHiddenField('resist_nat')} onToggle={toggleHidden} sectionKey="s_resist_nat" collapsed={isCollapsed('s_resist_nat')} onCollapse={toggleSection}>RÉSISTANCES NATURELLES</SectionTitle>
-        {!isCollapsed('s_resist_nat') && (
-          <>
-            {(d.resist_nat || []).map((item, i) => {
-              const drag = makeArrayDrag('resist_nat')
-              const isOver = dragOverArray.field === 'resist_nat' && dragOverArray.idx === i && dragArrayRef.current.from !== i
-              return (
-                <div key={i} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
-                  style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center', borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
-                  <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
-                  <input type="text" value={item} onChange={e => { const n = (d.resist_nat||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,resist_nat:n})) }} style={{...inpStyle,flex:1}}/>
-                  <button onClick={() => setDraft(p=>({...p,resist_nat:(p.resist_nat||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
-                </div>
-              )
-            })}
-            <button onClick={() => setDraft(p=>({...p,resist_nat:[...(p.resist_nat||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
-          </>
-        )}
-
-        {/* RÉSISTANCES ACQUISES */}
-        <SectionTitle fieldKey="resist_acq" isHidden={isHiddenField('resist_acq')} onToggle={toggleHidden} sectionKey="s_resist_acq" collapsed={isCollapsed('s_resist_acq')} onCollapse={toggleSection}>RÉSISTANCES ACQUISES</SectionTitle>
-        {!isCollapsed('s_resist_acq') && (
-          <>
-            {(d.resist_acq || []).map((item, i) => {
-              const drag = makeArrayDrag('resist_acq')
-              const isOver = dragOverArray.field === 'resist_acq' && dragOverArray.idx === i && dragArrayRef.current.from !== i
-              return (
-                <div key={i} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
-                  style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center', borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
-                  <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
-                  <input type="text" value={item} onChange={e => { const n = (d.resist_acq||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,resist_acq:n})) }} style={{...inpStyle,flex:1}}/>
-                  <button onClick={() => setDraft(p=>({...p,resist_acq:(p.resist_acq||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
-                </div>
-              )
-            })}
-            <button onClick={() => setDraft(p=>({...p,resist_acq:[...(p.resist_acq||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
-          </>
-        )}
-
-        {/* VIRULENCE */}
-        <SectionTitle fieldKey="virulence" isHidden={isHiddenField('virulence')} onToggle={toggleHidden} sectionKey="s_virulence" collapsed={isCollapsed('s_virulence')} onCollapse={toggleSection}>VIRULENCE</SectionTitle>
-        {!isCollapsed('s_virulence') && (
-          <>
-            {(d.virulence || []).map((item, i) => {
-              const drag = makeArrayDrag('virulence')
-              const isOver = dragOverArray.field === 'virulence' && dragOverArray.idx === i && dragArrayRef.current.from !== i
-              return (
-                <div key={i} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
-                  style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center', borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
-                  <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
-                  <input type="text" value={item} onChange={e => { const n = (d.virulence||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,virulence:n})) }} style={{...inpStyle,flex:1}}/>
-                  <button onClick={() => setDraft(p=>({...p,virulence:(p.virulence||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
-                </div>
-              )
-            })}
-            <button onClick={() => setDraft(p=>({...p,virulence:[...(p.virulence||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
-          </>
-        )}
-
-        {/* CLINIQUE & TRAITEMENT */}
-        <SectionTitle fieldKey="clinique" isHidden={isHiddenField('clinique')} onToggle={toggleHidden} sectionKey="s_clinique" collapsed={isCollapsed('s_clinique')} onCollapse={toggleSection}>CLINIQUE &amp; TRAITEMENT</SectionTitle>
+        {/* SIGNIFICATION CLINIQUE */}
+        <SectionTitle fieldKey="clinique" isHidden={isHiddenField('clinique')} onToggle={toggleHidden} sectionKey="s_clinique" collapsed={isCollapsed('s_clinique')} onCollapse={toggleSection}>SIGNIFICATION CLINIQUE</SectionTitle>
         {!isCollapsed('s_clinique') && (
           <>
-            <Field label="Description clinique" wide>
-              <textarea value={d.clinical_info || ''} onChange={e => setDraft(p=>({...p,clinical_info:e.target.value}))} rows={3} style={taStyle}/>
-              <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
-            </Field>
-            <Field label="Traitement antibiotique" wide>
-              <textarea value={d.antibio || ''} onChange={e => setDraft(p=>({...p,antibio:e.target.value}))} rows={3} style={taStyle}/>
-              <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
-            </Field>
+            <textarea value={d.clinical_info || ''} onChange={e => setDraft(p=>({...p,clinical_info:e.target.value}))} rows={3} style={taStyle}/>
+            <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
+          </>
+        )}
+
+        {/* TRAITEMENT ANTIBIOTIQUE */}
+        <SectionTitle fieldKey="antibio" isHidden={isHiddenField('antibio')} onToggle={toggleHidden} sectionKey="s_antibio" collapsed={isCollapsed('s_antibio')} onCollapse={toggleSection}>TRAITEMENT ANTIBIOTIQUE</SectionTitle>
+        {!isCollapsed('s_antibio') && (
+          <>
+            <textarea value={d.antibio || ''} onChange={e => setDraft(p=>({...p,antibio:e.target.value}))} rows={3} style={taStyle}/>
+            <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.08em', marginTop: 4 }}>Markdown supporté : **gras**, *italique*, - liste</div>
           </>
         )}
 
@@ -647,8 +590,68 @@ export default function AdminBacteria() {
           </>
         )}
 
-        {/* COMMENTAIRE */}
-        <SectionTitle fieldKey="commentaire" isHidden={isHiddenField('commentaire')} onToggle={toggleHidden} sectionKey="s_commentaire" collapsed={isCollapsed('s_commentaire')} onCollapse={toggleSection}>COMMENTAIRE</SectionTitle>
+        {/* RÉSISTANCES NATURELLES */}
+        <SectionTitle fieldKey="resist_nat" isHidden={isHiddenField('resist_nat')} onToggle={toggleHidden} sectionKey="s_resist_nat" collapsed={isCollapsed('s_resist_nat')} onCollapse={toggleSection}>RÉSISTANCES NATURELLES</SectionTitle>
+        {!isCollapsed('s_resist_nat') && (
+          <>
+            {(d.resist_nat || []).map((item, i) => {
+              const drag = makeArrayDrag('resist_nat')
+              const isOver = dragOverArray.field === 'resist_nat' && dragOverArray.idx === i && dragArrayRef.current.from !== i
+              return (
+                <div key={i} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
+                  style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center', borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
+                  <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
+                  <input type="text" value={item} onChange={e => { const n = (d.resist_nat||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,resist_nat:n})) }} style={{...inpStyle,flex:1}}/>
+                  <button onClick={() => setDraft(p=>({...p,resist_nat:(p.resist_nat||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
+                </div>
+              )
+            })}
+            <button onClick={() => setDraft(p=>({...p,resist_nat:[...(p.resist_nat||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
+          </>
+        )}
+
+        {/* RÉSISTANCES ACQUISES */}
+        <SectionTitle fieldKey="resist_acq" isHidden={isHiddenField('resist_acq')} onToggle={toggleHidden} sectionKey="s_resist_acq" collapsed={isCollapsed('s_resist_acq')} onCollapse={toggleSection}>RÉSISTANCES ACQUISES</SectionTitle>
+        {!isCollapsed('s_resist_acq') && (
+          <>
+            {(d.resist_acq || []).map((item, i) => {
+              const drag = makeArrayDrag('resist_acq')
+              const isOver = dragOverArray.field === 'resist_acq' && dragOverArray.idx === i && dragArrayRef.current.from !== i
+              return (
+                <div key={i} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
+                  style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center', borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
+                  <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
+                  <input type="text" value={item} onChange={e => { const n = (d.resist_acq||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,resist_acq:n})) }} style={{...inpStyle,flex:1}}/>
+                  <button onClick={() => setDraft(p=>({...p,resist_acq:(p.resist_acq||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
+                </div>
+              )
+            })}
+            <button onClick={() => setDraft(p=>({...p,resist_acq:[...(p.resist_acq||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
+          </>
+        )}
+
+        {/* FACTEURS DE VIRULENCE */}
+        <SectionTitle fieldKey="virulence" isHidden={isHiddenField('virulence')} onToggle={toggleHidden} sectionKey="s_virulence" collapsed={isCollapsed('s_virulence')} onCollapse={toggleSection}>FACTEURS DE VIRULENCE</SectionTitle>
+        {!isCollapsed('s_virulence') && (
+          <>
+            {(d.virulence || []).map((item, i) => {
+              const drag = makeArrayDrag('virulence')
+              const isOver = dragOverArray.field === 'virulence' && dragOverArray.idx === i && dragArrayRef.current.from !== i
+              return (
+                <div key={i} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
+                  style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center', borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
+                  <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
+                  <input type="text" value={item} onChange={e => { const n = (d.virulence||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,virulence:n})) }} style={{...inpStyle,flex:1}}/>
+                  <button onClick={() => setDraft(p=>({...p,virulence:(p.virulence||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
+                </div>
+              )
+            })}
+            <button onClick={() => setDraft(p=>({...p,virulence:[...(p.virulence||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
+          </>
+        )}
+
+        {/* REMARQUES */}
+        <SectionTitle fieldKey="commentaire" isHidden={isHiddenField('commentaire')} onToggle={toggleHidden} sectionKey="s_commentaire" collapsed={isCollapsed('s_commentaire')} onCollapse={toggleSection}>REMARQUES</SectionTitle>
         {!isCollapsed('s_commentaire') && (
           <>
             <textarea value={d.commentaire || ''} onChange={e => setDraft(p=>({...p,commentaire:e.target.value}))} rows={3} placeholder="Notes libres…" style={taStyle}/>

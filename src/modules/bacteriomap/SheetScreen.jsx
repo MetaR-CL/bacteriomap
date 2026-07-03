@@ -195,7 +195,6 @@ function SectionTitle({ n, title, anchor, accent, right }) {
 // ── SheetView — pure rendering, no fetch, no TopBar, no Lightbox ─────────────
 // Exported so AdminBacteria can use it for the live preview panel.
 export function SheetView({ b, images: imagesProp, systemId = 'orl', compact = false }) {
-  const [antiTab, setAntiTab] = React.useState('tableau');
   const [lightbox, setLightbox] = React.useState(null);
 
   if (!b) return null;
@@ -211,13 +210,15 @@ export function SheetView({ b, images: imagesProp, systemId = 'orl', compact = f
   const resistAcq = Array.isArray(b.resist_acq) ? b.resist_acq : [];
   const virulence = Array.isArray(b.virulence) ? b.virulence : [];
 
-  const rapidTests = [
+  const standardTests = [
     b.catalase    != null && { k: 'Catalase',    v: b.catalase    ? '+' : '−' },
     b.oxydase     != null && { k: 'Oxydase',     v: b.oxydase     ? '+' : '−' },
     b.coagulase   != null && { k: 'Coagulase',   v: b.coagulase   ? '+' : '−' },
     b.sporulation != null && { k: 'Sporulation', v: b.sporulation ? '+' : '−' },
-    ...(Array.isArray(b.tests_rapides) ? b.tests_rapides.map(t => ({ k: t.k || t.name || '', v: t.v || t.value || '' })).filter(t => t.k) : []),
   ].filter(Boolean);
+  const extraTests = Array.isArray(b.tests_rapides)
+    ? b.tests_rapides.map(t => ({ k: t.k || t.name || '', v: t.v || t.value || '' })).filter(t => t.k)
+    : [];
 
   const hidden = new Set(Array.isArray(b.hidden_fields) ? b.hidden_fields : []);
 
@@ -265,10 +266,20 @@ export function SheetView({ b, images: imagesProp, systemId = 'orl', compact = f
             ) : (
               <p style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink3, marginBottom: 12 }}>Données non renseignées.</p>
             )}
-            {rapidTests.length > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(rapidTests.length, 4)}, 1fr)`, border: `1px solid ${T.rule}`, marginBottom: 8 }}>
-                {rapidTests.map((r, i) => (
-                  <div key={r.k} style={{ padding: '6px 10px', borderRight: i < rapidTests.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', background: i % 2 === 0 ? T.bg : T.paper }}>
+            {standardTests.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(standardTests.length, 4)}, 1fr)`, border: `1px solid ${T.rule}`, marginBottom: extraTests.length > 0 ? 0 : 8 }}>
+                {standardTests.map((r, i) => (
+                  <div key={r.k} style={{ padding: '6px 10px', borderRight: i < standardTests.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', background: i % 2 === 0 ? T.bg : T.paper }}>
+                    <div style={{ fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.1em' }}>{r.k}</div>
+                    <div style={{ fontFamily: T.serif, fontSize: 22, lineHeight: 1, marginTop: 3, fontWeight: 500 }}>{r.v}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {extraTests.length > 0 && (
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(extraTests.length, 4)}, 1fr)`, border: `1px solid ${T.rule}`, borderTop: standardTests.length > 0 ? `1px solid ${T.ruleSoft}` : undefined, marginBottom: 8 }}>
+                {extraTests.map((r, i) => (
+                  <div key={r.k} style={{ padding: '6px 10px', borderRight: i < extraTests.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', background: T.bgSoft || T.bg }}>
                     <div style={{ fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.1em' }}>{r.k}</div>
                     <div style={{ fontFamily: T.serif, fontSize: 22, lineHeight: 1, marginTop: 3, fontWeight: 500 }}>{r.v}</div>
                   </div>
@@ -292,34 +303,31 @@ export function SheetView({ b, images: imagesProp, systemId = 'orl', compact = f
           </>
         )}
 
+        {!!b.antibio && !hidden.has('antibio') && (
+          <>
+            <SectionTitle n="05" title="Traitement" anchor={null} accent={accent} />
+            <MarkdownView content={b.antibio} />
+          </>
+        )}
+
         {antibiogramme.length > 0 && !hidden.has('antibiogramme') && (
           <>
-            <SectionTitle n="05" title="Antibiogramme" anchor={null} accent={accent} right={
-              <div style={{ display: 'flex', gap: 4 }}>
-                {['tableau', 'résumé'].map(k => (
-                  <button key={k} onClick={() => setAntiTab(k)} style={{ padding: '2px 6px', background: antiTab === k ? T.ink : 'transparent', color: antiTab === k ? T.paper : T.ink3, border: `1px solid ${antiTab === k ? T.ink : T.rule}`, fontFamily: T.mono, fontSize: 9, cursor: 'pointer' }}>{k.toUpperCase()}</button>
-                ))}
+            <SectionTitle n="06" title="Antibiogramme" anchor={null} accent={accent} />
+            <div style={{ border: `1px solid ${T.rule}` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px', padding: '5px 10px', background: T.bgSoft, fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.1em', borderBottom: `1px solid ${T.rule}` }}>
+                <span>ANTIBIOTIQUE</span><span>S/I/R</span>
               </div>
-            } />
-            {antiTab === 'tableau' ? (
-              <div style={{ border: `1px solid ${T.rule}` }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px', padding: '5px 10px', background: T.bgSoft, fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.1em', borderBottom: `1px solid ${T.rule}` }}>
-                  <span>ANTIBIOTIQUE</span><span>S/I/R</span>
-                </div>
-                {antibiogramme.map((row, i) => {
-                  const sens = row.sens || '?';
-                  const col = sens === 'S' ? T.green : sens === 'R' ? T.red : accent;
-                  return (
-                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 60px', padding: '6px 10px', borderBottom: i < antibiogramme.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', fontFamily: T.serif, fontSize: 13, alignItems: 'center', background: i % 2 === 0 ? T.paper : T.bg }}>
-                      <span style={{ fontStyle: 'italic' }}>{row.ab}</span>
-                      <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 600, color: col }}>{sens}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <MarkdownView content={b.antibio} />
-            )}
+              {antibiogramme.map((row, i) => {
+                const sens = row.sens || '?';
+                const col = sens === 'S' ? T.green : sens === 'R' ? T.red : accent;
+                return (
+                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 60px', padding: '6px 10px', borderBottom: i < antibiogramme.length - 1 ? `1px solid ${T.ruleSoft}` : 'none', fontFamily: T.serif, fontSize: 13, alignItems: 'center', background: i % 2 === 0 ? T.paper : T.bg }}>
+                    <span style={{ fontStyle: 'italic' }}>{row.ab}</span>
+                    <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 600, color: col }}>{sens}</span>
+                  </div>
+                );
+              })}
+            </div>
           </>
         )}
 
