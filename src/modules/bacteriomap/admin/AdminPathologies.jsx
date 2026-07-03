@@ -70,7 +70,33 @@ export default function AdminPathologies() {
   const [activeSystemId, setActiveSystemId] = React.useState(null)
 
   const [activePatho, setActivePatho] = React.useState(null)
-  const [linkedIds, setLinkedIds] = React.useState(new Set())
+  const [linkedGermes, setLinkedGermes] = React.useState([]) // [{bacteria_id, ordre, name}]
+  const linkedIds = React.useMemo(() => new Set(linkedGermes.map(g => g.bacteria_id)), [linkedGermes])
+
+  // Drag & drop germe reordering
+  const dragGermeFrom = React.useRef(null)
+  const [dragOverGermeIdx, setDragOverGermeIdx] = React.useState(null)
+
+  const dropGerme = async () => {
+    const from = dragGermeFrom.current
+    const to = dragOverGermeIdx
+    setDragOverGermeIdx(null)
+    dragGermeFrom.current = null
+    if (from === null || to === null || from === to) return
+    const reordered = [...linkedGermes]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
+    const updated = reordered.map((g, idx) => ({ ...g, ordre: idx }))
+    setLinkedGermes(updated)
+    try {
+      await Promise.all(updated.map(g =>
+        supabase.from('bacterio_pathologie_germes')
+          .update({ ordre: g.ordre })
+          .eq('pathologie_id', activePatho.id)
+          .eq('bacteria_id', g.bacteria_id)
+      ))
+    } catch (err) { flashErr(err.message) }
+  }
   const [success, setSuccess] = React.useState(null)
   const [error, setError] = React.useState(null)
 
@@ -159,16 +185,24 @@ export default function AdminPathologies() {
   }, [mode, activeZoneId, activeSystemId])
 
   React.useEffect(() => {
-    if (!activePatho) { setLinkedIds(new Set()); return }
+    if (!activePatho) { setLinkedGermes([]); return }
     setEditNom(activePatho.nom)
     setEditDesc(activePatho.description || '')
     setEditOrdre(activePatho.ordre ?? 0)
     supabase
       .from('bacterio_pathologie_germes')
-      .select('bacteria_id')
+      .select('bacteria_id, ordre')
       .eq('pathologie_id', activePatho.id)
-      .then(({ data }) => setLinkedIds(new Set((data || []).map(r => r.bacteria_id))))
-  }, [activePatho?.id])
+      .order('ordre')
+      .then(({ data }) => {
+        const rows = (data || []).sort((a, b) => a.ordre - b.ordre)
+        setLinkedGermes(rows.map(r => ({
+          bacteria_id: r.bacteria_id,
+          ordre: r.ordre,
+          name: bacteria.find(b => b.id === r.bacteria_id)?.name || '',
+        })))
+      })
+  }, [activePatho?.id]) // eslint-disable-line
 
   const uploadImage = async (file) => {
     if (!activePatho || !file) return
@@ -252,13 +286,15 @@ export default function AdminPathologies() {
         .eq('pathologie_id', activePatho.id)
         .eq('bacteria_id', bacteriaId)
       if (err) { flashErr(err.message); return }
-      setLinkedIds(s => { const n = new Set(s); n.delete(bacteriaId); return n })
+      setLinkedGermes(gs => gs.filter(g => g.bacteria_id !== bacteriaId))
     } else {
+      const ordre = linkedGermes.length
       const { error: err } = await supabase
         .from('bacterio_pathologie_germes')
-        .insert({ pathologie_id: activePatho.id, bacteria_id: bacteriaId })
+        .insert({ pathologie_id: activePatho.id, bacteria_id: bacteriaId, ordre })
       if (err) { flashErr(err.message); return }
-      setLinkedIds(s => new Set([...s, bacteriaId]))
+      const name = bacteria.find(b => b.id === bacteriaId)?.name || ''
+      setLinkedGermes(gs => [...gs, { bacteria_id: bacteriaId, ordre, name }])
     }
   }
 
@@ -435,42 +471,73 @@ export default function AdminPathologies() {
             </div>
 
             <SectionTitle>GERMES ASSOCIÉS ({linkedIds.size})</SectionTitle>
+
+            {/* Linked germes — draggable ordered list */}
+            {linkedGermes.length > 0 && (
+              <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, marginBottom: 12 }}>
+                {linkedGermes.map((g, i) => {
+                  const isOver = dragOverGermeIdx === i && dragGermeFrom.current !== null && dragGermeFrom.current !== i
+                  return (
+                    <div
+                      key={g.bacteria_id}
+                      draggable
+                      onDragStart={() => { dragGermeFrom.current = i }}
+                      onDragOver={e => { e.preventDefault(); setDragOverGermeIdx(i) }}
+                      onDrop={dropGerme}
+                      onDragEnd={() => { setDragOverGermeIdx(null); dragGermeFrom.current = null }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '8px 14px',
+                        borderBottom: i < linkedGermes.length - 1 ? '1px solid var(--ruleSoft)' : 'none',
+                        borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent',
+                        background: 'rgba(76,175,80,0.06)',
+                      }}
+                    >
+                      <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
+                      <input type="checkbox" checked onChange={() => toggleGerme(g.bacteria_id)}
+                        style={{ accentColor: 'var(--accent)', width: 14, height: 14, flexShrink: 0 }} />
+                      <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink, flex: 1 }}>{g.name}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Unchecked germes — searchable */}
             <div style={{ marginBottom: 10 }}>
               <input
                 type="text"
-                placeholder="Rechercher un germe…"
+                placeholder="Ajouter un germe…"
                 value={bacteriaSearch}
                 onChange={e => setBacteriaSearch(e.target.value)}
                 style={{ ...inpStyle, maxWidth: 320 }}
               />
             </div>
-            <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, maxHeight: 360, overflowY: 'auto' }}>
-              {filteredBacteria.length === 0 ? (
-                <div style={{ padding: '16px', fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, fontSize: 13 }}>Aucun résultat.</div>
+            <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, maxHeight: 280, overflowY: 'auto' }}>
+              {filteredBacteria.filter(b => !linkedIds.has(b.id)).length === 0 ? (
+                <div style={{ padding: '16px', fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, fontSize: 13 }}>
+                  {bacteriaSearch ? 'Aucun résultat.' : 'Tous les germes sont déjà liés.'}
+                </div>
               ) : (
-                filteredBacteria.map((b, i) => {
-                  const checked = linkedIds.has(b.id)
-                  return (
-                    <label
-                      key={b.id}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '8px 14px',
-                        borderBottom: i < filteredBacteria.length - 1 ? '1px solid var(--ruleSoft)' : 'none',
-                        cursor: 'pointer',
-                        background: checked ? 'rgba(76,175,80,0.06)' : 'transparent',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleGerme(b.id)}
-                        style={{ accentColor: 'var(--accent)', width: 14, height: 14, flexShrink: 0 }}
-                      />
-                      <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink }}>{b.name}</span>
-                    </label>
-                  )
-                })
+                filteredBacteria.filter(b => !linkedIds.has(b.id)).map((b, i, arr) => (
+                  <label
+                    key={b.id}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '8px 14px',
+                      borderBottom: i < arr.length - 1 ? '1px solid var(--ruleSoft)' : 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={false}
+                      onChange={() => toggleGerme(b.id)}
+                      style={{ accentColor: 'var(--accent)', width: 14, height: 14, flexShrink: 0 }}
+                    />
+                    <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink }}>{b.name}</span>
+                  </label>
+                ))
               )}
             </div>
 
