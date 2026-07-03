@@ -150,26 +150,28 @@ export default function AdminBacteria() {
   const draftRef                    = React.useRef(null)
   const [search, setSearch]         = React.useState('')
 
-  // Column widths — persisted to sessionStorage
+  // Column widths — persisted to localStorage (survive tab close and admin navigation)
   const [listWidth, setListWidth] = React.useState(() => {
-    const v = sessionStorage.getItem('admin_bacteria_list_w')
+    const v = localStorage.getItem('admin_bacteria_list_w')
     return v ? Math.max(LIST_MIN, Math.min(LIST_MAX, Number(v))) : LIST_DEFAULT
   })
   const [previewWidth, setPreviewWidth] = React.useState(() => {
-    const v = sessionStorage.getItem('admin_bacteria_preview_w')
+    const v = localStorage.getItem('admin_bacteria_preview_w')
     return v ? Math.max(PREVIEW_MIN, Math.min(PREVIEW_MAX, Number(v))) : PREVIEW_DEFAULT
   })
+  React.useEffect(() => { localStorage.setItem('admin_bacteria_list_w', listWidth) }, [listWidth])
+  React.useEffect(() => { localStorage.setItem('admin_bacteria_preview_w', previewWidth) }, [previewWidth])
 
-  // Collapsible form sections — persisted to sessionStorage
+  // Collapsible form sections — persisted to localStorage
   const [collapsedSections, setCollapsedSections] = React.useState(() => {
-    try { return new Set(JSON.parse(sessionStorage.getItem('admin_bacteria_collapsed') || '[]')) }
+    try { return new Set(JSON.parse(localStorage.getItem('admin_bacteria_collapsed') || '[]')) }
     catch { return new Set() }
   })
   const toggleSection = (key) => {
     setCollapsedSections(prev => {
       const next = new Set(prev)
       if (next.has(key)) next.delete(key); else next.add(key)
-      sessionStorage.setItem('admin_bacteria_collapsed', JSON.stringify([...next]))
+      localStorage.setItem('admin_bacteria_collapsed', JSON.stringify([...next]))
       return next
     })
   }
