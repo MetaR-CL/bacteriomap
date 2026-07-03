@@ -108,6 +108,31 @@ export default function AdminBacteria() {
   // Image upload busy
   const [imgBusy, setImgBusy] = React.useState(false)
 
+  // Drag & drop for inline arrays (resist_nat, resist_acq, virulence, tests_rapides)
+  const dragArrayRef = React.useRef({ from: null, to: null, field: null })
+  const [dragOverArray, setDragOverArray] = React.useState({ field: null, idx: null })
+
+  const makeArrayDrag = (field) => ({
+    onDragStart: (i) => { dragArrayRef.current = { from: i, to: i, field } },
+    onDragOver: (e, i) => { e.preventDefault(); setDragOverArray({ field, idx: i }); dragArrayRef.current.to = i },
+    onDrop: () => {
+      const { from, to, field: f } = dragArrayRef.current
+      setDragOverArray({ field: null, idx: null })
+      dragArrayRef.current = { from: null, to: null, field: null }
+      if (from === null || to === null || from === to || f !== field) return
+      setDraft(p => {
+        const arr = [...(p[f] || [])]
+        const [moved] = arr.splice(from, 1)
+        arr.splice(to, 0, moved)
+        return { ...p, [f]: arr }
+      })
+    },
+    onDragEnd: () => {
+      setDragOverArray({ field: null, idx: null })
+      dragArrayRef.current = { from: null, to: null, field: null }
+    },
+  })
+
   React.useEffect(() => { draftRef.current = draft }, [draft])
 
   // ── Core save function (via ref to always get latest upsert) ──────────────
@@ -340,13 +365,19 @@ export default function AdminBacteria() {
           ))}
         </div>
         <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.1em', marginBottom: 10 }}>TESTS SUPPLÉMENTAIRES</div>
-        {(d.tests_rapides || []).map((t, i) => (
-          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr minmax(70px, 120px) auto', gap: 8, marginBottom: 8, alignItems: 'center' }}>
-            <input type="text" placeholder="Nom du test" value={t.name || ''} onChange={e => { const n = (d.tests_rapides || []).map((x,j) => j===i ? {...x,name:e.target.value} : x); setDraft(p => ({...p,tests_rapides:n})) }} style={{...inpStyle, minWidth: 0}}/>
-            <input type="text" placeholder="Valeur" value={t.value || ''} onChange={e => { const n = (d.tests_rapides || []).map((x,j) => j===i ? {...x,value:e.target.value} : x); setDraft(p => ({...p,tests_rapides:n})) }} style={{...inpStyle, minWidth: 0, width: 100}}/>
-            <button onClick={() => setDraft(p => ({...p, tests_rapides: (p.tests_rapides||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
-          </div>
-        ))}
+        {(d.tests_rapides || []).map((t, i) => {
+          const drag = makeArrayDrag('tests_rapides')
+          const isOver = dragOverArray.field === 'tests_rapides' && dragOverArray.idx === i && dragArrayRef.current.from !== i
+          return (
+            <div key={i} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
+              style={{ display: 'grid', gridTemplateColumns: 'auto 1fr minmax(70px, 120px) auto', gap: 8, marginBottom: 8, alignItems: 'center', borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
+              <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none' }}>⠿</span>
+              <input type="text" placeholder="Nom du test" value={t.name || ''} onChange={e => { const n = (d.tests_rapides || []).map((x,j) => j===i ? {...x,name:e.target.value} : x); setDraft(p => ({...p,tests_rapides:n})) }} style={{...inpStyle, minWidth: 0}}/>
+              <input type="text" placeholder="Valeur" value={t.value || ''} onChange={e => { const n = (d.tests_rapides || []).map((x,j) => j===i ? {...x,value:e.target.value} : x); setDraft(p => ({...p,tests_rapides:n})) }} style={{...inpStyle, minWidth: 0, width: 100}}/>
+              <button onClick={() => setDraft(p => ({...p, tests_rapides: (p.tests_rapides||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
+            </div>
+          )
+        })}
         <button onClick={() => setDraft(p => ({...p, tests_rapides: [...(p.tests_rapides||[]),{name:'',value:''}]}))} style={{...ghostBtn, fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter un test</button>
 
         {/* MILIEUX */}
@@ -410,32 +441,50 @@ export default function AdminBacteria() {
 
         {/* RÉSISTANCES NATURELLES */}
         <SectionTitle fieldKey="resist_nat" isHidden={isHiddenField('resist_nat')} onToggle={toggleHidden}>RÉSISTANCES NATURELLES</SectionTitle>
-        {(d.resist_nat || []).map((item, i) => (
-          <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-            <input type="text" value={item} onChange={e => { const n = (d.resist_nat||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,resist_nat:n})) }} style={{...inpStyle,flex:1}}/>
-            <button onClick={() => setDraft(p=>({...p,resist_nat:(p.resist_nat||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
-          </div>
-        ))}
+        {(d.resist_nat || []).map((item, i) => {
+          const drag = makeArrayDrag('resist_nat')
+          const isOver = dragOverArray.field === 'resist_nat' && dragOverArray.idx === i && dragArrayRef.current.from !== i
+          return (
+            <div key={i} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
+              style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center', borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
+              <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
+              <input type="text" value={item} onChange={e => { const n = (d.resist_nat||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,resist_nat:n})) }} style={{...inpStyle,flex:1}}/>
+              <button onClick={() => setDraft(p=>({...p,resist_nat:(p.resist_nat||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
+            </div>
+          )
+        })}
         <button onClick={() => setDraft(p=>({...p,resist_nat:[...(p.resist_nat||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
 
         {/* RÉSISTANCES ACQUISES */}
         <SectionTitle fieldKey="resist_acq" isHidden={isHiddenField('resist_acq')} onToggle={toggleHidden}>RÉSISTANCES ACQUISES</SectionTitle>
-        {(d.resist_acq || []).map((item, i) => (
-          <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-            <input type="text" value={item} onChange={e => { const n = (d.resist_acq||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,resist_acq:n})) }} style={{...inpStyle,flex:1}}/>
-            <button onClick={() => setDraft(p=>({...p,resist_acq:(p.resist_acq||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
-          </div>
-        ))}
+        {(d.resist_acq || []).map((item, i) => {
+          const drag = makeArrayDrag('resist_acq')
+          const isOver = dragOverArray.field === 'resist_acq' && dragOverArray.idx === i && dragArrayRef.current.from !== i
+          return (
+            <div key={i} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
+              style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center', borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
+              <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
+              <input type="text" value={item} onChange={e => { const n = (d.resist_acq||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,resist_acq:n})) }} style={{...inpStyle,flex:1}}/>
+              <button onClick={() => setDraft(p=>({...p,resist_acq:(p.resist_acq||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
+            </div>
+          )
+        })}
         <button onClick={() => setDraft(p=>({...p,resist_acq:[...(p.resist_acq||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
 
         {/* VIRULENCE */}
         <SectionTitle fieldKey="virulence" isHidden={isHiddenField('virulence')} onToggle={toggleHidden}>VIRULENCE</SectionTitle>
-        {(d.virulence || []).map((item, i) => (
-          <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-            <input type="text" value={item} onChange={e => { const n = (d.virulence||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,virulence:n})) }} style={{...inpStyle,flex:1}}/>
-            <button onClick={() => setDraft(p=>({...p,virulence:(p.virulence||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
-          </div>
-        ))}
+        {(d.virulence || []).map((item, i) => {
+          const drag = makeArrayDrag('virulence')
+          const isOver = dragOverArray.field === 'virulence' && dragOverArray.idx === i && dragArrayRef.current.from !== i
+          return (
+            <div key={i} draggable onDragStart={() => drag.onDragStart(i)} onDragOver={e => drag.onDragOver(e, i)} onDrop={drag.onDrop} onDragEnd={drag.onDragEnd}
+              style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center', borderTop: isOver ? '2px solid var(--accent)' : '2px solid transparent' }}>
+              <span style={{ cursor: 'grab', color: T.ink3, fontSize: 14, userSelect: 'none', flexShrink: 0 }}>⠿</span>
+              <input type="text" value={item} onChange={e => { const n = (d.virulence||[]).map((x,j)=>j===i?e.target.value:x); setDraft(p=>({...p,virulence:n})) }} style={{...inpStyle,flex:1}}/>
+              <button onClick={() => setDraft(p=>({...p,virulence:(p.virulence||[]).filter((_,j)=>j!==i)}))} style={{...arrowBtn,color:'var(--red)'}}>×</button>
+            </div>
+          )
+        })}
         <button onClick={() => setDraft(p=>({...p,virulence:[...(p.virulence||[]),'']}))} style={{...ghostBtn,fontSize:10,letterSpacing:'0.1em'}}>+ Ajouter</button>
 
         {/* CLINIQUE & TRAITEMENT */}

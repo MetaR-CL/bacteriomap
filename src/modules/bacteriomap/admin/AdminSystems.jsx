@@ -161,13 +161,22 @@ export default function AdminSystems() {
     } catch (err) { setError(err.message) }
   }
 
-  const moveSub = async (idx, dir) => {
-    const tgt = idx + dir
-    if (tgt < 0 || tgt >= sysSubs.length) return
+  // Drag & drop zone reordering
+  const dragZoneFrom = React.useRef(null)
+  const [dragOverZoneIdx, setDragOverZoneIdx] = React.useState(null)
+
+  const dropZone = async () => {
+    const from = dragZoneFrom.current
+    const to = dragOverZoneIdx
+    setDragOverZoneIdx(null)
+    dragZoneFrom.current = null
+    if (from === null || to === null || from === to) return
+    const reordered = [...sysSubs]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
     setError(null)
     try {
-      await upsertZone({ ...sysSubs[idx], position: sysSubs[tgt].position })
-      await upsertZone({ ...sysSubs[tgt], position: sysSubs[idx].position })
+      await Promise.all(reordered.map((z, idx) => upsertZone({ ...z, position: idx })))
     } catch (err) { setError(err.message) }
   }
 
@@ -335,7 +344,21 @@ export default function AdminSystems() {
             ) : (
               <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, marginBottom: 16 }}>
                 {sysSubs.map((z, i) => (
-                  <div key={z.id} style={{ padding: '12px 16px', borderBottom: i < sysSubs.length - 1 ? `1px solid var(--ruleSoft)` : 'none', display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'center' }}>
+                  <div
+                    key={z.id}
+                    draggable
+                    onDragStart={() => { dragZoneFrom.current = i }}
+                    onDragOver={e => { e.preventDefault(); setDragOverZoneIdx(i) }}
+                    onDrop={dropZone}
+                    onDragEnd={() => { setDragOverZoneIdx(null); dragZoneFrom.current = null }}
+                    style={{
+                      padding: '12px 16px',
+                      borderBottom: i < sysSubs.length - 1 ? `1px solid var(--ruleSoft)` : 'none',
+                      borderTop: dragOverZoneIdx === i && dragZoneFrom.current !== null && dragZoneFrom.current !== i ? `2px solid var(--accent)` : '2px solid transparent',
+                      display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 10, alignItems: 'center',
+                    }}
+                  >
+                    <span style={{ cursor: 'grab', color: T.ink3, fontSize: 16, userSelect: 'none', lineHeight: 1, paddingRight: 2 }}>⠿</span>
                     <input
                       type="text"
                       value={zoneVal(z, 'label')}
@@ -344,8 +367,6 @@ export default function AdminSystems() {
                     />
                     <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                       <button onClick={() => saveZone(z)} style={{ ...ghostBtn, padding: '4px 10px', fontSize: 10 }}>Enregistrer</button>
-                      <button onClick={() => moveSub(i, -1)} style={arrowBtn} disabled={i === 0}>↑</button>
-                      <button onClick={() => moveSub(i, +1)} style={arrowBtn} disabled={i === sysSubs.length - 1}>↓</button>
                       <button onClick={() => removeSub(z)} style={{ ...arrowBtn, color: 'var(--red)' }}>×</button>
                     </div>
                   </div>
