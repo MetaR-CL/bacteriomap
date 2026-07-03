@@ -14,18 +14,23 @@ export function useBacteria(zoneId = null, isFlora = false) {
     }
     setLoading(true)
     async function fetch() {
-      let query = supabase
-        .from('bacterio_bacteria')
-        .select('*, bacterio_images(*)')
-        .order('name')
       if (isFlora) {
-        query = query.contains('flora_zone_ids', [zoneId])
+        const { data, error } = await supabase
+          .from('bacterio_bacteria')
+          .select('*, bacterio_images(*)')
+          .contains('flora_zone_ids', [zoneId])
+          .order('name')
+        if (error) setError(error)
+        else setBacteria(data || [])
       } else {
-        query = query.contains('zone_ids', [zoneId])
+        const { data, error } = await supabase
+          .from('bacterio_zone_bacteria')
+          .select('ordre, bacterio_bacteria(*, bacterio_images(*))')
+          .eq('zone_id', zoneId)
+          .order('ordre')
+        if (error) setError(error)
+        else setBacteria((data || []).map(r => r.bacterio_bacteria).filter(Boolean))
       }
-      const { data, error } = await query
-      if (error) setError(error)
-      else setBacteria(data || [])
       setLoading(false)
     }
     fetch()
