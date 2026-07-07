@@ -1,177 +1,169 @@
 // dataSource.js — single entry point for all read-only public-app data access.
-// Today every function hits Supabase directly with the exact same queries the
-// app used before this module existed. Swapping to a static JSON snapshot
-// later means reimplementing this file only — callers never touch Supabase.
+//
+// Instead of one Supabase round-trip per screen/click (systems, zone
+// bacteria, flora, pathologies, system bacteria, linked germs...), the
+// entire content set is fetched ONCE per session (8 queries in parallel)
+// and kept in memory. Every getX() below reads/derives from that in-memory
+// store — zero network calls after the first load. Content only changes via
+// the admin, so serving a session-long snapshot is a safe tradeoff (a page
+// reload always picks up the latest data).
+//
+// Swapping to a static JSON snapshot later means reimplementing loadStore()
+// only — every getX() function and its return shape stays identical.
 import { supabase } from '../lib/supabase.js'
 
-// Short-lived in-memory cache. Every zone/system click re-mounts ZoneScreen,
-// which re-fires 6-7 fresh network round-trips with no reuse across
-// navigation — this is what made every click feel like a fresh page load.
-// Content here only changes via the admin, so a short TTL is safe and
-// collapses repeat navigation (e.g. switching between zones) into cache hits.
-const CACHE_TTL = 60_000
-const cache = new Map()
+let storePromise = null
 
-function cached(key, fetcher) {
-  const hit = cache.get(key)
-  if (hit && Date.now() - hit.time < CACHE_TTL) return hit.promise
-  const promise = fetcher().catch(err => { cache.delete(key); throw err })
-  cache.set(key, { promise, time: Date.now() })
-  return promise
+async function loadStore() {
+  const [systems, bacteria, images, pathologies, pathologieGermes, zoneBacteria, systemBacteria, quiz] = await Promise.all([
+    supabase.from('bacterio_systems').select('*, bacterio_zones(*)').order('position'),
+    supabase.from('bacterio_bacteria').select('*'),
+    supabase.from('bacterio_images').select('*'),
+    supabase.from('bacterio_pathologies').select('*'),
+    supabase.from('bacterio_pathologie_germes').select('bacteria_id, pathologie_id, ordre'),
+    supabase.from('bacterio_zone_bacteria').select('zone_id, bacteria_id, ordre'),
+    supabase.from('bacterio_system_bacteria').select('system_id, bacteria_id'),
+    supabase.from('bacterio_quiz').select('*').eq('active', true).order('id'),
+  ])
+  for (const r of [systems, bacteria, images, pathologies, pathologieGermes, zoneBacteria, systemBacteria, quiz]) {
+    if (r.error) throw r.error
+  }
+
+  const imagesByBacteria = new Map()
+  for (const img of images.data || []) {
+    if (!imagesByBacteria.has(img.bacteria_id)) imagesByBacteria.set(img.bacteria_id, [])
+    imagesByBacteria.get(img.bacteria_id).push(img)
+  }
+
+  const bacteriaById = new Map()
+  const bacteriaByName = new Map()
+  for (const b of bacteria.data || []) {
+    const full = { ...b, bacterio_images: imagesByBacteria.get(b.id) || [] }
+    bacteriaById.set(b.id, full)
+    bacteriaByName.set(b.name, full)
+  }
+
+  const zoneLabelById = new Map()
+  for (const sys of systems.data || []) {
+    for (const z of sys.bacterio_zones || []) zoneLabelById.set(z.id, { label: z.label, name: z.name })
+  }
+
+  return {
+    systems: systems.data || [],
+    bacteriaById,
+    bacteriaByName,
+    zoneLabelById,
+    pathologies: pathologies.data || [],
+    pathologieGermes: pathologieGermes.data || [],
+    zoneBacteria: zoneBacteria.data || [],
+    systemBacteria: systemBacteria.data || [],
+    quiz: quiz.data || [],
+  }
+}
+
+function getStore() {
+  if (!storePromise) {
+    storePromise = loadStore().catch(err => { storePromise = null; throw err })
+  }
+  return storePromise
+}
+
+function resolveBacteria(store, ids) {
+  return ids.map(id => store.bacteriaById.get(id)).filter(Boolean)
 }
 
 export async function getSystemes() {
-  return cached('systemes', async () => {
-    const { data, error } = await supabase
-      .from('bacterio_systems')
-      .select('*, bacterio_zones(*)')
-      .order('position')
-    if (error) throw error
-    return data || []
-  })
+  const store = await getStore()
+  return store.systems
 }
 
 export async function getZoneBacteries(zoneId) {
-  return cached(`zone_bacteries:${zoneId}`, async () => {
-    const { data, error } = await supabase
-      .from('bacterio_zone_bacteria')
-      .select('ordre, bacterio_bacteria(*, bacterio_images(*))')
-      .eq('zone_id', zoneId)
-      .order('ordre')
-    if (error) throw error
-    return (data || []).map(r => r.bacterio_bacteria).filter(Boolean)
-  })
+  const store = await getStore()
+  const ids = store.zoneBacteria
+    .filter(r => r.zone_id === zoneId)
+    .sort((a, b) => a.ordre - b.ordre)
+    .map(r => r.bacteria_id)
+  return resolveBacteria(store, ids)
 }
 
 export async function getZoneFlore(zoneId) {
-  return cached(`zone_flore:${zoneId}`, async () => {
-    const { data, error } = await supabase
-      .from('bacterio_bacteria')
-      .select('*, bacterio_images(*)')
-      .contains('flora_zone_ids', [zoneId])
-      .order('name')
-    if (error) throw error
-    return data || []
-  })
+  const store = await getStore()
+  return [...store.bacteriaById.values()]
+    .filter(b => Array.isArray(b.flora_zone_ids) && b.flora_zone_ids.includes(zoneId))
+    .sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export async function getSystemBacteries(systemId) {
-  return cached(`system_bacteries:${systemId}`, async () => {
-    const { data, error } = await supabase
-      .from('bacterio_system_bacteria')
-      .select('bacterio_bacteria(*, bacterio_images(*))')
-      .eq('system_id', systemId)
-    if (error) throw error
-    return (data || []).map(r => r.bacterio_bacteria).filter(Boolean)
-  })
+  const store = await getStore()
+  const ids = store.systemBacteria.filter(r => r.system_id === systemId).map(r => r.bacteria_id)
+  return resolveBacteria(store, ids)
 }
 
 export async function getAllBacteries() {
-  return cached('all_bacteries', async () => {
-    const { data, error } = await supabase
-      .from('bacterio_bacteria')
-      .select('id, name, gram, morphology, zone_ids')
-      .order('name')
-    if (error) throw error
-    return data || []
-  })
+  const store = await getStore()
+  return [...store.bacteriaById.values()]
+    .map(b => ({ id: b.id, name: b.name, gram: b.gram, morphology: b.morphology, zone_ids: b.zone_ids }))
+    .sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export async function getBacterieByName(name) {
-  return cached(`bacterie:${name}`, async () => {
-    const { data, error } = await supabase
-      .from('bacterio_bacteria')
-      .select('*, bacterio_images(*)')
-      .eq('name', name)
-      .single()
-    if (error) throw error
-    return data
-  })
+  const store = await getStore()
+  const b = store.bacteriaByName.get(name)
+  if (!b) throw new Error(`Bactérie introuvable: ${name}`)
+  return b
+}
+
+function withGermeCount(store, p) {
+  const germe_count = store.pathologieGermes.filter(g => g.pathologie_id === p.id).length
+  return { ...p, germe_count }
 }
 
 export async function getZonePathologies(zoneId) {
-  return cached(`zone_patho:${zoneId}`, async () => {
-    const { data, error } = await supabase
-      .from('bacterio_pathologies')
-      .select('*, bacterio_pathologie_germes(bacteria_id)')
-      .eq('zone_id', zoneId)
-      .order('ordre')
-    if (error) throw error
-    return (data || []).map(p => ({
-      ...p,
-      germe_count: Array.isArray(p.bacterio_pathologie_germes) ? p.bacterio_pathologie_germes.length : 0,
-    }))
-  })
+  const store = await getStore()
+  return store.pathologies
+    .filter(p => p.zone_id === zoneId)
+    .sort((a, b) => a.ordre - b.ordre)
+    .map(p => withGermeCount(store, p))
 }
 
 export async function getSystemPathologies(systemId) {
-  return cached(`system_patho:${systemId}`, async () => {
-    const { data, error } = await supabase
-      .from('bacterio_pathologies')
-      .select('*, bacterio_pathologie_germes(bacteria_id)')
-      .eq('system_id', systemId)
-      .order('ordre')
-    if (error) throw error
-    return (data || []).map(p => ({
-      ...p,
-      germe_count: Array.isArray(p.bacterio_pathologie_germes) ? p.bacterio_pathologie_germes.length : 0,
-    }))
-  })
+  const store = await getStore()
+  return store.pathologies
+    .filter(p => p.system_id === systemId)
+    .sort((a, b) => a.ordre - b.ordre)
+    .map(p => withGermeCount(store, p))
 }
 
 export async function getPathologieBacteries(pathologieId) {
-  return cached(`patho_bacteries:${pathologieId}`, async () => {
-    const { data, error } = await supabase
-      .from('bacterio_pathologie_germes')
-      .select('bacteria_id, ordre, bacterio_bacteria(*, bacterio_images(*))')
-      .eq('pathologie_id', pathologieId)
-      .order('ordre')
-    if (error) throw error
-    return (data || []).map(r => r.bacterio_bacteria).filter(Boolean)
-  })
+  const store = await getStore()
+  const ids = store.pathologieGermes
+    .filter(g => g.pathologie_id === pathologieId)
+    .sort((a, b) => a.ordre - b.ordre)
+    .map(g => g.bacteria_id)
+  return resolveBacteria(store, ids)
 }
 
 export async function getLinkedBacteriaIds(pathologieIds) {
-  return cached(`linked_bact:${pathologieIds.slice().sort().join(',')}`, async () => {
-    const { data, error } = await supabase
-      .from('bacterio_pathologie_germes')
-      .select('bacteria_id')
-      .in('pathologie_id', pathologieIds)
-    if (error) throw error
-    return (data || []).map(r => r.bacteria_id)
-  })
+  const store = await getStore()
+  const set = new Set(pathologieIds)
+  return store.pathologieGermes.filter(g => set.has(g.pathologie_id)).map(g => g.bacteria_id)
 }
 
 export async function getPathologie(pathologieId) {
-  return cached(`pathologie:${pathologieId}`, async () => {
-    const { data, error } = await supabase
-      .from('bacterio_pathologies')
-      .select('*')
-      .eq('id', pathologieId)
-      .single()
-    if (error) throw error
-    return data
-  })
+  const store = await getStore()
+  const p = store.pathologies.find(p => p.id === pathologieId)
+  if (!p) throw new Error(`Pathologie introuvable: ${pathologieId}`)
+  return p
 }
 
 export async function getZoneLabel(zoneId) {
-  return cached(`zone_label:${zoneId}`, async () => {
-    const { data, error } = await supabase
-      .from('bacterio_zones')
-      .select('label, name')
-      .eq('id', zoneId)
-      .single()
-    if (error) throw error
-    return data
-  })
+  const store = await getStore()
+  const z = store.zoneLabelById.get(zoneId)
+  if (!z) throw new Error(`Zone introuvable: ${zoneId}`)
+  return z
 }
 
 export async function getQuiz(systemId = null) {
-  return cached(`quiz:${systemId ?? 'all'}`, async () => {
-    let q = supabase.from('bacterio_quiz').select('*').eq('active', true).order('id')
-    if (systemId) q = q.eq('system_id', systemId)
-    const { data, error } = await q
-    if (error) throw error
-    return data || []
-  })
+  const store = await getStore()
+  return systemId ? store.quiz.filter(q => q.system_id === systemId) : store.quiz
 }
