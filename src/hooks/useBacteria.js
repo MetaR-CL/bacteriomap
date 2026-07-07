@@ -38,3 +38,23 @@ export function useBacteria(zoneId = null, isFlora = false) {
 
   return { bacteria, loading, error }
 }
+
+export function useSystemBacteria(systemId = null) {
+  const [bacteria, setBacteria] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (systemId === null) { setBacteria([]); return }
+    setLoading(true)
+    supabase
+      .from('bacterio_system_bacteria')
+      .select('bacterio_bacteria(*, bacterio_images(*))')
+      .eq('system_id', systemId)
+      .then(({ data }) => {
+        setBacteria((data || []).map(r => r.bacterio_bacteria).filter(Boolean))
+        setLoading(false)
+      })
+  }, [systemId])
+
+  return { bacteria, loading }
+}
