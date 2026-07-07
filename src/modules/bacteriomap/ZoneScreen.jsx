@@ -6,6 +6,7 @@ import { useBacteria, useSystemBacteria } from '../../hooks/useBacteria.js'
 import { usePathologies, useSystemPathologies } from '../../hooks/usePathologies.js'
 import { useIsMobile } from '../../hooks/useIsMobile.js'
 import { useCompare } from '../../context/CompareContext.jsx'
+import { getLinkedBacteriaIds } from '../../shared/dataSource.js'
 import TopBar from './TopBar.jsx'
 
 const GRAM_MAP = { positif: '+', negatif: '−', aucun: 'F' }
@@ -55,13 +56,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
       return
     }
     const ids = pathologies.map(p => p.id)
-    import('../../lib/supabase').then(({ supabase }) => {
-      supabase
-        .from('bacterio_pathologie_germes')
-        .select('bacteria_id')
-        .in('pathologie_id', ids)
-        .then(({ data }) => setLinkedBacteriaIds(new Set((data || []).map(r => r.bacteria_id))))
-    })
+    getLinkedBacteriaIds(ids).then(bacteriaIds => setLinkedBacteriaIds(new Set(bacteriaIds)))
   }, [zoneIdToFetch, pathologies.length, pathoLoading]) // eslint-disable-line
 
   if (sysLoading) return (

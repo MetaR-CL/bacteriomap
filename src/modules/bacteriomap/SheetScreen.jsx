@@ -3,7 +3,7 @@
 import React from 'react';
 import { T } from './data.js';
 import { SYSTEMS, getSystemPalette, gramColor } from './shared.jsx';
-import { supabase } from '../../lib/supabase.js';
+import { getBacterieByName } from '../../shared/dataSource.js';
 import TopBar from './TopBar.jsx'
 import MarkdownView from './MarkdownView.jsx'
 import { useIsMobile } from '../../hooks/useIsMobile.js';
@@ -399,12 +399,9 @@ export default function SheetScreen({ navigate, bacteriaId, systemId = 'orl', vi
   React.useEffect(() => {
     setLoading(true);
     if (!bacteriaId) { setLoading(false); return; }
-    supabase
-      .from('bacterio_bacteria')
-      .select('*, bacterio_images(*)')
-      .eq('name', bacteriaId)
-      .single()
-      .then(({ data }) => { if (data) setB(data); setLoading(false); });
+    getBacterieByName(bacteriaId)
+      .then(data => { if (data) setB(data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [bacteriaId]);
 
   if (loading) return (

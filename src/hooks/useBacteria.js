@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { getZoneBacteries, getZoneFlore, getSystemBacteries } from '../shared/dataSource.js'
 
 export function useBacteria(zoneId = null, isFlora = false) {
   const [bacteria, setBacteria] = useState([])
@@ -14,22 +14,11 @@ export function useBacteria(zoneId = null, isFlora = false) {
     }
     setLoading(true)
     async function fetch() {
-      if (isFlora) {
-        const { data, error } = await supabase
-          .from('bacterio_bacteria')
-          .select('*, bacterio_images(*)')
-          .contains('flora_zone_ids', [zoneId])
-          .order('name')
-        if (error) setError(error)
-        else setBacteria(data || [])
-      } else {
-        const { data, error } = await supabase
-          .from('bacterio_zone_bacteria')
-          .select('ordre, bacterio_bacteria(*, bacterio_images(*))')
-          .eq('zone_id', zoneId)
-          .order('ordre')
-        if (error) setError(error)
-        else setBacteria((data || []).map(r => r.bacterio_bacteria).filter(Boolean))
+      try {
+        const data = isFlora ? await getZoneFlore(zoneId) : await getZoneBacteries(zoneId)
+        setBacteria(data)
+      } catch (err) {
+        setError(err)
       }
       setLoading(false)
     }
@@ -46,14 +35,10 @@ export function useSystemBacteria(systemId = null) {
   useEffect(() => {
     if (systemId === null) { setBacteria([]); return }
     setLoading(true)
-    supabase
-      .from('bacterio_system_bacteria')
-      .select('bacterio_bacteria(*, bacterio_images(*))')
-      .eq('system_id', systemId)
-      .then(({ data }) => {
-        setBacteria((data || []).map(r => r.bacterio_bacteria).filter(Boolean))
-        setLoading(false)
-      })
+    getSystemBacteries(systemId).then(data => {
+      setBacteria(data)
+      setLoading(false)
+    })
   }, [systemId])
 
   return { bacteria, loading }

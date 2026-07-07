@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { getZonePathologies, getSystemPathologies, getPathologieBacteries } from '../shared/dataSource.js'
 
 export function usePathologies(zoneId = null) {
   const [pathologies, setPathologies] = useState([])
@@ -8,19 +8,10 @@ export function usePathologies(zoneId = null) {
   useEffect(() => {
     if (zoneId === null) { setPathologies([]); return }
     setLoading(true)
-    supabase
-      .from('bacterio_pathologies')
-      .select('*, bacterio_pathologie_germes(bacteria_id)')
-      .eq('zone_id', zoneId)
-      .order('ordre')
-      .then(({ data }) => {
-        const enriched = (data || []).map(p => ({
-          ...p,
-          germe_count: Array.isArray(p.bacterio_pathologie_germes) ? p.bacterio_pathologie_germes.length : 0,
-        }))
-        setPathologies(enriched)
-        setLoading(false)
-      })
+    getZonePathologies(zoneId).then(data => {
+      setPathologies(data)
+      setLoading(false)
+    })
   }, [zoneId])
 
   return { pathologies, loading }
@@ -33,19 +24,10 @@ export function useSystemPathologies(systemId = null) {
   useEffect(() => {
     if (systemId === null) { setPathologies([]); return }
     setLoading(true)
-    supabase
-      .from('bacterio_pathologies')
-      .select('*, bacterio_pathologie_germes(bacteria_id)')
-      .eq('system_id', systemId)
-      .order('ordre')
-      .then(({ data }) => {
-        const enriched = (data || []).map(p => ({
-          ...p,
-          germe_count: Array.isArray(p.bacterio_pathologie_germes) ? p.bacterio_pathologie_germes.length : 0,
-        }))
-        setPathologies(enriched)
-        setLoading(false)
-      })
+    getSystemPathologies(systemId).then(data => {
+      setPathologies(data)
+      setLoading(false)
+    })
   }, [systemId])
 
   return { pathologies, loading }
@@ -58,15 +40,10 @@ export function usePathologieBacteria(pathologieId = null) {
   useEffect(() => {
     if (pathologieId === null) { setBacteria([]); return }
     setLoading(true)
-    supabase
-      .from('bacterio_pathologie_germes')
-      .select('bacteria_id, ordre, bacterio_bacteria(*, bacterio_images(*))')
-      .eq('pathologie_id', pathologieId)
-      .order('ordre')
-      .then(({ data }) => {
-        setBacteria((data || []).map(r => r.bacterio_bacteria).filter(Boolean))
-        setLoading(false)
-      })
+    getPathologieBacteries(pathologieId).then(data => {
+      setBacteria(data)
+      setLoading(false)
+    })
   }, [pathologieId])
 
   return { bacteria, loading }
