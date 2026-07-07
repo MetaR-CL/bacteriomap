@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { compressImage } from '../shared/compressImage.js'
 
 export function useAdminBacteria() {
   const [bacteria, setBacteria] = useState([])
@@ -60,12 +61,13 @@ export function useAdminBacteria() {
   }
 
   const uploadImage = async (bacteriaId, file) => {
-    const ext = file.name.split('.').pop()
+    const compressed = await compressImage(file)
+    const ext = compressed.name.split('.').pop()
     const path = `bacteria/${bacteriaId}/${Date.now()}.${ext}`
 
     const { error: upErr } = await supabase.storage
       .from('bacteriomap-images')
-      .upload(path, file)
+      .upload(path, compressed)
     if (upErr) throw upErr
 
     const { data: { publicUrl } } = supabase.storage
@@ -74,7 +76,7 @@ export function useAdminBacteria() {
 
     const { error: dbErr } = await supabase
       .from('bacterio_images')
-      .insert({ bacteria_id: bacteriaId, url: publicUrl, caption: file.name, position: 0 })
+      .insert({ bacteria_id: bacteriaId, url: publicUrl, caption: compressed.name, position: 0 })
     if (dbErr) throw dbErr
 
     await load()

@@ -1,6 +1,7 @@
 import React from 'react'
 import { T } from '../data.js'
 import { supabase } from '../../../lib/supabase.js'
+import { compressImage } from '../../../shared/compressImage.js'
 
 const primaryBtn = {
   padding: '8px 16px', background: 'var(--accent)', color: 'var(--paper)', border: 'none',
@@ -208,9 +209,10 @@ export default function AdminPathologies() {
     if (!activePatho || !file) return
     setUploading(true)
     try {
-      const ext = file.name.split('.').pop()
+      const compressed = await compressImage(file)
+      const ext = compressed.name.split('.').pop()
       const path = `pathologies/${activePatho.id}-${Date.now()}.${ext}`
-      const { error: upErr } = await supabase.storage.from('bacteriomap-images').upload(path, file, { upsert: true })
+      const { error: upErr } = await supabase.storage.from('bacteriomap-images').upload(path, compressed, { upsert: true })
       if (upErr) throw upErr
       const { data: { publicUrl } } = supabase.storage.from('bacteriomap-images').getPublicUrl(path)
       await supabase.from('bacterio_pathologies').update({ image_url: publicUrl }).eq('id', activePatho.id)

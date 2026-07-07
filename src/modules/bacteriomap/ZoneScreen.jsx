@@ -7,6 +7,7 @@ import { usePathologies, useSystemPathologies } from '../../hooks/usePathologies
 import { useIsMobile } from '../../hooks/useIsMobile.js'
 import { useCompare } from '../../context/CompareContext.jsx'
 import { getLinkedBacteriaIds } from '../../shared/dataSource.js'
+import FadeImg from '../../shared/FadeImg.jsx'
 import TopBar from './TopBar.jsx'
 
 const GRAM_MAP = { positif: '+', negatif: '−', aucun: 'F' }
@@ -100,7 +101,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
         >{inBasket ? '✓' : '+'}</button>
         <div style={{ height: mobile ? 120 : height, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
           {img ? (
-            <img src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: imgFilter }} />
+            <FadeImg src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: imgFilter }} />
           ) : (
             <svg viewBox="0 0 100 100" width={mobile ? 80 : 120} height={mobile ? 80 : 120}>
               <MorphoSVG kind={b.morpho} size={100} stroke={c.stroke} fill={c.fill} fillOpacity={0.3} strokeWidth={1.6} vivid={vivid} />
@@ -219,7 +220,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                       >
                         <div style={{ height: mobile ? 120 : 180, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
                           {p.image_url ? (
-                            <img src={p.image_url} alt={p.nom} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <FadeImg src={p.image_url} alt={p.nom} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
                             <svg viewBox="0 0 100 100" width={mobile ? 70 : 100} height={mobile ? 70 : 100} fill="none">
                               <rect x="50" y="12" width="40" height="40" rx="3" transform="rotate(45 50 12)" fill={accent} fillOpacity="0.18" stroke={accent} strokeWidth="1.6" />
@@ -277,7 +278,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                         {/* Thumbnail */}
                         <div style={{ height: mobile ? 120 : 180, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
                           {p.image_url ? (
-                            <img src={p.image_url} alt={p.nom} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <FadeImg src={p.image_url} alt={p.nom} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
                             <svg viewBox="0 0 100 100" width={mobile ? 70 : 100} height={mobile ? 70 : 100} fill="none">
                               <rect x="50" y="12" width="40" height="40" rx="3" transform="rotate(45 50 12)" fill={accent} fillOpacity="0.18" stroke={accent} strokeWidth="1.6" />
