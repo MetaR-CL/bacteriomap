@@ -64,18 +64,17 @@ function Dashboard({ onNavigate }) {
 
   React.useEffect(() => {
     async function load() {
-      const [sys, zones, bact, quiz, patho, imgs, lastBact, lastZone, lastPatho] = await Promise.all([
+      const [sys, zones, bact, quiz, patho, imgs, lastBact, lastPatho] = await Promise.all([
         supabase.from('bacterio_systems').select('id', { count: 'exact', head: true }),
         supabase.from('bacterio_zones').select('id', { count: 'exact', head: true }),
         supabase.from('bacterio_bacteria').select('id', { count: 'exact', head: true }),
         supabase.from('bacterio_quiz').select('id', { count: 'exact', head: true }),
         supabase.from('bacterio_pathologies').select('id', { count: 'exact', head: true }),
-        supabase.from('bacterio_bacteria').select('id', { count: 'exact', head: true }).not('image_url', 'is', null),
-        supabase.from('bacterio_bacteria').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('bacterio_zones').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('bacterio_pathologies').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('bacterio_images').select('id', { count: 'exact', head: true }),
+        supabase.from('bacterio_bacteria').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('bacterio_pathologies').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle(),
       ])
-      const dates = [lastBact.data?.updated_at, lastZone.data?.updated_at, lastPatho.data?.updated_at]
+      const dates = [lastBact.data?.created_at, lastPatho.data?.created_at]
         .filter(Boolean).map(d => new Date(d))
       const lastModified = dates.length
         ? new Date(Math.max(...dates)).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })
