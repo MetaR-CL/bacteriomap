@@ -2,7 +2,7 @@ import React from 'react'
 import { T } from './data.js'
 import { gramColor, MorphoSVG } from './shared.jsx'
 import { useSystems } from '../../hooks/useSystems.js'
-import { useBacteria } from '../../hooks/useBacteria.js'
+import { useBacteria, useSystemBacteria } from '../../hooks/useBacteria.js'
 import { usePathologies, useSystemPathologies } from '../../hooks/usePathologies.js'
 import { useIsMobile } from '../../hooks/useIsMobile.js'
 import { useCompare } from '../../context/CompareContext.jsx'
@@ -44,6 +44,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
   const { bacteria: flora, loading: floraLoading } = useBacteria(zoneIdToFetch, true)
   const { pathologies, loading: pathoLoading } = usePathologies(zoneIdToFetch)
   const { pathologies: systemPathologies, loading: sysPathoLoading } = useSystemPathologies(sys?.id ?? null)
+  const { bacteria: systemBacteria, loading: sysBacteriaLoading } = useSystemBacteria(sys?.id ?? null)
 
   // Bacteria IDs already linked to at least one pathologie
   const [linkedBacteriaIds, setLinkedBacteriaIds] = React.useState(new Set())
@@ -197,7 +198,7 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
         <main style={{ padding: mobile ? '16px' : '32px 40px' }}>
 
           {/* ── Pathologies ── */}
-          {(pathoLoading || bacteriaLoading || sysPathoLoading) ? (
+          {(pathoLoading || bacteriaLoading || sysPathoLoading || sysBacteriaLoading) ? (
             <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: 'var(--ink3)', padding: 40 }}>Chargement…</div>
           ) : (
             <>
@@ -243,6 +244,17 @@ export default function ZoneScreen({ navigate, systemId = 'snc', vivid = false, 
                         </div>
                       </div>
                     ))}
+                  </div>
+                </>
+              )}
+
+              {systemBacteria.length > 0 && (
+                <>
+                  <div style={{ fontFamily: T.mono, fontSize: 10, color: 'var(--ink3)', letterSpacing: '0.18em', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid var(--rule)' }}>
+                    PATHOGÈNES DU SYSTÈME
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: mobile ? 12 : 20, marginBottom: 32 }}>
+                    {systemBacteria.map(normalize).map(b => <BactCard key={b.id} b={b} height={180} />)}
                   </div>
                 </>
               )}
