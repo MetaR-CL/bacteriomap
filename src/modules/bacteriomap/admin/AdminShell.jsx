@@ -8,6 +8,7 @@ import AdminMilieux from './AdminMilieux.jsx'
 import AdminQuiz from './AdminQuiz.jsx'
 import AdminPalette from './AdminPalette.jsx'
 import AdminPathologies from './AdminPathologies.jsx'
+import { recompressAllImages } from '../../../shared/recompressExisting.js'
 
 const TABS = [
   { id: 'dashboard',    num: 'I',    label: 'Tableau de bord' },
@@ -57,6 +58,9 @@ function Dashboard({ onNavigate }) {
   const [counts, setCounts] = React.useState(null)
   const [loading, setLoading] = React.useState(true)
   const [exporting, setExporting] = React.useState(false)
+  const [recompressing, setRecompressing] = React.useState(false)
+  const [recompressProgress, setRecompressProgress] = React.useState(null)
+  const [recompressResult, setRecompressResult] = React.useState(null)
 
   React.useEffect(() => {
     async function load() {
@@ -193,6 +197,53 @@ function Dashboard({ onNavigate }) {
           Télécharge un JSON complet de tout le contenu (backup local).
         </span>
       </div>
+
+      <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.18em', marginBottom: 14, marginTop: 32, paddingTop: 20, borderTop: `1px solid var(--ruleSoft)` }}>MAINTENANCE</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+        <button
+          onClick={async () => {
+            if (!confirm('Recompresser toutes les images déjà en ligne ? Les fichiers volumineux seront réduits en place (même URL). Opération ponctuelle, peut prendre plusieurs minutes.')) return
+            setRecompressing(true)
+            setRecompressResult(null)
+            setRecompressProgress({ done: 0, total: 0 })
+            try {
+              const result = await recompressAllImages((done, total) => setRecompressProgress({ done, total }))
+              setRecompressResult(result)
+            } catch (err) {
+              setRecompressResult({ error: err.message })
+            } finally {
+              setRecompressing(false)
+            }
+          }}
+          disabled={recompressing}
+          style={{
+            padding: '10px 18px',
+            background: recompressing ? T.bg : T.paper,
+            border: `0.5px solid ${T.rule}`,
+            fontFamily: T.mono,
+            fontSize: 11,
+            letterSpacing: '0.1em',
+            color: recompressing ? T.ink3 : T.ink2,
+            cursor: recompressing ? 'wait' : 'pointer',
+          }}
+        >
+          {recompressing
+            ? `RECOMPRESSION… ${recompressProgress?.done ?? 0}/${recompressProgress?.total ?? '?'}`
+            : '⟳ RECOMPRESSER LES IMAGES EXISTANTES'}
+        </button>
+        <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 12, color: T.ink3 }}>
+          Opération ponctuelle : réduit le poids des images déjà en ligne (mêmes URLs, rien d'autre ne change).
+        </span>
+      </div>
+      {recompressResult && (
+        <div style={{ marginTop: 12, fontFamily: T.mono, fontSize: 10, color: recompressResult.error ? 'var(--red)' : T.ink2, letterSpacing: '0.04em' }}>
+          {recompressResult.error
+            ? `Erreur : ${recompressResult.error}`
+            : `Terminé — ${recompressResult.recompressed} image(s) recompressée(s), ${recompressResult.skipped} déjà légère(s)/ignorée(s)` +
+              (recompressResult.savedBytes ? `, ${(recompressResult.savedBytes / 1024 / 1024).toFixed(1)} Mo économisés` : '') +
+              (recompressResult.errors.length ? `, ${recompressResult.errors.length} erreur(s)` : '')}
+        </div>
+      )}
     </div>
   )
 }
