@@ -243,29 +243,35 @@ export function SheetView({ b, images: imagesProp, systemId = 'orl', compact = f
       {/* Sections */}
       <div style={{ background: T.paper, padding: compact ? '12px 16px 32px' : '20px 28px 48px' }}>
 
+        {(!hidden.has('microscopie') || !hidden.has('milieux')) && (
+          <SectionTitle n="02" title="Microscopie & culture" anchor={null} accent={accent} />
+        )}
+
+        {!hidden.has('milieux') && (
+          milieux.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, marginBottom: 12 }}>
+              {milieux.map((m, i) => {
+                const mName = typeof m === 'string' ? m : (m.name || '');
+                const mNote = typeof m === 'object' ? m.note : null;
+                const mPrim = typeof m === 'object' ? m.primary : false;
+                return (
+                  <div key={mName + i} style={{ background: T.bg, border: `0.5px solid ${T.rule}`, padding: '8px 10px', borderLeft: `3px solid ${mPrim ? accent : T.rule}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ fontFamily: T.serif, fontSize: 14, fontWeight: 500 }}>{mName}</div>
+                      {mPrim && <span style={{ fontFamily: T.mono, fontSize: 9, color: accent }}>1ʳᵉ</span>}
+                    </div>
+                    {mNote && <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 12, color: T.ink2, marginTop: 2 }}>{mNote}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink3, marginBottom: 12 }}>Données non renseignées.</p>
+          )
+        )}
+
         {!hidden.has('microscopie') && (
           <>
-            <SectionTitle n="02" title="Microscopie & culture" anchor={null} accent={accent} />
-            {milieux.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, marginBottom: 12 }}>
-                {milieux.map((m, i) => {
-                  const mName = typeof m === 'string' ? m : (m.name || '');
-                  const mNote = typeof m === 'object' ? m.note : null;
-                  const mPrim = typeof m === 'object' ? m.primary : false;
-                  return (
-                    <div key={mName + i} style={{ background: T.bg, border: `0.5px solid ${T.rule}`, padding: '8px 10px', borderLeft: `3px solid ${mPrim ? accent : T.rule}` }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <div style={{ fontFamily: T.serif, fontSize: 14, fontWeight: 500 }}>{mName}</div>
-                        {mPrim && <span style={{ fontFamily: T.mono, fontSize: 9, color: accent }}>1ʳᵉ</span>}
-                      </div>
-                      {mNote && <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 12, color: T.ink2, marginTop: 2 }}>{mNote}</div>}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13, color: T.ink3, marginBottom: 12 }}>Données non renseignées.</p>
-            )}
             {standardTests.length > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(standardTests.length, 4)}, 1fr)`, border: `1px solid ${T.rule}`, marginBottom: extraTests.length > 0 ? 0 : 8 }}>
                 {standardTests.map((r, i) => (

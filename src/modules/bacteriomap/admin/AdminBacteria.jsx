@@ -486,7 +486,7 @@ export default function AdminBacteria() {
         )}
 
         {/* MILIEUX */}
-        <SectionTitle sectionKey="s_milieux" collapsed={isCollapsed('s_milieux')} onCollapse={toggleSection}>MILIEUX</SectionTitle>
+        <SectionTitle fieldKey="milieux" isHidden={isHiddenField('milieux')} onToggle={toggleHidden} sectionKey="s_milieux" collapsed={isCollapsed('s_milieux')} onCollapse={toggleSection}>MILIEUX</SectionTitle>
         {!isCollapsed('s_milieux') && (
           milieux.length === 0 ? (
             <div style={{ fontFamily: T.serif, fontStyle: 'italic', color: T.ink3, fontSize: 13 }}>Aucun milieu configuré.</div>
