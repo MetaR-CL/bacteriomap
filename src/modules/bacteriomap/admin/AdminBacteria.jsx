@@ -191,6 +191,8 @@ export default function AdminBacteria() {
 
   // Zone memberships — from junction table (not draft.zone_ids)
   const [zoneLinkedIds, setZoneLinkedIds] = React.useState(new Set())
+  // System-level memberships (without requiring a sub-zone)
+  const [sysLinkedIds, setSysLinkedIds] = React.useState(new Set())
 
   // Drag & drop for inline arrays
   const dragArrayRef = React.useRef({ from: null, to: null, field: null })
@@ -285,12 +287,17 @@ export default function AdminBacteria() {
   }
 
   React.useEffect(() => {
-    if (!selectedId) { setZoneLinkedIds(new Set()); return }
+    if (!selectedId) { setZoneLinkedIds(new Set()); setSysLinkedIds(new Set()); return }
     supabase
       .from('bacterio_zone_bacteria')
       .select('zone_id')
       .eq('bacteria_id', selectedId)
       .then(({ data }) => setZoneLinkedIds(new Set((data || []).map(r => Number(r.zone_id)))))
+    supabase
+      .from('bacterio_system_bacteria')
+      .select('system_id')
+      .eq('bacteria_id', selectedId)
+      .then(({ data }) => setSysLinkedIds(new Set((data || []).map(r => Number(r.system_id)))))
   }, [selectedId])
 
   const current = bacteria.find(b => b.id === selectedId) || null
@@ -668,32 +675,46 @@ export default function AdminBacteria() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
               {systems.map(sys => {
                 const zones = [...(sys.bacterio_zones || [])].sort((a, b) => a.position - b.position)
-                if (!zones.length) return null
+                const sid = Number(sys.id)
+                const sysChecked = sysLinkedIds.has(sid)
                 return (
                   <div key={sys.id}>
-                    <div style={{ fontFamily: T.mono, fontSize: 9, color: sys.color || T.ink2, letterSpacing: '0.1em', marginBottom: 8 }}>{sys.name.toUpperCase()}</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {zones.map(z => {
-                        const zid = Number(z.id)
-                        const checked = zoneLinkedIds.has(zid)
-                        return (
-                          <label key={z.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: T.serif, fontSize: 13, color: T.ink2, cursor: 'pointer' }}>
-                            <input type="checkbox" checked={checked} onChange={async () => {
-                              if (checked) {
-                                setZoneLinkedIds(s => { const n = new Set(s); n.delete(zid); return n })
-                                await supabase.from('bacterio_zone_bacteria').delete().eq('zone_id', zid).eq('bacteria_id', selectedId)
-                              } else {
-                                const { data: ex } = await supabase.from('bacterio_zone_bacteria').select('ordre').eq('zone_id', zid).order('ordre', { ascending: false }).limit(1)
-                                const ordre = ex?.length ? (ex[0].ordre + 1) : 0
-                                setZoneLinkedIds(s => new Set([...s, zid]))
-                                await supabase.from('bacterio_zone_bacteria').insert({ zone_id: zid, bacteria_id: selectedId, ordre })
-                              }
-                            }}/>
-                            {z.label || z.name}
-                          </label>
-                        )
-                      })}
-                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: T.mono, fontSize: 9, color: sys.color || T.ink2, letterSpacing: '0.1em', marginBottom: 8, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={sysChecked} onChange={async () => {
+                        if (sysChecked) {
+                          setSysLinkedIds(s => { const n = new Set(s); n.delete(sid); return n })
+                          await supabase.from('bacterio_system_bacteria').delete().eq('system_id', sid).eq('bacteria_id', selectedId)
+                        } else {
+                          setSysLinkedIds(s => new Set([...s, sid]))
+                          await supabase.from('bacterio_system_bacteria').insert({ system_id: sid, bacteria_id: selectedId })
+                        }
+                      }}/>
+                      {sys.name.toUpperCase()}
+                    </label>
+                    {zones.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 20 }}>
+                        {zones.map(z => {
+                          const zid = Number(z.id)
+                          const checked = zoneLinkedIds.has(zid)
+                          return (
+                            <label key={z.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: T.serif, fontSize: 13, color: T.ink2, cursor: 'pointer' }}>
+                              <input type="checkbox" checked={checked} onChange={async () => {
+                                if (checked) {
+                                  setZoneLinkedIds(s => { const n = new Set(s); n.delete(zid); return n })
+                                  await supabase.from('bacterio_zone_bacteria').delete().eq('zone_id', zid).eq('bacteria_id', selectedId)
+                                } else {
+                                  const { data: ex } = await supabase.from('bacterio_zone_bacteria').select('ordre').eq('zone_id', zid).order('ordre', { ascending: false }).limit(1)
+                                  const ordre = ex?.length ? (ex[0].ordre + 1) : 0
+                                  setZoneLinkedIds(s => new Set([...s, zid]))
+                                  await supabase.from('bacterio_zone_bacteria').insert({ zone_id: zid, bacteria_id: selectedId, ordre })
+                                }
+                              }}/>
+                              {z.label || z.name}
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                 )
               })}
