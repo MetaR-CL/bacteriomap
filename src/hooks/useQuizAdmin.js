@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { compressImage } from '../shared/compressImage.js'
 
 export function useQuizAdmin() {
   const [questions, setQuestions] = useState([])
@@ -39,11 +40,12 @@ export function useQuizAdmin() {
   }
 
   const uploadImage = async (file, questionId) => {
-    const ext = file.name.split('.').pop()
+    const compressed = await compressImage(file)
+    const ext = compressed.name.split('.').pop()
     const path = `quiz/${questionId}/${Date.now()}.${ext}`
     const { error: upErr } = await supabase.storage
       .from('bacteriomap-images')
-      .upload(path, file, { upsert: true })
+      .upload(path, compressed, { upsert: true })
     if (upErr) throw upErr
     const { data: { publicUrl } } = supabase.storage
       .from('bacteriomap-images')

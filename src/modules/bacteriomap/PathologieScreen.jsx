@@ -4,6 +4,7 @@ import { gramColor, MorphoSVG } from './shared.jsx'
 import { usePathologieBacteria } from '../../hooks/usePathologies.js'
 import { useIsMobile } from '../../hooks/useIsMobile.js'
 import { useCompare } from '../../context/CompareContext.jsx'
+import FadeImg from '../../shared/FadeImg.jsx'
 import TopBar from './TopBar.jsx'
 
 const GRAM_MAP = { positif: '+', negatif: '−', aucun: 'F' }
@@ -86,7 +87,7 @@ export default function PathologieScreen({ navigate, pathologieId, pathologie, s
 
                   <div style={{ height: mobile ? 120 : 180, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', overflow: 'hidden' }}>
                     {img ? (
-                      <img src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <FadeImg src={img.url} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <svg viewBox="0 0 100 100" width={mobile ? 80 : 120} height={mobile ? 80 : 120}>
                         <MorphoSVG kind={b.morpho} size={100} stroke={c.stroke} fill={c.fill} fillOpacity={0.3} strokeWidth={1.6} />

@@ -3,6 +3,7 @@ import React from 'react';
 import { T } from './data.js';
 import { useQuiz } from '../../hooks/useQuiz.js';
 import { useIsMobile } from '../../hooks/useIsMobile.js';
+import FadeImg from '../../shared/FadeImg.jsx';
 import TopBar from './TopBar.jsx';
 import MarkdownView from './MarkdownView.jsx';
 
@@ -180,7 +181,7 @@ function Lobby({ onStart, mobile = false }) {
 // ── Question components ───────────────────────────────────────────────────────
 function QuizImage({ url }) {
   if (!url) return null;
-  return <img src={url} alt="" style={{ maxHeight: 320, width: '100%', objectFit: 'cover', marginBottom: 24, border: `0.5px solid ${T.rule}`, display: 'block' }}/>;
+  return <FadeImg src={url} alt="" style={{ maxHeight: 320, width: '100%', objectFit: 'cover', marginBottom: 24, border: `0.5px solid ${T.rule}`, display: 'block' }}/>;
 }
 
 function FeedbackBlock({ children }) {

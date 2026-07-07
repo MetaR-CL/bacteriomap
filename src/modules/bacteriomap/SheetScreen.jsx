@@ -4,6 +4,7 @@ import React from 'react';
 import { T } from './data.js';
 import { SYSTEMS, getSystemPalette, gramColor } from './shared.jsx';
 import { getBacterieByName } from '../../shared/dataSource.js';
+import FadeImg from '../../shared/FadeImg.jsx';
 import TopBar from './TopBar.jsx'
 import MarkdownView from './MarkdownView.jsx'
 import { useIsMobile } from '../../hooks/useIsMobile.js';
@@ -66,7 +67,7 @@ function Carrousel({ images, accent, onOpen }) {
         }}>
           {images.map((im, i) => (
             <div key={im.id || i} style={{ flex:'0 0 100%', height:'100%' }}>
-              <img src={im.url} alt={im.label || ''} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
+              <FadeImg src={im.url} alt={im.label || ''} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
             </div>
           ))}
         </div>
