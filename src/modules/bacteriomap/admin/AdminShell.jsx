@@ -19,9 +19,44 @@ const TABS = [
   { id: 'palette',      num: 'VII',  label: 'Couleurs' },
 ]
 
+const EXPORT_TABLES = [
+  'bacterio_systems', 'bacterio_zones', 'bacterio_bacteria', 'bacterio_images',
+  'bacterio_milieux', 'bacterio_pathologies', 'bacterio_pathologie_germes',
+  'bacterio_zone_bacteria', 'bacterio_system_bacteria', 'bacterio_quiz',
+]
+
+async function exportCanonicalJSON() {
+  const results = await Promise.all(
+    EXPORT_TABLES.map(t => supabase.from(t).select('*').limit(10000).then(({ data }) => [t, data || []]))
+  )
+  const payload = {
+    version: 1,
+    exported_at: new Date().toISOString(),
+    systems:            results.find(([t]) => t === 'bacterio_systems')?.[1],
+    zones:              results.find(([t]) => t === 'bacterio_zones')?.[1],
+    bacteria:           results.find(([t]) => t === 'bacterio_bacteria')?.[1],
+    images:             results.find(([t]) => t === 'bacterio_images')?.[1],
+    milieux:            results.find(([t]) => t === 'bacterio_milieux')?.[1],
+    pathologies:        results.find(([t]) => t === 'bacterio_pathologies')?.[1],
+    pathologie_germes:  results.find(([t]) => t === 'bacterio_pathologie_germes')?.[1],
+    zone_bacteria:      results.find(([t]) => t === 'bacterio_zone_bacteria')?.[1],
+    system_bacteria:    results.find(([t]) => t === 'bacterio_system_bacteria')?.[1],
+    quiz:               results.find(([t]) => t === 'bacterio_quiz')?.[1],
+  }
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  const date = new Date().toISOString().slice(0, 10)
+  a.href     = url
+  a.download = `bacteriomap-backup-${date}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 function Dashboard({ onNavigate }) {
   const [counts, setCounts] = React.useState(null)
   const [loading, setLoading] = React.useState(true)
+  const [exporting, setExporting] = React.useState(false)
 
   React.useEffect(() => {
     async function load() {
@@ -133,6 +168,30 @@ function Dashboard({ onNavigate }) {
             {label.toUpperCase()} →
           </button>
         ))}
+      </div>
+
+      <div style={{ fontFamily: T.mono, fontSize: 9, color: T.ink3, letterSpacing: '0.18em', marginBottom: 14, marginTop: 32, paddingTop: 20, borderTop: `1px solid var(--ruleSoft)` }}>SAUVEGARDE</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+        <button
+          onClick={async () => { setExporting(true); try { await exportCanonicalJSON() } finally { setExporting(false) } }}
+          disabled={exporting}
+          style={{
+            padding: '10px 18px',
+            background: exporting ? T.bg : 'var(--accent)',
+            border: 'none',
+            fontFamily: T.mono,
+            fontSize: 11,
+            letterSpacing: '0.1em',
+            color: exporting ? T.ink3 : 'var(--paper)',
+            cursor: exporting ? 'wait' : 'pointer',
+            opacity: exporting ? 0.7 : 1,
+          }}
+        >
+          {exporting ? 'EXPORT EN COURS…' : '↓ EXPORTER LES DONNÉES'}
+        </button>
+        <span style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 12, color: T.ink3 }}>
+          Télécharge un JSON complet de tout le contenu (backup local).
+        </span>
       </div>
     </div>
   )

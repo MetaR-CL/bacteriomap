@@ -1,0 +1,75 @@
+name: Backup Content
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # chaque jour à 3h UTC
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch all tables and build canonical JSON
+        env:
+          SUPABASE_URL: https://mqobermcwxxxkbovizua.supabase.co
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          set -e
+
+          fetch() {
+            curl -sf \
+              -H "apikey: $SUPABASE_ANON_KEY" \
+              -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+              -H "Range: 0-9999" \
+              "$SUPABASE_URL/rest/v1/$1?select=*"
+          }
+
+          mkdir -p backups
+
+          TODAY=$(date -u +%Y-%m-%d)
+          EXPORTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          jq -n \
+            --argjson systems          "$(fetch bacterio_systems)" \
+            --argjson zones            "$(fetch bacterio_zones)" \
+            --argjson bacteria         "$(fetch bacterio_bacteria)" \
+            --argjson images           "$(fetch bacterio_images)" \
+            --argjson milieux          "$(fetch bacterio_milieux)" \
+            --argjson pathologies      "$(fetch bacterio_pathologies)" \
+            --argjson pathologie_germes "$(fetch bacterio_pathologie_germes)" \
+            --argjson zone_bacteria    "$(fetch bacterio_zone_bacteria)" \
+            --argjson system_bacteria  "$(fetch bacterio_system_bacteria)" \
+            --argjson quiz             "$(fetch bacterio_quiz)" \
+            --arg     version          "1" \
+            --arg     exported_at      "$EXPORTED_AT" \
+            '{
+              version:            ($version | tonumber),
+              exported_at:        $exported_at,
+              systems:            $systems,
+              zones:              $zones,
+              bacteria:           $bacteria,
+              images:             $images,
+              milieux:            $milieux,
+              pathologies:        $pathologies,
+              pathologie_germes:  $pathologie_germes,
+              zone_bacteria:      $zone_bacteria,
+              system_bacteria:    $system_bacteria,
+              quiz:               $quiz
+            }' > backups/latest.json
+
+          cp "backups/latest.json" "backups/$TODAY.json"
+
+          echo "Backup OK — $(wc -c < backups/latest.json) bytes"
+
+      - name: Commit backup
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backups/
+          git diff --staged --quiet && echo "No changes." || git commit -m "backup: $(date -u +%Y-%m-%d)"
+          git push
