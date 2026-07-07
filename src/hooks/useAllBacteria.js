@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { getAllBacteries } from '../shared/dataSource.js'
 
 export function useAllBacteria() {
   const [bacteria, setBacteria] = useState([])
@@ -7,11 +7,8 @@ export function useAllBacteria() {
 
   useEffect(() => {
     async function fetch() {
-      const { data } = await supabase
-        .from('bacterio_bacteria')
-        .select('id, name, gram, morphology, zone_ids')
-        .order('name')
-      setBacteria(data || [])
+      const data = await getAllBacteries()
+      setBacteria(data)
       setLoading(false)
     }
     fetch()

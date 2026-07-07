@@ -113,7 +113,7 @@ function MoonIcon() {
   );
 }
 
-import { supabase } from './lib/supabase.js';
+import { getPathologie, getZoneLabel } from './shared/dataSource.js';
 import { getSystemPalette } from './modules/bacteriomap/shared.jsx';
 
 function PathologieLoader({ navigate, params, vivid }) {
@@ -124,14 +124,12 @@ function PathologieLoader({ navigate, params, vivid }) {
 
   React.useEffect(() => {
     if (!pathologieId) return
-    supabase.from('bacterio_pathologies').select('*').eq('id', pathologieId).single()
-      .then(({ data }) => { if (data) setPathologie(data) })
+    getPathologie(pathologieId).then(data => { if (data) setPathologie(data) })
   }, [pathologieId])
 
   React.useEffect(() => {
     if (!zoneId) return
-    supabase.from('bacterio_zones').select('label, name').eq('id', zoneId).single()
-      .then(({ data }) => { if (data) setZoneLabel(data.label || data.name || '') })
+    getZoneLabel(zoneId).then(data => { if (data) setZoneLabel(data.label || data.name || '') })
   }, [zoneId])
 
   return (
