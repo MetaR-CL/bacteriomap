@@ -151,10 +151,13 @@ function FormationBanner({ navigate, mobile = false }) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex',
+        flexDirection: mobile ? 'column' : 'row',
+        alignItems: mobile ? 'stretch' : 'center',
+        justifyContent: 'space-between',
         marginTop: 26, cursor: 'pointer',
-        background: '#2C2620', borderRadius: 12, padding: mobile ? '16px 18px' : '24px 32px',
-        gap: 16,
+        background: '#2C2620', borderRadius: 12, padding: mobile ? '18px' : '24px 32px',
+        gap: mobile ? 18 : 16,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 22, minWidth: 0 }}>
@@ -166,9 +169,9 @@ function FormationBanner({ navigate, mobile = false }) {
             <path d="M4 19V6a2 2 0 0 1 2-2h7v15H6a2 2 0 0 0-2 2zM13 4h5a2 2 0 0 1 2 2v13"/>
           </svg>
         </span>
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div style={{ fontFamily: T.mono, fontSize: 10.5, letterSpacing: '0.22em', color: 'rgba(241,236,221,0.6)', textTransform: 'uppercase' }}>Formation</div>
-          <div style={{ fontFamily: T.serif, fontSize: 23, color: '#F6F1E4', marginTop: 4, lineHeight: 1.2 }}>Tester mes connaissances</div>
+          <div style={{ fontFamily: T.serif, fontSize: mobile ? 19 : 23, color: '#F6F1E4', marginTop: 4, lineHeight: 1.25 }}>Tester mes connaissances</div>
           <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 14, color: 'rgba(241,236,221,0.65)', marginTop: 2 }}>Questions à choix multiples</div>
         </div>
       </div>
@@ -176,6 +179,8 @@ function FormationBanner({ navigate, mobile = false }) {
         fontFamily: T.mono, fontSize: 12, letterSpacing: '0.12em', color: '#F1ECDD',
         border: `1px solid ${hover ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.25)'}`,
         borderRadius: 8, padding: '11px 20px', flexShrink: 0,
+        textAlign: 'center',
+        alignSelf: mobile ? 'flex-start' : 'center',
         transition: 'border-color .15s',
       }}>
         Commencer →
