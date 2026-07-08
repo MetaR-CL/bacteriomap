@@ -1,0 +1,1734 @@
+{
+  "version": 1,
+  "exported_at": "2026-07-08T05:39:21Z",
+  "systems": [
+    {
+      "id": 15,
+      "name": "Système digestif",
+      "slug": "systeme-digestif",
+      "color": "#9a6b1f",
+      "icon": null,
+      "position": 14,
+      "short": "",
+      "subtitle": "",
+      "hue": null,
+      "tint": "#efe2c5",
+      "deep": "#5d3e0c",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/systems/systeme-digestif-1780663217297.png"
+    },
+    {
+      "id": 12,
+      "name": "Système tégumentaire",
+      "slug": "systeme-tegumentaire",
+      "color": "#a85a2a",
+      "icon": null,
+      "position": 11,
+      "short": "",
+      "subtitle": "",
+      "hue": null,
+      "tint": "#f0dccd",
+      "deep": "#62301a",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/systems/systeme-tegumentaire-1780663195265.png"
+    },
+    {
+      "id": 16,
+      "name": "Système immunitaire",
+      "slug": "systeme-immunitaire",
+      "color": "#2d6a6f",
+      "icon": null,
+      "position": 15,
+      "short": "",
+      "subtitle": "",
+      "hue": null,
+      "tint": "#dceae9",
+      "deep": "#143b3e",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/systems/systeme-immunitaire-1780663225393.png"
+    },
+    {
+      "id": 13,
+      "name": "Système respiratoire",
+      "slug": "systeme-respiratoire",
+      "color": "#4a7a4d",
+      "icon": null,
+      "position": 12,
+      "short": "",
+      "subtitle": "",
+      "hue": null,
+      "tint": "#dfe8de",
+      "deep": "#264a28",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/systems/systeme-respiratoire-1780661312274.png"
+    },
+    {
+      "id": 14,
+      "name": "Systèmes circulatoire",
+      "slug": "systemes-circulatoire",
+      "color": "#a02e1f",
+      "icon": null,
+      "position": 13,
+      "short": "",
+      "subtitle": "",
+      "hue": null,
+      "tint": "#f0d9d4",
+      "deep": "#5a160c",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/systems/systemes-circulatoire-1780663207657.png"
+    },
+    {
+      "id": 17,
+      "name": "Système musculosquelettique",
+      "slug": "systeme-musculosquelettique",
+      "color": "#7a7a2d",
+      "icon": null,
+      "position": 16,
+      "short": "",
+      "subtitle": "",
+      "hue": null,
+      "tint": "#ebe8d2",
+      "deep": "#4a4a14",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/systems/systeme-musculosquelettique-1780663985135.png"
+    },
+    {
+      "id": 10,
+      "name": "Système reproducteur",
+      "slug": "gen",
+      "color": "#9a3a6a",
+      "icon": null,
+      "position": 10,
+      "short": "",
+      "subtitle": "Masculin / Féminin",
+      "hue": 330,
+      "tint": "#efd6e0",
+      "deep": "#5a1a3a",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/systems/gen-1780662743030.png"
+    },
+    {
+      "id": 8,
+      "name": "Système urinaire",
+      "slug": "uri",
+      "color": "#c08a1a",
+      "icon": null,
+      "position": 8,
+      "short": "",
+      "subtitle": "Reins · Vessie · Urines",
+      "hue": 50,
+      "tint": "#f3e5c0",
+      "deep": "#7a5208",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/systems/uri-1780662735509.png"
+    },
+    {
+      "id": 1,
+      "name": "Système nerveux central",
+      "slug": "snc",
+      "color": "#6b3fa0",
+      "icon": null,
+      "position": 1,
+      "short": "",
+      "subtitle": "LCR · Méninges",
+      "hue": 270,
+      "tint": "#ede4f5",
+      "deep": "#3d1f6e",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/systems/snc-1780521196164.png"
+    }
+  ],
+  "zones": [
+    {
+      "id": 1,
+      "system_id": 1,
+      "name": "LCR",
+      "slug": "snc-lcr",
+      "position": 1,
+      "n": 9,
+      "flora": 0,
+      "descr": "Liquide céphalo-rachidien. Ponction lombaire stérile.",
+      "label": null
+    },
+    {
+      "id": 7,
+      "system_id": 1,
+      "name": "LCR par drain",
+      "slug": "snc-mpv9cmm2",
+      "position": 1,
+      "n": 0,
+      "flora": 0,
+      "descr": "",
+      "label": "LCR par drain"
+    },
+    {
+      "id": 8,
+      "system_id": 12,
+      "name": "Aisselle",
+      "slug": "systeme-tegumentaire-mpvalkxd",
+      "position": 0,
+      "n": 0,
+      "flora": 0,
+      "descr": "",
+      "label": "Aisselle"
+    },
+    {
+      "id": 15,
+      "system_id": 8,
+      "name": "general",
+      "slug": "uri-general",
+      "position": 0,
+      "n": 0,
+      "flora": 0,
+      "descr": null,
+      "label": "Urinaire"
+    },
+    {
+      "id": 17,
+      "system_id": 10,
+      "name": "general",
+      "slug": "gen-general",
+      "position": 0,
+      "n": 0,
+      "flora": 0,
+      "descr": null,
+      "label": "Génital"
+    },
+    {
+      "id": 18,
+      "system_id": 12,
+      "name": "Coude",
+      "slug": "systeme-tegumentaire-mq0vm7k6",
+      "position": 1,
+      "n": 0,
+      "flora": 0,
+      "descr": "",
+      "label": "Coude"
+    },
+    {
+      "id": 19,
+      "system_id": 12,
+      "name": "Epaule",
+      "slug": "systeme-tegumentaire-mq0vmadi",
+      "position": 2,
+      "n": 0,
+      "flora": 0,
+      "descr": "",
+      "label": "Epaule"
+    },
+    {
+      "id": 20,
+      "system_id": 12,
+      "name": "Plaie",
+      "slug": "systeme-tegumentaire-mq0vmely",
+      "position": 3,
+      "n": 0,
+      "flora": 0,
+      "descr": "",
+      "label": "Plaie"
+    },
+    {
+      "id": 21,
+      "system_id": 13,
+      "name": "Expectoration",
+      "slug": "systeme-respiratoire-mq0vmp5h",
+      "position": 0,
+      "n": 0,
+      "flora": 0,
+      "descr": "",
+      "label": "Expectoration"
+    },
+    {
+      "id": 22,
+      "system_id": 14,
+      "name": "Liquide péricarde",
+      "slug": "systemes-circulatoire-mr21smgl",
+      "position": 0,
+      "n": 0,
+      "flora": 0,
+      "descr": "",
+      "label": "Liquide péricarde"
+    },
+    {
+      "id": 23,
+      "system_id": 14,
+      "name": "Fragment thrombus",
+      "slug": "systemes-circulatoire-mr21stjs",
+      "position": 1,
+      "n": 0,
+      "flora": 0,
+      "descr": "",
+      "label": "Fragment thrombus"
+    }
+  ],
+  "bacteria": [
+    {
+      "id": 1,
+      "name": "Streptococcus pneumoniae",
+      "type": "bacterie",
+      "gram": "positif",
+      "morphology": "cocci-pairs",
+      "catalase": false,
+      "oxydase": false,
+      "coagulase": false,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Gélose Columbia + 5% sang de mouton",
+          "note": "colonies mucoïdes, α-hémolytiques avec zone verte",
+          "primary": true
+        },
+        {
+          "name": "Gélose au sang cuit (chocolat)",
+          "note": "meilleure croissance en 5% CO₂",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Pneumonies communautaires (1ère cause), méningites bactériennes (adulte), otites moyennes, sinusites, bactériémies.",
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        1,
+        5
+      ],
+      "created_at": "2026-05-13T20:40:24.477237+00:00",
+      "shape": "coque · diplocoques lancéolés",
+      "freq": "fréquent",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": true,
+      "declaration": false,
+      "bsl3": false,
+      "identif": "MALDI-TOF. Sensibilité à l'optochine (zone ≥14 mm). Lyse par les sels biliaires. Antigène urinaire (BinaxNOW).",
+      "antibio": "Amoxicilline (si sensible). Ceftriaxone pour méningites. Selon CMI pour les souches de sensibilité diminuée.",
+      "resist_nat": [
+        "Aminosides (bas niveau)"
+      ],
+      "resist_acq": [
+        "Pénicilline (altération PLP)",
+        "Macrolides (erm, mef)",
+        "Fluoroquinolones (rare)"
+      ],
+      "virulence": [
+        "Capsule polysaccharidique",
+        "Pneumolysine",
+        "Autolysine",
+        "IgA protéase"
+      ],
+      "tests_rapides": [],
+      "antibiogramme": [
+        {
+          "ab": "Amoxicilline",
+          "sens": "S"
+        },
+        {
+          "ab": "Ceftriaxone",
+          "sens": "S"
+        },
+        {
+          "ab": "Vancomycine",
+          "sens": "S"
+        },
+        {
+          "ab": "Érythromycine",
+          "sens": "I"
+        },
+        {
+          "ab": "Tétracycline",
+          "sens": "I"
+        }
+      ],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    },
+    {
+      "id": 2,
+      "name": "Neisseria meningitidis",
+      "type": "bacterie",
+      "gram": "negatif",
+      "morphology": "cocci-pairs",
+      "catalase": true,
+      "oxydase": true,
+      "coagulase": false,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Gélose au sang cuit (chocolat)",
+          "note": "atmosphère 5% CO₂ obligatoire",
+          "primary": true
+        },
+        {
+          "name": "Gélose Columbia + 5% sang de mouton",
+          "note": "",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Méningite bactérienne, purpura fulminans. Maladie à déclaration obligatoire. Pronostic vital engagé.",
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        1
+      ],
+      "created_at": "2026-05-13T20:40:24.477237+00:00",
+      "shape": "coque · diplocoques en grains de café",
+      "freq": "fréquent",
+      "atmosphere": "aérobie strict",
+      "urgence": true,
+      "declaration": true,
+      "bsl3": false,
+      "identif": "MALDI-TOF. Oxydase +. Diplocoques Gram− en grains de café. Agglutination latex ou PCR pour sérogroupage.",
+      "antibio": "Ceftriaxone IV en urgence. Chimioprophylaxie entourage : rifampicine ou ciprofloxacine.",
+      "resist_nat": [
+        "Polymyxines"
+      ],
+      "resist_acq": [
+        "Pénicilline (rare, β-lactamase)"
+      ],
+      "virulence": [
+        "Capsule polysaccharidique",
+        "Pili",
+        "Endotoxine LPS",
+        "IgA protéase"
+      ],
+      "tests_rapides": [],
+      "antibiogramme": [
+        {
+          "ab": "Ceftriaxone",
+          "sens": "S"
+        },
+        {
+          "ab": "Pénicilline G",
+          "sens": "S"
+        },
+        {
+          "ab": "Rifampicine",
+          "sens": "S"
+        },
+        {
+          "ab": "Ciprofloxacine",
+          "sens": "S"
+        }
+      ],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    },
+    {
+      "id": 3,
+      "name": "Listeria monocytogenes",
+      "type": "bacterie",
+      "gram": "positif",
+      "morphology": "rod",
+      "catalase": true,
+      "oxydase": false,
+      "coagulase": false,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Gélose Columbia + 5% sang de mouton",
+          "note": "β-hémolyse étroite, colonies grises",
+          "primary": true
+        },
+        {
+          "name": "Gélose ALOA ou RAPID Listeria",
+          "note": "milieu sélectif chromogène",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Listériose : méningite du sujet âgé/immunodéprimé, infection materno-fœtale, septicémie. Aliments réfrigérés (fromages, charcuterie).",
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        1
+      ],
+      "created_at": "2026-05-13T20:40:24.477237+00:00",
+      "shape": "bacille · isolés ou courtes chaînettes",
+      "freq": "occasionnel",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": true,
+      "declaration": true,
+      "bsl3": false,
+      "identif": "- MALDI-TOF. Mobilité en parapluie à 25°C. β-hémolytique étroite. CAMP test + avec S. aureus.\n- adgdfgdgdgfgdgf\n - dfgdfgdsgdsgdsg\n- hjkhkhjkhjkh",
+      "antibio": "Amoxicilline + gentamicine. Cotrimoxazole si allergie aux pénicillines.",
+      "resist_nat": [
+        "Céphalosporines",
+        "Fosfomycine"
+      ],
+      "resist_acq": [],
+      "virulence": [
+        "Listeriolysine O (LLO)",
+        "Internalines A/B",
+        "ActA (mobilité intracellulaire)"
+      ],
+      "tests_rapides": [],
+      "antibiogramme": [
+        {
+          "ab": "Amoxicilline",
+          "sens": "S"
+        },
+        {
+          "ab": "Cotrimoxazole",
+          "sens": "S"
+        },
+        {
+          "ab": "Gentamicine",
+          "sens": "S"
+        },
+        {
+          "ab": "Ceftriaxone",
+          "sens": "R"
+        }
+      ],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    },
+    {
+      "id": 7,
+      "name": "Mycobacterium tuberculosis",
+      "type": "bacterie",
+      "gram": "positif",
+      "morphology": "rod-bar",
+      "catalase": true,
+      "oxydase": false,
+      "coagulase": false,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Löwenstein-Jensen",
+          "note": "croissance 3–6 semaines, 37°C",
+          "primary": true
+        },
+        {
+          "name": "Middlebrook 7H10/7H11",
+          "note": "milieu gélosé enrichi",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Tuberculose pulmonaire (toux > 3 semaines, hémoptysie). Formes extrapulmonaires : miliaire, méningite, osseuse. Déclaration obligatoire.",
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        1
+      ],
+      "created_at": "2026-05-13T20:40:24.477237+00:00",
+      "shape": "bacille · isolés, BAAR",
+      "freq": "rare",
+      "atmosphere": "aérobie strict",
+      "urgence": true,
+      "declaration": true,
+      "bsl3": true,
+      "identif": "MALDI-TOF (BSL3). Ziehl-Neelsen (BAAR). PCR GeneXpert MTB/RIF. Culture lente obligatoire.",
+      "antibio": "Quadrithérapie : Isoniazide + Rifampicine + Pyrazinamide + Éthambutol × 2 mois, puis bithérapie × 4 mois.",
+      "resist_nat": [
+        "Pyrazinamide (M. bovis)"
+      ],
+      "resist_acq": [
+        "Isoniazide",
+        "Rifampicine (MDR)",
+        "Fluoroquinolones (XDR)"
+      ],
+      "virulence": [
+        "Cord factor (TDM)",
+        "Lipoarabinomannane",
+        "Résistance intracellulaire"
+      ],
+      "tests_rapides": [],
+      "antibiogramme": [
+        {
+          "ab": "Isoniazide",
+          "sens": "S"
+        },
+        {
+          "ab": "Rifampicine",
+          "sens": "S"
+        },
+        {
+          "ab": "Pyrazinamide",
+          "sens": "S"
+        },
+        {
+          "ab": "Éthambutol",
+          "sens": "S"
+        }
+      ],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    },
+    {
+      "id": 4,
+      "name": "Haemophilus influenzae",
+      "type": "bacterie",
+      "gram": "negatif",
+      "morphology": "coccobacillus",
+      "catalase": true,
+      "oxydase": true,
+      "coagulase": false,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Gélose au sang cuit (chocolat)",
+          "note": "facteurs X et V indispensables",
+          "primary": true
+        },
+        {
+          "name": "Gélose au sang cuit (chocolat) + Polyvitex",
+          "note": "",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Méningite enfant non vacciné (Hib), otites, sinusites, épiglottite, exacerbations BPCO.",
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        1
+      ],
+      "created_at": "2026-05-13T20:40:24.477237+00:00",
+      "shape": "coccobacille · isolés, pléomorphes",
+      "freq": "rare",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": false,
+      "declaration": false,
+      "bsl3": false,
+      "identif": "MALDI-TOF. Satellite autour de S. aureus sur gélose sang. Exige facteurs X (hémine) + V (NAD).",
+      "antibio": "Amoxicilline-clavulanate ou cefuroxime. Ceftriaxone si méningite.",
+      "resist_nat": [],
+      "resist_acq": [
+        "β-lactamase (ampicilline)",
+        "BLNAR (altération PLP3)"
+      ],
+      "virulence": [
+        "Capsule type b (Hib)",
+        "Adhésines",
+        "IgA protéase"
+      ],
+      "tests_rapides": [],
+      "antibiogramme": [
+        {
+          "ab": "Amoxicilline",
+          "sens": "I"
+        },
+        {
+          "ab": "Amoxicilline-clavulanate",
+          "sens": "S"
+        },
+        {
+          "ab": "Ceftriaxone",
+          "sens": "S"
+        },
+        {
+          "ab": "Ciprofloxacine",
+          "sens": "S"
+        }
+      ],
+      "flora_zone_ids": [
+        8
+      ],
+      "hidden_fields": []
+    },
+    {
+      "id": 8,
+      "name": "Cutibacterium acnes",
+      "type": "bacterie",
+      "gram": "positif",
+      "morphology": "rod",
+      "catalase": true,
+      "oxydase": false,
+      "coagulase": false,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Gélose Columbia + 5% sang de mouton",
+          "note": "anaérobie strict, 5–7 jours",
+          "primary": true
+        },
+        {
+          "name": "Gélose Schaedler",
+          "note": "",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Acné vulgaire. Infections de prothèses orthopédiques (épaule +++). Souvent contaminant en hémoculture. Endocardites rares.",
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        1
+      ],
+      "created_at": "2026-05-13T20:40:24.477237+00:00",
+      "shape": "bacille · isolés, pléomorphes",
+      "freq": "rare",
+      "atmosphere": "anaérobie strict",
+      "urgence": false,
+      "declaration": false,
+      "bsl3": false,
+      "identif": "MALDI-TOF. Anaérobie strict. Colonies blanches/grises. Indole +. Catalase +.",
+      "antibio": "Amoxicilline ou doxycycline. Acné : tétracyclines topiques/systémiques.",
+      "resist_nat": [],
+      "resist_acq": [
+        "Macrolides (acné chronique traitée)"
+      ],
+      "virulence": [
+        "Lipases",
+        "Protéases",
+        "Biofilm (prothèses)"
+      ],
+      "tests_rapides": [],
+      "antibiogramme": [
+        {
+          "ab": "Amoxicilline",
+          "sens": "S"
+        },
+        {
+          "ab": "Doxycycline",
+          "sens": "S"
+        },
+        {
+          "ab": "Clindamycine",
+          "sens": "S"
+        },
+        {
+          "ab": "Métronidazole",
+          "sens": "R"
+        }
+      ],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    },
+    {
+      "id": 10,
+      "name": "Corynebacterium",
+      "type": "bacterie",
+      "gram": "positif",
+      "morphology": "rod",
+      "catalase": true,
+      "oxydase": null,
+      "coagulase": false,
+      "sporulation": null,
+      "milieux": [
+        {
+          "name": "Columbia",
+          "note": "",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": null,
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        1
+      ],
+      "created_at": "2026-05-20T13:43:54.285249+00:00",
+      "shape": "Bacille",
+      "freq": "fréquent",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": false,
+      "declaration": false,
+      "bsl3": false,
+      "identif": "Saperlipopette",
+      "antibio": null,
+      "resist_nat": null,
+      "resist_acq": null,
+      "virulence": null,
+      "tests_rapides": [
+        {
+          "name": "Faire une aggluti",
+          "value": "é"
+        },
+        {
+          "name": "",
+          "value": ""
+        }
+      ],
+      "antibiogramme": [
+        {
+          "ab": "Ampiciline",
+          "sens": "S"
+        },
+        {
+          "ab": "Ceftriaxone",
+          "sens": "R"
+        }
+      ],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    },
+    {
+      "id": 6,
+      "name": "Streptococcus agalactiae",
+      "type": "bacterie",
+      "gram": "positif",
+      "morphology": "cocci-chains",
+      "catalase": false,
+      "oxydase": false,
+      "coagulase": false,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Gélose Columbia + 5% sang de mouton",
+          "note": "β-hémolyse large",
+          "primary": true
+        },
+        {
+          "name": "Milieu chromogène StrepB",
+          "note": "",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Infection materno-fœtale précoce (sepsis, méningite néonatale). Dépistage vaginal 35–37 SA. Infections adulte âgé.",
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        1
+      ],
+      "created_at": "2026-05-13T20:40:24.477237+00:00",
+      "shape": "coque · chaînettes",
+      "freq": "occasionnel",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": true,
+      "declaration": false,
+      "bsl3": false,
+      "identif": "MALDI-TOF. Strepto B. CAMP test +. Hippurate hydrolysé. AgLA latex.",
+      "antibio": "Amoxicilline. Clindamycine si allergie (selon antibiogramme).",
+      "resist_nat": [
+        "Aminosides (bas niveau)"
+      ],
+      "resist_acq": [
+        "Macrolides (erm, mef)",
+        "Tétracyclines"
+      ],
+      "virulence": [
+        "Capsule polysaccharidique",
+        "Protéine CAMP",
+        "Adhésines"
+      ],
+      "tests_rapides": [],
+      "antibiogramme": [
+        {
+          "ab": "Amoxicilline",
+          "sens": "S"
+        },
+        {
+          "ab": "Clindamycine",
+          "sens": "S"
+        },
+        {
+          "ab": "Érythromycine",
+          "sens": "I"
+        },
+        {
+          "ab": "Vancomycine",
+          "sens": "S"
+        }
+      ],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    },
+    {
+      "id": 12,
+      "name": "Staphylococcus epidermidis",
+      "type": "bacterie",
+      "gram": "positif",
+      "morphology": "cocci-cluster",
+      "catalase": true,
+      "oxydase": null,
+      "coagulase": null,
+      "sporulation": null,
+      "milieux": null,
+      "resistances": null,
+      "clinical_info": null,
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        5
+      ],
+      "created_at": "2026-06-01T13:42:53.005428+00:00",
+      "shape": "cocci en amas",
+      "freq": "fréquent",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": false,
+      "declaration": false,
+      "bsl3": false,
+      "identif": null,
+      "antibio": null,
+      "resist_nat": null,
+      "resist_acq": null,
+      "virulence": null,
+      "tests_rapides": [],
+      "antibiogramme": [],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    },
+    {
+      "id": 13,
+      "name": "Proteus mirabilis",
+      "type": "bacterie",
+      "gram": "negatif",
+      "morphology": "rod",
+      "catalase": null,
+      "oxydase": null,
+      "coagulase": null,
+      "sporulation": null,
+      "milieux": [
+        {
+          "name": "Gélose ORI",
+          "note": "Couleur Brune sur ORI",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": null,
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        15
+      ],
+      "created_at": "2026-06-01T14:15:16.69626+00:00",
+      "shape": "",
+      "freq": "fréquent",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": false,
+      "declaration": false,
+      "bsl3": false,
+      "identif": null,
+      "antibio": null,
+      "resist_nat": [
+        "Resistance naturel a la Nitrofurantoine"
+      ],
+      "resist_acq": null,
+      "virulence": null,
+      "tests_rapides": [],
+      "antibiogramme": [
+        {
+          "ab": "Ampiciline",
+          "sens": "R"
+        },
+        {
+          "ab": "Amoxiciline clav.",
+          "sens": "S"
+        }
+      ],
+      "flora_zone_ids": [
+        1
+      ],
+      "hidden_fields": []
+    },
+    {
+      "id": 14,
+      "name": "Staphylococcus aureus",
+      "type": "bacterie",
+      "gram": "positif",
+      "morphology": "cocci-cluster",
+      "catalase": true,
+      "oxydase": null,
+      "coagulase": true,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Gélose Chapman (MSA)",
+          "note": "Colonie jaune",
+          "primary": false
+        },
+        {
+          "name": "Gélose Columbia",
+          "note": "Hémolyse béta",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Infections cutanées : C'est la cause la plus fréquente de petites infections superficielles (furoncles, impétigo, panaris).\nContagion : La transmission se fait principalement par contact direct (peau à peau) ou via des objets souillés (serviettes, poignées de porte).Intoxication alimentaire : La bactérie peut produire des toxines dans les aliments mal réfrigérés (crèmes, pâtisseries, viandes) et provoquer des vomissements violents quelques heures après ingestion.\nInfections nosocomiales : Elle est redoutée en milieu hospitalier car elle peut infecter les plaies chirurgicales ou les dispositifs médicaux",
+      "populations_risque": null,
+      "commentaire": "Mesures de préventionLa prévention repose sur des gestes simples mais stricts :Hygiène des mains : Se laver régulièrement les mains à l'eau et au savon ou avec une solution hydroalcoolique.Soins des plaies : Désinfecter soigneusement toute coupure ou éraflure et la recouvrir avec un pansement.Dans les hôpitaux : Respect absolu des protocoles d'isolement et d'hygiène pour éviter la propagation aux patients fragiles",
+      "zone_ids": [
+        21,
+        17,
+        15,
+        8,
+        19,
+        20
+      ],
+      "created_at": "2026-06-05T11:59:34.124022+00:00",
+      "shape": "cocci en amas",
+      "freq": "fréquent",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": false,
+      "declaration": false,
+      "bsl3": false,
+      "identif": "L'identification se fait principalement au maldi Tof",
+      "antibio": "Le traitement repose sur des antiseptiques locaux et, si l'infection est profonde, sur des antibiotiques adaptés (comme la pénicilline ou la pristinamycine).Cependant, certaines souches ont développé une résistance aux antibiotiques. C'est le cas du SARM (Staphylococcus Aureus Résistant à la Méticilline), ou MRSA en anglais. Cela rend le traitement plus complexe et nécessite la réalisation d'un antibiogramme par le laboratoire pour identifier la molécule efficace",
+      "resist_nat": [
+        "Amoxiciline"
+      ],
+      "resist_acq": [
+        "Résistance à la méthyciline MRSA"
+      ],
+      "virulence": null,
+      "tests_rapides": [],
+      "antibiogramme": [],
+      "flora_zone_ids": [
+        18
+      ],
+      "hidden_fields": []
+    },
+    {
+      "id": 5,
+      "name": "Escherichia coli",
+      "type": "bacterie",
+      "gram": "negatif",
+      "morphology": "rod",
+      "catalase": true,
+      "oxydase": false,
+      "coagulase": false,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Gélose MacConkey",
+          "note": "colonies roses lactose+",
+          "primary": true
+        },
+        {
+          "name": "Gélose Columbia + 5% sang de mouton",
+          "note": "",
+          "primary": false
+        },
+        {
+          "name": "Gélose chromogène",
+          "note": "colonies roses/rouges",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Infections urinaires (1ère cause), bactériémies, méningites néonatales, gastro-entérites (ETEC, STEC).",
+      "populations_risque": null,
+      "commentaire": null,
+      "zone_ids": [
+        7
+      ],
+      "created_at": "2026-05-13T20:40:24.477237+00:00",
+      "shape": "bacille · isolés",
+      "freq": "occasionnel",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": true,
+      "declaration": false,
+      "bsl3": false,
+      "identif": "MALDI-TOF. Lactose +, indole +, mobile. Colonies brillantes sur gélose lactosée.",
+      "antibio": "Selon antibiogramme. Amoxicilline-clavulanate ou C3G en première intention.",
+      "resist_nat": [],
+      "resist_acq": [
+        "BLSE",
+        "Carbapénémases (rare)",
+        "Fluoroquinolones"
+      ],
+      "virulence": [
+        "Fimbriae type 1 et P",
+        "Toxines (ETEC, STEC)",
+        "Capsule K1 (méningite néonatale)"
+      ],
+      "tests_rapides": [],
+      "antibiogramme": [
+        {
+          "ab": "Amoxicilline",
+          "sens": "R"
+        },
+        {
+          "ab": "Amoxicilline-clavulanate",
+          "sens": "S"
+        },
+        {
+          "ab": "Ciprofloxacine",
+          "sens": "S"
+        },
+        {
+          "ab": "Ceftriaxone",
+          "sens": "S"
+        },
+        {
+          "ab": "Imipénème",
+          "sens": "S"
+        }
+      ],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    },
+    {
+      "id": 15,
+      "name": "Streptococcus sp",
+      "type": "bacterie",
+      "gram": "positif",
+      "morphology": "cocci-pairs",
+      "catalase": false,
+      "oxydase": false,
+      "coagulase": false,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Gélose Columbia + 5% sang de mouton",
+          "note": "colonies mucoïdes, α-hémolytiques avec zone verte",
+          "primary": true
+        },
+        {
+          "name": "Gélose au sang cuit (chocolat)",
+          "note": "meilleure croissance en 5% CO₂",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Pneumonies communautaires (1ère cause), méningites bactériennes (adulte), otites moyennes, sinusites, bactériémies.",
+      "populations_risque": null,
+      "commentaire": "- **gras**",
+      "zone_ids": [
+        1,
+        5
+      ],
+      "created_at": "2026-05-13T20:40:24.477237+00:00",
+      "shape": "coque · diplocoques lancéolés",
+      "freq": "fréquent",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": true,
+      "declaration": false,
+      "bsl3": false,
+      "identif": "MALDI-TOF. Sensibilité à l'optochine (zone ≥14 mm). Lyse par les sels biliaires. Antigène urinaire (BinaxNOW). ",
+      "antibio": "Amoxicilline (si sensible). Ceftriaxone pour méningites. Selon CMI pour les souches de sensibilité diminuée.",
+      "resist_nat": [
+        "Aminosides (bas niveau)"
+      ],
+      "resist_acq": [
+        "Pénicilline (altération PLP)",
+        "Macrolides (erm, mef)",
+        "Fluoroquinolones (rare)"
+      ],
+      "virulence": [
+        "Pneumolysine",
+        "Capsule polysaccharidique",
+        "Autolysine",
+        "IgA protéase"
+      ],
+      "tests_rapides": [],
+      "antibiogramme": [
+        {
+          "ab": "Amoxicilline",
+          "sens": "S"
+        },
+        {
+          "ab": "Ceftriaxone",
+          "sens": "S"
+        },
+        {
+          "ab": "Vancomycine",
+          "sens": "S"
+        },
+        {
+          "ab": "Érythromycine",
+          "sens": "I"
+        },
+        {
+          "ab": "Tétracycline",
+          "sens": "I"
+        }
+      ],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    },
+    {
+      "id": 9,
+      "name": "Candida albicans",
+      "type": "levure",
+      "gram": "aucun",
+      "morphology": "yeast",
+      "catalase": true,
+      "oxydase": false,
+      "coagulase": false,
+      "sporulation": false,
+      "milieux": [
+        {
+          "name": "Gélose Sabouraud",
+          "note": "colonies blanches crémeuses",
+          "primary": true
+        },
+        {
+          "name": "CHROMagar Candida",
+          "note": "colonies vertes (C. albicans)",
+          "primary": false
+        },
+        {
+          "name": "Gélose Columbia + 5% sang de mouton",
+          "note": "",
+          "primary": false
+        },
+        {
+          "name": "Bouillon BHI",
+          "note": "",
+          "primary": false
+        }
+      ],
+      "resistances": null,
+      "clinical_info": "Candidoses superficielles (muguet, vaginite). Candidémies du patient immunodéprimé ou en réanimation. Endocardites sur prothèse.",
+      "populations_risque": null,
+      "commentaire": "- Bonjour\n- **Bonsoir**",
+      "zone_ids": [
+        1
+      ],
+      "created_at": "2026-05-13T20:40:24.477237+00:00",
+      "shape": "levure · pseudo-hyphes",
+      "freq": "occasionnel",
+      "atmosphere": "aéro-anaérobie facultatif",
+      "urgence": false,
+      "declaration": false,
+      "bsl3": false,
+      "identif": "- MALDI-TOF. Test du tube germinatif + (2h à 37°C). \n- Filaments pseudo-mycéliens. API 20C AUX.",
+      "antibio": "Fluconazole (souches sensibles). Échinocandines (infections sévères). Amphotéricine B (formes réfractaires). ",
+      "resist_nat": [
+        "Fluconazole (C. krusei — autre espèce)",
+        "Échinocandines (rare)"
+      ],
+      "resist_acq": [],
+      "virulence": [
+        "Adhésines (Als)",
+        "Transition levure-hyphe",
+        "Biofilm",
+        "Protéases aspartiques (SAP)"
+      ],
+      "tests_rapides": [
+        {
+          "name": "BIC",
+          "value": "+"
+        },
+        {
+          "name": "AHG ",
+          "value": "+"
+        }
+      ],
+      "antibiogramme": [
+        {
+          "ab": "Fluconazole",
+          "sens": "S"
+        },
+        {
+          "ab": "Caspofungine",
+          "sens": "S"
+        },
+        {
+          "ab": "Amphotéricine B",
+          "sens": "S"
+        },
+        {
+          "ab": "Voriconazole",
+          "sens": "S"
+        }
+      ],
+      "flora_zone_ids": [],
+      "hidden_fields": []
+    }
+  ],
+  "images": [
+    {
+      "id": 1,
+      "bacteria_id": 9,
+      "url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/bacteria/9/1779908865116.jpg",
+      "caption": "Microorganism-1600x1065.jpg",
+      "position": 0,
+      "source": null,
+      "legend": null
+    },
+    {
+      "id": 3,
+      "bacteria_id": 13,
+      "url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/bacteria/13/1780408471997.jpg",
+      "caption": "MG-8211-Fiche-Produit-600x594.jpg",
+      "position": 0,
+      "source": null,
+      "legend": null
+    },
+    {
+      "id": 4,
+      "bacteria_id": 13,
+      "url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/bacteria/13/1780408628149.jpg",
+      "caption": "MG-8211-model-Mini-fiche-e1654677830942.jpg",
+      "position": 0,
+      "source": null,
+      "legend": null
+    },
+    {
+      "id": 6,
+      "bacteria_id": 1,
+      "url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/bacteria/1/1780495759203.jpg",
+      "caption": "Streptococcus-pneumoniae-bacteria_G_687796457.jpg",
+      "position": 0,
+      "source": null,
+      "legend": null
+    },
+    {
+      "id": 7,
+      "bacteria_id": 1,
+      "url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/bacteria/1/1780495768794.jpg",
+      "caption": "pneumocoque-pneumonie_dr.jpg",
+      "position": 0,
+      "source": null,
+      "legend": null
+    },
+    {
+      "id": 8,
+      "bacteria_id": 14,
+      "url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/bacteria/14/1780667317411.jpg",
+      "caption": "26806789318_01a096be32_o.jpg",
+      "position": 0,
+      "source": "Staphylococcus aureus et globules blancs © National Institute of Allergy and Infectious Diseases, NIH",
+      "legend": null
+    },
+    {
+      "id": 9,
+      "bacteria_id": 2,
+      "url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/bacteria/2/1781186143279.jpg",
+      "caption": "Neisseria meningitidis.jpg",
+      "position": 0,
+      "source": "https://www.britannica.com/science/List-of-Vaccine-Preventable-Diseases",
+      "legend": "Neisseria Meningitidis"
+    }
+  ],
+  "milieux": [
+    {
+      "id": 1,
+      "name": "Gélose Columbia + 5% sang de mouton",
+      "category": "Gélose",
+      "selective": false,
+      "created_at": "2026-05-20T14:49:29.317931+00:00"
+    },
+    {
+      "id": 3,
+      "name": "Gélose MacConkey",
+      "category": "Gélose",
+      "selective": true,
+      "created_at": "2026-05-20T14:49:29.317931+00:00"
+    },
+    {
+      "id": 4,
+      "name": "Gélose Sabouraud",
+      "category": "Gélose",
+      "selective": true,
+      "created_at": "2026-05-20T14:49:29.317931+00:00"
+    },
+    {
+      "id": 8,
+      "name": "Gélose Chapman (MSA)",
+      "category": "Gélose",
+      "selective": true,
+      "created_at": "2026-05-20T14:49:29.317931+00:00"
+    },
+    {
+      "id": 9,
+      "name": "Bouillon thioglycolate",
+      "category": "Bouillon",
+      "selective": false,
+      "created_at": "2026-05-20T14:49:29.317931+00:00"
+    },
+    {
+      "id": 10,
+      "name": "Bouillon BHI",
+      "category": "Bouillon",
+      "selective": false,
+      "created_at": "2026-05-20T14:49:29.317931+00:00"
+    },
+    {
+      "id": 13,
+      "name": "Eau peptonée tamponée",
+      "category": "Enrichissement",
+      "selective": false,
+      "created_at": "2026-05-20T14:49:29.317931+00:00"
+    },
+    {
+      "id": 14,
+      "name": "Gélose ORI",
+      "category": "Chromogène",
+      "selective": false,
+      "created_at": "2026-06-02T13:50:03.325364+00:00"
+    },
+    {
+      "id": 15,
+      "name": "Gélose Columbia",
+      "category": "Gélose",
+      "selective": false,
+      "created_at": "2026-06-05T13:27:04.526355+00:00"
+    },
+    {
+      "id": 2,
+      "name": "Gélose PVX (chocolat)",
+      "category": "Gélose",
+      "selective": false,
+      "created_at": "2026-05-20T14:49:29.317931+00:00"
+    },
+    {
+      "id": 16,
+      "name": "Gélose CNA (acide nalidixique-colistine",
+      "category": "Sélectif",
+      "selective": true,
+      "created_at": "2026-06-05T14:06:15.532924+00:00"
+    },
+    {
+      "id": 17,
+      "name": "Gélose HAE",
+      "category": "Gélose",
+      "selective": true,
+      "created_at": "2026-06-05T14:08:46.635255+00:00"
+    },
+    {
+      "id": 18,
+      "name": "Gélose Schaedler",
+      "category": "Gélose",
+      "selective": false,
+      "created_at": "2026-06-05T14:09:23.307416+00:00"
+    }
+  ],
+  "pathologies": [
+    {
+      "id": 1,
+      "zone_id": 1,
+      "nom": "Méningite",
+      "description": null,
+      "ordre": 1,
+      "created_at": "2026-07-01T12:21:04.76344+00:00",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/pathologies/1-1782910759479.png",
+      "system_id": null
+    },
+    {
+      "id": 2,
+      "zone_id": 22,
+      "nom": "Péricardite",
+      "description": "La péricardite est l'inflammation du péricarde, le sac membraneux qui enveloppe le cœur. Elle se manifeste principalement par une douleur thoracique aiguë, souvent soulagée lorsque le patient se penche en avant, et peut s'accompagner de fièvre",
+      "ordre": 1,
+      "created_at": "2026-07-01T12:25:09.693526+00:00",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/pathologies/2-1782911026254.png",
+      "system_id": null
+    },
+    {
+      "id": 3,
+      "zone_id": null,
+      "nom": "Abcès",
+      "description": null,
+      "ordre": 1,
+      "created_at": "2026-07-03T09:21:45.870263+00:00",
+      "image_url": null,
+      "system_id": 12
+    },
+    {
+      "id": 5,
+      "zone_id": null,
+      "nom": "Fasciite",
+      "description": null,
+      "ordre": 0,
+      "created_at": "2026-07-03T12:43:44.805343+00:00",
+      "image_url": null,
+      "system_id": 12
+    },
+    {
+      "id": 6,
+      "zone_id": null,
+      "nom": "Encéphalite",
+      "description": null,
+      "ordre": 0,
+      "created_at": "2026-07-06T14:40:58.056079+00:00",
+      "image_url": null,
+      "system_id": 1
+    }
+  ],
+  "pathologie_germes": [
+    {
+      "pathologie_id": 2,
+      "bacteria_id": 14,
+      "ordre": 0
+    },
+    {
+      "pathologie_id": 2,
+      "bacteria_id": 6,
+      "ordre": 0
+    },
+    {
+      "pathologie_id": 1,
+      "bacteria_id": 1,
+      "ordre": 2
+    },
+    {
+      "pathologie_id": 1,
+      "bacteria_id": 2,
+      "ordre": 0
+    },
+    {
+      "pathologie_id": 1,
+      "bacteria_id": 6,
+      "ordre": 3
+    },
+    {
+      "pathologie_id": 1,
+      "bacteria_id": 3,
+      "ordre": 1
+    }
+  ],
+  "zone_bacteria": [
+    {
+      "zone_id": 7,
+      "bacteria_id": 5,
+      "ordre": 0
+    },
+    {
+      "zone_id": 15,
+      "bacteria_id": 13,
+      "ordre": 0
+    },
+    {
+      "zone_id": 15,
+      "bacteria_id": 14,
+      "ordre": 1
+    },
+    {
+      "zone_id": 17,
+      "bacteria_id": 14,
+      "ordre": 0
+    },
+    {
+      "zone_id": 19,
+      "bacteria_id": 14,
+      "ordre": 0
+    },
+    {
+      "zone_id": 20,
+      "bacteria_id": 14,
+      "ordre": 0
+    },
+    {
+      "zone_id": 21,
+      "bacteria_id": 14,
+      "ordre": 0
+    },
+    {
+      "zone_id": 8,
+      "bacteria_id": 14,
+      "ordre": 1
+    },
+    {
+      "zone_id": 8,
+      "bacteria_id": 2,
+      "ordre": 0
+    },
+    {
+      "zone_id": 1,
+      "bacteria_id": 3,
+      "ordre": 3
+    },
+    {
+      "zone_id": 1,
+      "bacteria_id": 6,
+      "ordre": 6
+    },
+    {
+      "zone_id": 1,
+      "bacteria_id": 2,
+      "ordre": 5
+    },
+    {
+      "zone_id": 1,
+      "bacteria_id": 8,
+      "ordre": 0
+    },
+    {
+      "zone_id": 1,
+      "bacteria_id": 4,
+      "ordre": 2
+    },
+    {
+      "zone_id": 1,
+      "bacteria_id": 7,
+      "ordre": 4
+    },
+    {
+      "zone_id": 1,
+      "bacteria_id": 1,
+      "ordre": 7
+    },
+    {
+      "zone_id": 1,
+      "bacteria_id": 10,
+      "ordre": 1
+    },
+    {
+      "zone_id": 1,
+      "bacteria_id": 15,
+      "ordre": 8
+    }
+  ],
+  "system_bacteria": [
+    {
+      "system_id": 1,
+      "bacteria_id": 9
+    }
+  ],
+  "quiz": [
+    {
+      "id": 2,
+      "title": "",
+      "scenario": "",
+      "question": "Diplocoque Gram− en grains de café, oxydase+, strictement humain. Urgence absolue, déclaration obligatoire. Qui suis-je ?",
+      "options": [
+        "Neisseria gonorrhoeae",
+        "Neisseria meningitidis",
+        "Moraxella catarrhalis",
+        "Haemophilus influenzae"
+      ],
+      "correct_index": 1,
+      "explanation": null,
+      "zone_ids": null,
+      "created_at": "2026-05-15T11:34:22.563238+00:00",
+      "feedback": "Neisseria meningitidis — méningite et purpura fulminans. Fragile en dehors de l'hôte.",
+      "system_id": null,
+      "difficulty": 2,
+      "active": true,
+      "type": "qcm",
+      "image_url": null,
+      "context": null,
+      "answer": null,
+      "sub_questions": null
+    },
+    {
+      "id": 5,
+      "title": "sdfsfssdfsdfsf",
+      "scenario": "",
+      "question": "",
+      "options": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "correct_index": 0,
+      "explanation": null,
+      "zone_ids": null,
+      "created_at": "2026-06-22T10:03:48.364731+00:00",
+      "feedback": "",
+      "system_id": null,
+      "difficulty": 1,
+      "active": true,
+      "type": "theorique",
+      "image_url": null,
+      "context": "",
+      "answer": "",
+      "sub_questions": []
+    },
+    {
+      "id": 7,
+      "title": "sfdsdfsfsfsdf",
+      "scenario": "",
+      "question": "sfdsdfsdfsdf",
+      "options": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "correct_index": 0,
+      "explanation": null,
+      "zone_ids": null,
+      "created_at": "2026-06-22T10:04:24.334829+00:00",
+      "feedback": "",
+      "system_id": null,
+      "difficulty": 1,
+      "active": true,
+      "type": "qcm",
+      "image_url": null,
+      "context": "",
+      "answer": "",
+      "sub_questions": []
+    },
+    {
+      "id": 1,
+      "title": "Une personne vient chez le medecin pour un problème a à la jambe.",
+      "scenario": "",
+      "question": "Ce germe est Gram+, en diplocoques lancéolés, α-hémolytique sur gélose sang. Il est la 1ère cause de pneumonie communautaire. Qui suis-je ?",
+      "options": [
+        "Streptococcus pneumoniae",
+        "Streptococcus pyogenes",
+        "Enterococcus faecalis",
+        "Listeria monocytogenes",
+        ""
+      ],
+      "correct_index": 0,
+      "explanation": null,
+      "zone_ids": null,
+      "created_at": "2026-05-15T11:34:22.563238+00:00",
+      "feedback": "Streptococcus pneumoniae — sensible à l'optochine, lyse par les sels biliaires. Antigène urinaire (BinaxNOW).",
+      "system_id": 13,
+      "difficulty": 1,
+      "active": true,
+      "type": "cas_clinique",
+      "image_url": "https://mqobermcwxxxkbovizua.supabase.co/storage/v1/object/public/bacteriomap-images/quiz/1/1781608282909.png",
+      "context": "- Il a mal au fesse et dors pas beaucoup",
+      "answer": null,
+      "sub_questions": [
+        {
+          "options": [
+            "La réponse A",
+            "La B ",
+            "adfaf",
+            "asfdasdf"
+          ],
+          "feedback": "",
+          "question": "Que faire ?",
+          "correct_index": 0
+        },
+        {
+          "options": [
+            "",
+            "",
+            "",
+            ""
+          ],
+          "feedback": "",
+          "question": "",
+          "correct_index": 0
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "",
+      "scenario": "",
+      "question": "Bacille Gram+, mobile à 25°C, pousse au froid, β-hémolytique étroite. Tropisme placentaire et neuroméningé. Qui suis-je ?",
+      "options": [
+        "Clostridium perfringens",
+        "Bacillus cereus",
+        "Listeria monocytogenes",
+        "Corynebacterium diphtheriae"
+      ],
+      "correct_index": 2,
+      "explanation": null,
+      "zone_ids": null,
+      "created_at": "2026-05-15T11:34:22.563238+00:00",
+      "feedback": "Listeria monocytogenes — fromages au lait cru, charcuterie. Infection materno-fœtale.",
+      "system_id": null,
+      "difficulty": 2,
+      "active": true,
+      "type": "qcm",
+      "image_url": null,
+      "context": null,
+      "answer": null,
+      "sub_questions": []
+    },
+    {
+      "id": 6,
+      "title": "sfdsfsf",
+      "scenario": "",
+      "question": "",
+      "options": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "correct_index": 0,
+      "explanation": null,
+      "zone_ids": null,
+      "created_at": "2026-06-22T10:04:13.618103+00:00",
+      "feedback": "",
+      "system_id": null,
+      "difficulty": 1,
+      "active": true,
+      "type": "qcm",
+      "image_url": null,
+      "context": "",
+      "answer": "",
+      "sub_questions": []
+    }
+  ]
+}
