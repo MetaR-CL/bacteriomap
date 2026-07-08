@@ -216,14 +216,15 @@ export default function HomeScreen({ navigate }) {
     : []
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)', fontFamily: T.serif }}>
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--bg)', fontFamily: T.serif, overflow: 'hidden' }}>
 
       {/* Header */}
       <header style={{
         padding: mobile ? '14px 16px' : '22px 40px',
+        paddingTop: `calc(${mobile ? '14px' : '22px'} + env(safe-area-inset-top))`,
         borderBottom: '1px solid var(--rule)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: 'var(--paper)', position: 'sticky', top: 0, zIndex: 5,
+        background: 'var(--paper)', flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <BacterioMark size={26} />
@@ -255,8 +256,9 @@ export default function HomeScreen({ navigate }) {
         </div>
       </header>
 
-      {/* Main container */}
-      <div style={{ maxWidth: 1120, margin: '0 auto', width: '100%', padding: mobile ? '16px 16px 40px' : '44px 40px 56px', boxSizing: 'border-box' }}>
+      {/* Scrollable content — header and Formation banner stay fixed outside this area */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div style={{ maxWidth: 1120, margin: '0 auto', width: '100%', padding: mobile ? '16px 16px 24px' : '44px 40px 32px', boxSizing: 'border-box' }}>
 
         {/* Search bar */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: mobile ? 20 : 40 }}>
@@ -343,9 +345,19 @@ export default function HomeScreen({ navigate }) {
           </>
         )}
 
-        {/* Formation banner */}
-        {!q && <FormationBanner navigate={navigate} mobile={mobile} />}
       </div>
+      </div>
+
+      {/* Formation banner — pinned outside the scroll area so it's always visible */}
+      {!q && (
+        <div style={{
+          flexShrink: 0, maxWidth: 1120, margin: '0 auto', width: '100%', boxSizing: 'border-box',
+          padding: mobile ? '0 16px' : '0 40px',
+          paddingBottom: `calc(${mobile ? '14px' : '20px'} + env(safe-area-inset-bottom))`,
+        }}>
+          <FormationBanner navigate={navigate} mobile={mobile} />
+        </div>
+      )}
     </div>
   )
 }
