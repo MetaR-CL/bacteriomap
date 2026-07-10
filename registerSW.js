@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/bacteriomap/sw.js', { scope: '/bacteriomap/' })})}
