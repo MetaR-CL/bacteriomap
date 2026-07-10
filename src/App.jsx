@@ -4,15 +4,29 @@ import React from 'react';
 import { gramColor, MorphoSVG } from './modules/bacteriomap/shared.jsx';
 import { useTweaks, TweaksPanel, TweakSection, TweakToggle, TweakColor, TweakButton } from './modules/bacteriomap/TweaksPanel.jsx';
 import { useDarkMode } from './hooks/useDarkMode.js';
-import HomeScreen    from './modules/bacteriomap/HomeScreen.jsx';
-import ZoneScreen    from './modules/bacteriomap/ZoneScreen.jsx';
-import SheetScreen   from './modules/bacteriomap/SheetScreen.jsx';
-import QuizScreen    from './modules/bacteriomap/QuizScreen.jsx';
-import AdminScreen   from './modules/bacteriomap/AdminScreen.jsx';
-import CompareScreen     from './modules/bacteriomap/CompareScreen.jsx';
 import CompareBar        from './modules/bacteriomap/CompareBar.jsx';
-import PathologieScreen  from './modules/bacteriomap/PathologieScreen.jsx';
 import { CompareProvider } from './context/CompareContext.jsx';
+import ErrorBoundary from './shared/ErrorBoundary.jsx';
+
+// Route-level code splitting: each screen ships in its own chunk, fetched
+// only when navigated to. AdminScreen in particular pulls in the entire
+// admin CRUD surface (systems/bacteria/milieux/pathologies/quiz editors),
+// which public visitors never need to download.
+const HomeScreen       = React.lazy(() => import('./modules/bacteriomap/HomeScreen.jsx'));
+const ZoneScreen       = React.lazy(() => import('./modules/bacteriomap/ZoneScreen.jsx'));
+const SheetScreen      = React.lazy(() => import('./modules/bacteriomap/SheetScreen.jsx'));
+const QuizScreen       = React.lazy(() => import('./modules/bacteriomap/QuizScreen.jsx'));
+const AdminScreen      = React.lazy(() => import('./modules/bacteriomap/AdminScreen.jsx'));
+const CompareScreen    = React.lazy(() => import('./modules/bacteriomap/CompareScreen.jsx'));
+const PathologieScreenLazy = React.lazy(() => import('./modules/bacteriomap/PathologieScreen.jsx'));
+
+function RouteLoadingFallback() {
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Newsreader", serif', fontStyle: 'italic', color: 'var(--ink3)' }}>
+      Chargement…
+    </div>
+  )
+}
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "dark": false,
@@ -133,7 +147,7 @@ function PathologieLoader({ navigate, params, vivid }) {
   }, [zoneId])
 
   return (
-    <PathologieScreen
+    <PathologieScreenLazy
       navigate={navigate}
       pathologieId={pathologieId}
       pathologie={pathologie}
@@ -206,7 +220,11 @@ export default function App() {
       <div className={cls} style={{ minHeight:'100vh' }} data-screen-label={
         route.name === 'home' ? 'Accueil' : route.name === 'zone' ? `Zone ${route.params.systemId || 'orl'}` : route.name === 'quiz' ? 'Quiz' : route.name === 'admin' ? 'Admin' : route.name === 'compare' ? 'Comparaison' : 'Fiche bactérie'
       }>
-        {screen}
+        <ErrorBoundary onReset={() => navigate('home')}>
+          <React.Suspense fallback={<RouteLoadingFallback />}>
+            {screen}
+          </React.Suspense>
+        </ErrorBoundary>
       </div>
 
       <TweaksPanel title="Tweaks">
