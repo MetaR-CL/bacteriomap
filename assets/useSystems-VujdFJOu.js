@@ -1,0 +1,1 @@
+import{r as t,f as c}from"./index-BLqorGeK.js";function f(){const[e,o]=t.useState([]),[a,n]=t.useState(!0);return t.useEffect(()=>{c().then(r=>{o((r||[]).map(s=>({...s,bacterio_zones:[...s.bacterio_zones||[]].sort((i,u)=>i.position-u.position)}))),n(!1)})},[]),{systems:e,loading:a}}export{f as u};

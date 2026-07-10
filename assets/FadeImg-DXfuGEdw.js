@@ -1,0 +1,1 @@
+import{R as n,j as d}from"./index-BLqorGeK.js";function r({style:a,onLoad:t,...o}){const[e,s]=n.useState(!1);return d.jsx("img",{...o,loading:"lazy",decoding:"async",onLoad:i=>{s(!0),t?.(i)},style:{...a,opacity:e?a?.opacity??1:0,transition:"opacity .25s ease"}})}export{r as F};
