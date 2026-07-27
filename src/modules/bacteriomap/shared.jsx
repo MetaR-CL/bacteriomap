@@ -1,5 +1,21 @@
 // shared.jsx — data, helpers, SVG morpho placeholders, system list
 
+// Single source of truth for the morphology dropdown (admin) and its labels (public sheet)
+export const MORPHO_OPTIONS = [
+  ['cocci-pairs', 'Cocci en paires'],
+  ['cocci-chains', 'Cocci en chaînettes'],
+  ['cocci-cluster', 'Cocci en amas'],
+  ['rod', 'Bacille'],
+  ['coccobacillus', 'Coccobacille'],
+  ['rod-bar', 'Bacille BAAR'],
+  ['spiral', 'Spirale'],
+  ['yeast', 'Levure'],
+  ['mold', 'Champignon filamenteux'],
+];
+export function morphoLabel(kind) {
+  return MORPHO_OPTIONS.find(([k]) => k === kind)?.[1] || kind || '—';
+}
+
 // Apothicaire palette per system : each color is harmonious, low-saturation
 // Pairs : { accent, tint, deep } — accent for headers/rules, tint for backgrounds, deep for hover/active
 export const SYSTEM_PALETTES = {
@@ -230,6 +246,33 @@ export function MorphoSVG({ kind, size = 100, stroke = 'var(--violet)', fill = '
       </g>
     );
   }
+  if (kind === 'mold') {
+    // Filamentous fungus — branching hyphae with a conidiophore bearing spores
+    const branch = (x, y, angle, len, depth) => {
+      const rad = angle * Math.PI / 180;
+      const x2 = x + Math.cos(rad) * len;
+      const y2 = y + Math.sin(rad) * len;
+      const segs = [
+        <line key={`${x}-${y}-${angle}`} x1={x} y1={y} x2={x2} y2={y2} stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" fill="none" opacity={0.85}/>
+      ];
+      if (depth > 0) {
+        segs.push(...branch(x2, y2, angle - 26, len * 0.72, depth - 1));
+        segs.push(...branch(x2, y2, angle + 30, len * 0.72, depth - 1));
+      }
+      return segs;
+    };
+    const spores = [0, 1, 2, 3, 4].map(i => (
+      <circle key={`s${i}`} cx={cx - 16 + i * 8} cy={cy - r * 0.62 - (i % 2) * 4} r={2.4} fill={fill} fillOpacity={vivid ? 0.8 : 0.5} stroke={stroke} strokeWidth={0.5}/>
+    ));
+    return (
+      <g>
+        {defs}
+        {branch(cx, cy + r * 0.75, -90, r * 0.55, 3)}
+        <circle cx={cx} cy={cy - r * 0.62} r={3.2} fill={fill} fillOpacity={vivid ? 0.85 : 0.55} stroke={stroke} strokeWidth={strokeWidth * 0.6}/>
+        {spores}
+      </g>
+    );
+  }
   // fallback
   return (
     <g>
@@ -244,5 +287,9 @@ export function gramColor(gram) {
     return { stroke: '#3D2A6B', fill: '#5B3FA8', tint: '#EDE7F8', label: 'Gram +' }
   if (gram === '-' || gram === '−' || gram === 'negatif')
     return { stroke: '#7A1F3D', fill: '#C4337A', tint: '#FBE6EE', label: 'Gram −' }
+  if (gram === 'variable')
+    return { stroke: '#6a5a1f', fill: '#a4881f', tint: '#f3edd0', label: 'Gram variable' }
+  if (gram === 'aucun' || gram === 'F')
+    return { stroke: '#3a5a4a', fill: '#5a9a7a', tint: '#e3f0e9', label: 'Non applicable (fongique)' }
   return { stroke: '#444', fill: '#777', tint: '#EEE', label: gram || '—' }
 }

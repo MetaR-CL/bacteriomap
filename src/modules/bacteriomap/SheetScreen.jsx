@@ -2,7 +2,7 @@
 // Carrousel images · sommaire sticky · meta-bar sticky
 import React from 'react';
 import { T } from './data.js';
-import { SYSTEMS, getSystemPalette, gramColor } from './shared.jsx';
+import { SYSTEMS, getSystemPalette, gramColor, MorphoSVG, morphoLabel } from './shared.jsx';
 import { getBacterieByName } from '../../shared/dataSource.js';
 import FadeImg from '../../shared/FadeImg.jsx';
 import TopBar from './TopBar.jsx'
@@ -11,6 +11,7 @@ import { useIsMobile } from '../../hooks/useIsMobile.js';
 import { useCompare } from '../../context/CompareContext.jsx';
 
 const GRAM_MAP = { positif: '+', négatif: '−', aucun: 'F' }
+const TYPE_LABELS = { bacterie: 'Bactérie', levure: 'Levure', moisissure: 'Moisissure' }
 
 // Parse JSONB fields that may arrive as a string (e.g. stored by admin as JSON text)
 function parseJSONField(val) {
@@ -222,6 +223,7 @@ export function SheetView({ b, images: imagesProp, systemId = 'orl', compact = f
     : [];
 
   const hidden = new Set(Array.isArray(b.hidden_fields) ? b.hidden_fields : []);
+  const gramInfo = gramColor(b.gram);
 
   return (
     <div style={{ fontFamily: T.serif, '--accent': accent, background: T.bg }}>
@@ -243,6 +245,39 @@ export function SheetView({ b, images: imagesProp, systemId = 'orl', compact = f
 
       {/* Sections */}
       <div style={{ background: T.paper, padding: compact ? '12px 16px 32px' : '20px 28px 48px' }}>
+
+        {!hidden.has('identite') && (
+          <>
+            <SectionTitle n="01" title="Identité" anchor={null} accent={accent} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', border: `1px solid ${T.rule}`, marginBottom: 12, alignItems: 'stretch' }}>
+              <div style={{ padding: '8px 10px', borderRight: `1px solid ${T.ruleSoft}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 40, height: 40, flexShrink: 0 }}>
+                  <svg viewBox="0 0 100 100" width="100%" height="100%">
+                    <MorphoSVG kind={b.morphology} size={100} stroke={gramInfo.stroke} fill={gramInfo.fill} fillOpacity={0.3} strokeWidth={2} />
+                  </svg>
+                </div>
+                <div>
+                  <div style={{ fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.1em' }}>MORPHOLOGIE</div>
+                  <div style={{ fontFamily: T.serif, fontSize: 14, fontWeight: 500 }}>{morphoLabel(b.morphology)}</div>
+                </div>
+              </div>
+              <div style={{ padding: '8px 10px', borderRight: `1px solid ${T.ruleSoft}` }}>
+                <div style={{ fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.1em' }}>GRAM</div>
+                <div style={{ fontFamily: T.serif, fontSize: 14, fontWeight: 500 }}>{gramInfo.label}</div>
+              </div>
+              <div style={{ padding: '8px 10px', borderRight: `1px solid ${T.ruleSoft}` }}>
+                <div style={{ fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.1em' }}>TYPE</div>
+                <div style={{ fontFamily: T.serif, fontSize: 14, fontWeight: 500 }}>{TYPE_LABELS[b.type] || b.type || '—'}</div>
+              </div>
+              {!!b.shape && (
+                <div style={{ padding: '8px 10px' }}>
+                  <div style={{ fontFamily: T.mono, fontSize: 8, color: T.ink3, letterSpacing: '0.1em' }}>FORME</div>
+                  <div style={{ fontFamily: T.serif, fontStyle: 'italic', fontSize: 13 }}>{b.shape}</div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
 
         {(!hidden.has('microscopie') || !hidden.has('milieux')) && (
           <SectionTitle n="02" title="Microscopie & culture" anchor={null} accent={accent} />

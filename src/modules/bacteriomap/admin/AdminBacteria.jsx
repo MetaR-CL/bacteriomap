@@ -3,7 +3,7 @@ import { T } from '../data.js'
 import { useAdminBacteria } from '../../../hooks/useAdminBacteria.js'
 import { useAdminSystems } from '../../../hooks/useAdminSystems.js'
 import { useAdminMilieux } from '../../../hooks/useAdminMilieux.js'
-import { gramColor } from '../shared.jsx'
+import { gramColor, MORPHO_OPTIONS } from '../shared.jsx'
 import { supabase } from '../../../lib/supabase.js'
 import { SheetView } from '../SheetScreen.jsx'
 
@@ -431,7 +431,7 @@ export default function AdminBacteria() {
       <div style={{ background: T.paper, border: `0.5px solid ${T.rule}`, padding: '24px 28px' }}>
 
         {/* IDENTITÉ */}
-        <SectionTitle sectionKey="s_identite" collapsed={isCollapsed('s_identite')} onCollapse={toggleSection}>IDENTITÉ</SectionTitle>
+        <SectionTitle fieldKey="identite" isHidden={isHiddenField('identite')} onToggle={toggleHidden} sectionKey="s_identite" collapsed={isCollapsed('s_identite')} onCollapse={toggleSection}>IDENTITÉ</SectionTitle>
         {!isCollapsed('s_identite') && (
           <>
             <Field label="Nom">
@@ -454,7 +454,7 @@ export default function AdminBacteria() {
             </Field>
             <Field label="Morphologie">
               <select value={d.morphology || 'cocci-cluster'} onChange={e => setDraft(p => ({ ...p, morphology: e.target.value }))} style={selStyle}>
-                {[['cocci-pairs','Cocci en paires'],['cocci-chains','Cocci en chaînettes'],['cocci-cluster','Cocci en amas'],['rod','Bacille'],['coccobacillus','Coccobacille'],['rod-bar','Bacille BAAR'],['yeast','Levure']].map(([k,l]) => <option key={k} value={k}>{l}</option>)}
+                {MORPHO_OPTIONS.map(([k,l]) => <option key={k} value={k}>{l}</option>)}
               </select>
             </Field>
             <Field label="Forme courte">
